@@ -1,0 +1,43 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ai-runners
+    steps:
+      - uses: actions/checkout@v3
+      - name: Add root local bin to PATH (for self-hosted runners)
+        run: echo "/root/.local/bin" >> "$GITHUB_PATH"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.local
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Cache PDM packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pdm
+          key: ${{ runner.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pdm-
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip --user
+      - name: Install and configure PDM
+        run: |
+          python -m pip install --user pdm
+          pdm config python.use_venv false
+      - name: Install dependencies
+        run: |
+          pdm install -G test
+          pdm install -G example
+      - name: Run tests
+        run: pdm run pytest
+      - name: Run examples
+        working-directory: examples
+        run: pdm run python overhead_benchmark.py
