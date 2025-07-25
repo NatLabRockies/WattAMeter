@@ -4,11 +4,9 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ai-runners
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Add root local bin to PATH (for self-hosted runners)
-        run: echo "/root/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
