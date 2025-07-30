@@ -9,7 +9,7 @@ Since overhead measurements are machine-dependent, this script is provided
 as an example rather than as a test.
 
 Usage:
-    python overhead_benchmark.py
+    python overhead.py
 """
 
 import time
@@ -130,43 +130,11 @@ def benchmark_measurement_overhead():
             print("❌ Measurement overhead might be too high (> 100ms)")
 
 
-def print_system_info():
-    """Print basic system information that might affect overhead."""
-    import platform
-    import cpuinfo
-    import sys
-    import pynvml
-
-    print("=" * 60)
-    print("SYSTEM INFORMATION")
-    print("=" * 60)
-    print(f"Platform: {platform.platform()}")
-    print(f"Python version: {sys.version}")
-    print(f"Architecture: {platform.architecture()}")
-    print(f"Processor: {cpuinfo.get_cpu_info()['brand_raw']}")
-
-    try:
-        pynvml.nvmlInit()
-        try:
-            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            name = pynvml.nvmlDeviceGetName(handle)
-            if hasattr(name, "decode"):
-                name = name.decode("utf-8")
-            print(f"GPU: {name}")
-        except pynvml.NVMLError as e:
-            print(f"GPU: Error retrieving GPU info - {e}")
-        finally:
-            pynvml.nvmlShutdown()
-    except pynvml.NVMLError:
-        pass  # NVML not available, skip GPU info
-
-
 if __name__ == "__main__":
     print("WattAMeter Overhead Benchmark")
     print("This script measures the performance overhead of PowerTracker.")
     print("Results are machine-dependent and should be used for reference only.\n")
 
-    print_system_info()
     benchmark_initialization_overhead()
     benchmark_measurement_overhead()
 
