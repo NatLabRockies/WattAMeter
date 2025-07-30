@@ -36,6 +36,6 @@ jobs:
           pdm install -G example
       - name: Run tests
         run: pdm run pytest
-      - name: Run examples
-        working-directory: examples
-        run: pdm run python overhead_benchmark.py
+      - name: Run benchmark
+        working-directory: benchmark
+        run: pdm run python main.py
