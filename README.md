@@ -1,6 +1,6 @@
 [![CI](https://github.com/NREL/WattAMeter/actions/workflows/ci.yml/badge.svg)](https://github.com/NREL/WattAMeter/actions/workflows/ci.yml)
 
-# WattAMeter
+![wattameter_logo](wattameter_logo.png)
 
 **wattameter** is a Python package for monitoring and recording power consumption over time, enabling users to collect time series data on CPU, GPU, and RAM power usage. It also estimates energy consumption and CO₂ emissions.
 
