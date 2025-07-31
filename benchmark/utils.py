@@ -41,7 +41,7 @@ def print_system_info():
 
 def estimate_dt(
     f, n_trials: int = 10, sleep_dt: float = 0.013, ntmax: int = 1000
-) -> float:
+) -> list[float]:
     """
     Estimates the average time interval between changes in the output of a given function.
 
@@ -62,7 +62,7 @@ def estimate_dt(
     t1 = time.perf_counter()
 
     # Estimate the time interval
-    res = 0.0
+    res = [0.0] * n_trials
     n_computed_dt = 0
     for count in range(n_trials + 1):
         # Initialize the value and time counters
@@ -85,7 +85,6 @@ def estimate_dt(
         # Update estimated time interval
         if count > 0:  # Skip the first trial to avoid initialization bias
             n_computed_dt += 1
-            res += t1 - t0
+            res[count - 1] = t1 - t0
 
-    res /= n_computed_dt
     return res

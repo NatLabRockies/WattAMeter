@@ -13,6 +13,7 @@ Usage:
 """
 
 from utils import estimate_dt
+import numpy as np
 
 
 def _benchmark_metric(metric_name, get_metric_func, unit, conversion_factor=1):
@@ -43,15 +44,23 @@ def _benchmark_metric(metric_name, get_metric_func, unit, conversion_factor=1):
             ntmax=2000,
         )
 
-        print(f"   ✅ Estimated update interval: {estimated_dt:.6f} seconds")
-        print(f"   📈 Estimated update frequency: {1.0 / estimated_dt:.2f} Hz")
+        freq = 1.0 / np.asarray(estimated_dt)
+        min_freq = np.min(freq)
+        max_freq = np.max(freq)
+        mean_freq = np.mean(freq)
+        std_freq = np.std(freq)
+
+        print(f"   📈 Average update frequency: {mean_freq:.6f} Hz")
+        print(f"                           Min: {min_freq:.6f} Hz")
+        print(f"                           Max: {max_freq:.6f} Hz")
+        print(f"                           Std: {std_freq:.6f} Hz")
 
         # Provide context on update frequency
-        if estimated_dt < 0.01:  # < 10ms (> 100Hz)
+        if mean_freq > 100:  # < 10ms (> 100Hz)
             print("   💚 Very fast updates (< 10ms)")
-        elif estimated_dt < 0.1:  # < 100ms (> 10Hz)
+        elif mean_freq > 10:  # < 100ms (> 10Hz)
             print("   ✅ Fast updates (< 100ms)")
-        elif estimated_dt < 1.0:  # < 1s (> 1Hz)
+        elif mean_freq > 1:  # < 1s (> 1Hz)
             print("   ⚠️  Moderate updates (< 1s)")
         else:  # >= 1s (<= 1Hz)
             print("   ⚠️  Slow updates (>= 1s)")
