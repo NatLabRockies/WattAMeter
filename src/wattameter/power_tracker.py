@@ -84,6 +84,10 @@ class PowerTracker(OfflineEmissionsTracker):
     def start(self) -> None:
         super().start()
 
+        # I don't need their scheduler to monitor power, so I stop it
+        if self._scheduler_monitor_power:
+            self._scheduler_monitor_power.stop()
+
         if self._api_call_interval != -1:
             timestamp_str = datetime.now().strftime(self.timestamp_fmt)[:-3]
 
