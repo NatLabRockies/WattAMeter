@@ -5,7 +5,7 @@
 Benchmarks for WattAMeter
 
 This script runs various benchmarks with WattAMeter, including:
-- Overhead of initializing and destroying the PowerTracker
+- Overhead of initializing and destroying the CodeCarbonTracker
 - Overhead of measurement operations
 - Frequency of power updates
 

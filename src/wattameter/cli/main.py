@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 
-from ..power_tracker import PowerTracker
+from ..codecarbon_tracker import CodeCarbonTracker
 
 import signal
 import time
@@ -127,7 +127,7 @@ def main():
     logging.basicConfig(level=args.log_level.upper())
 
     # Initialize the tracker
-    tracker = PowerTracker(
+    tracker = CodeCarbonTracker(
         # For CO2 emissions tracking
         country_iso_code=args.country,
         region=args.region,

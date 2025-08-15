@@ -25,9 +25,9 @@ pip install wattameter
 ### As a Python module
 
 ```python
-from wattameter.power_tracker import PowerTracker
+from wattameter.codecarbon_tracker import CodeCarbonTracker
 
-tracker = PowerTracker(
+tracker = CodeCarbonTracker(
     country_iso_code="USA",
     region="colorado",
     measure_power_secs=1,

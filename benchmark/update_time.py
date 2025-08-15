@@ -4,7 +4,7 @@
 """
 Frequency of Update Benchmark Script for WattAMeter
 
-This script measures the frequency of updates for the PowerTracker.
+This script measures the frequency of updates for the CodeCarbonTracker.
 Since update frequency measurements are machine-dependent, this script is provided
 as an example rather than as a test.
 

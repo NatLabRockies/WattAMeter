@@ -13,7 +13,7 @@ import re
 import os
 
 
-class PowerTracker(OfflineEmissionsTracker):
+class CodeCarbonTracker(OfflineEmissionsTracker):
     """Power tracker based on the CodeCarbon offline emission tracker.
 
     :param output_power_file: Optional path to the output file where power data

@@ -4,7 +4,7 @@
 """
 Overhead Benchmark Script for WattAMeter
 
-This script measures the performance overhead introduced by the PowerTracker.
+This script measures the performance overhead introduced by the CodeCarbonTracker.
 Since overhead measurements are machine-dependent, this script is provided
 as an example rather than as a test.
 
@@ -13,14 +13,14 @@ Usage:
 """
 
 import time
-from wattameter.power_tracker import PowerTracker
+from wattameter.codecarbon_tracker import CodeCarbonTracker
 import tempfile
 from pathlib import Path
 
 
 def create_default_tracker(temp_dir, measure_power_secs: float = 1):
-    """Creates a default PowerTracker instance for benchmarking."""
-    tracker = PowerTracker(
+    """Creates a default CodeCarbonTracker instance for benchmarking."""
+    tracker = CodeCarbonTracker(
         # For CO2 emissions tracking
         country_iso_code="USA",
         region="colorado",
@@ -38,7 +38,7 @@ def create_default_tracker(temp_dir, measure_power_secs: float = 1):
 
 
 def benchmark_initialization_overhead(iterations: int = 5):
-    """Measures the overhead of initializing and destroying the PowerTracker."""
+    """Measures the overhead of initializing and destroying the CodeCarbonTracker."""
     print("=" * 60)
     print("POWERTRACKER INITIALIZATION OVERHEAD BENCHMARK")
     print("=" * 60)
@@ -78,7 +78,7 @@ def benchmark_initialization_overhead(iterations: int = 5):
 
 
 def benchmark_measurement_overhead(num_measurements: int = 50):
-    """Measures the overhead of the PowerTracker's measurement function."""
+    """Measures the overhead of the CodeCarbonTracker's measurement function."""
     print("\n" + "=" * 60)
     print("POWERTRACKER MEASUREMENT OVERHEAD BENCHMARK")
     print("=" * 60)
@@ -189,7 +189,7 @@ def _read_rapl_energy(files: list, dt: float) -> list[float]:
 
 
 def benchmark_measurement_cpu_energy_overhead(T: float = 60):
-    """Measures the CPU energy added by the PowerTracker's measurement function."""
+    """Measures the CPU energy added by the CodeCarbonTracker's measurement function."""
     print("\n" + "=" * 60)
     print("POWERTRACKER MEASUREMENT CPU ENERGY OVERHEAD BENCHMARK")
     print("=" * 60)
@@ -236,7 +236,7 @@ def benchmark_measurement_cpu_energy_overhead(T: float = 60):
     for dt in [0.1, 0.2, 0.5, 1.0]:
         freq = int(1 / dt)
         print(
-            f"📊 Measuring PowerTracker overhead at {freq} Hz (measurement every {dt}s)"
+            f"📊 Measuring CodeCarbonTracker overhead at {freq} Hz (measurement every {dt}s)"
         )
         print("-" * 50)
 
@@ -246,7 +246,7 @@ def benchmark_measurement_cpu_energy_overhead(T: float = 60):
             tracker = create_default_tracker(temp_dir, measure_power_secs=dt)
             tracker.start()
 
-            # Measure energy consumption during PowerTracker operation
+            # Measure energy consumption during CodeCarbonTracker operation
             overhead_energy_raw = _read_rapl_energy(rapl_f, dt=T)
 
             tracker.stop()
@@ -265,7 +265,7 @@ def benchmark_measurement_cpu_energy_overhead(T: float = 60):
             total_overhead_energy = sum(overhead_energy)
             total_overhead_power = sum(overhead_power)
 
-            print("PowerTracker Energy Overhead:")
+            print("CodeCarbonTracker Energy Overhead:")
             for i, (domain, energy, power, rel) in enumerate(
                 zip(domain_names, overhead_energy, overhead_power, rel_overhead)
             ):
@@ -354,7 +354,7 @@ def benchmark_measurement_cpu_energy_overhead(T: float = 60):
 
 if __name__ == "__main__":
     print("WattAMeter Overhead Benchmark")
-    print("This script measures the performance overhead of PowerTracker.")
+    print("This script measures the performance overhead of CodeCarbonTracker.")
     print("Results are machine-dependent and should be used for reference only.\n")
 
     benchmark_initialization_overhead()
