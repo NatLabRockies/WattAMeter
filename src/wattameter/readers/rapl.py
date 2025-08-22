@@ -14,7 +14,6 @@ def _get_rapl_domain_name(rapl_device_path, tag_for_unnamed_device: str) -> str:
 
     :param rapl_device_path: Path to the RAPL device directory.
     :param tag_for_unnamed_device: Tag to use if the device name cannot be determined.
-    :return: A string representing the domain name.
     """
 
     # If the path ends in a pattern like :<number>:<number>
@@ -114,7 +113,6 @@ class RAPLDevice(BaseReader):
 
     @property
     def tags(self) -> list[str]:
-        """Return a list of tags for reading stream."""
         return [self._tag]
 
     def get_unit(self, quantity: str) -> str:
@@ -225,11 +223,6 @@ class RAPLReader(BaseReader):
 
     # Alias for read_energy to match the BaseReader interface
     read = read_energy
-
-    @property
-    def max_energy_per_device(self) -> list[int]:
-        """Return the maximum energy range for each device."""
-        return [device.max_energy_range for device in self.devices]
 
     def compute_energy_delta(self, energy_series: np.ndarray) -> np.ndarray:
         res = super().compute_energy_delta(energy_series)
