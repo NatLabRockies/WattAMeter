@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pynvml
 
 from wattameter.readers.nvml import NVMLReader
+from wattameter.readers.utils import Quantity, Energy, Power, Temperature
 
 
 class TestNVMLReader:
@@ -20,7 +21,7 @@ class TestNVMLReader:
         mock_get_handle.return_value = mock_device
 
         # Create reader
-        reader = NVMLReader(quantities=("power",))
+        reader = NVMLReader(quantities=(Power,))
 
         # Verify calls
         mock_init.assert_called_once()
@@ -30,7 +31,7 @@ class TestNVMLReader:
         # Verify state
         assert len(reader.devices) == 1
         assert reader.devices[0] == mock_device
-        assert reader.quantities == ("power",)
+        assert reader.quantities == (Power,)
 
     @patch("pynvml.nvmlInit")
     def test_init_nvml_init_failure(self, mock_init):
@@ -85,7 +86,7 @@ class TestNVMLReader:
             patch("pynvml.nvmlDeviceGetCount", return_value=0),
         ):
             with pytest.raises(ValueError, match="Unsupported quantities"):
-                NVMLReader(quantities=("invalid_quantity",))
+                NVMLReader(quantities=(Quantity,))
 
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
@@ -94,7 +95,7 @@ class TestNVMLReader:
         mock_get_count.return_value = 2
 
         with patch("pynvml.nvmlDeviceGetHandleByIndex"):
-            reader = NVMLReader(quantities=("power", "energy"))
+            reader = NVMLReader(quantities=(Power, Energy))
 
         expected_tags = ["gpu-0", "gpu-1"]
         assert reader.tags == expected_tags
@@ -107,10 +108,10 @@ class TestNVMLReader:
         ):
             reader = NVMLReader()
 
-        assert reader.get_unit("power") == "W"
-        assert reader.get_unit("energy") == "mJ"
-        assert reader.get_unit("temperature") == "C"
-        assert reader.get_unit("invalid") == ""
+        assert reader.get_unit(Power) == "W"
+        assert reader.get_unit(Energy) == "mJ"
+        assert reader.get_unit(Temperature) == "C"
+        assert reader.get_unit(Quantity) == ""
 
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
@@ -212,7 +213,7 @@ class TestNVMLReader:
         mock_devices = [Mock(), Mock()]
         mock_get_handle.side_effect = mock_devices
 
-        reader = NVMLReader(quantities=("energy",))
+        reader = NVMLReader(quantities=(Energy,))
 
         with patch.object(reader, "read_energy_on_device", side_effect=[1000, 2000]):
             result = reader.read_energy()
@@ -227,7 +228,7 @@ class TestNVMLReader:
         mock_get_count.return_value = 1
         mock_get_handle.return_value = Mock()
 
-        reader = NVMLReader(quantities=("power", "energy", "temperature"))
+        reader = NVMLReader(quantities=(Power, Energy, Temperature))
 
         with (
             patch.object(reader, "read_power_on_device", return_value=250),

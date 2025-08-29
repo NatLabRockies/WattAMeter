@@ -1,6 +1,7 @@
 import numpy as np
 
 from wattameter.readers.base import BaseReader
+from wattameter.readers.utils import Quantity, Energy, Power, Unit, Joule, Watt
 
 
 class DummyReader(BaseReader):
@@ -14,53 +15,52 @@ class DummyReader(BaseReader):
     def read(self):
         return [1, 2]
 
-    def get_unit(self, quantity: str) -> str:
-        units = {"energy": "J", "power": "W"}
-        return units.get(quantity, "")
+    def get_unit(self, quantity: type[Quantity]) -> Unit:
+        units = {Energy: Joule(), Power: Watt()}
+        return units.get(quantity, Unit())
 
 
 def test_energy_without_power_true():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     assert reader.energy_without_power is True
 
 
 def test_energy_without_power_false():
-    reader = DummyReader(["energy", "power"])
+    reader = DummyReader([Energy, Power])
     assert reader.energy_without_power is False
 
 
 def test_compute_energy_delta_empty():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     arr = np.array([])
     result = reader.compute_energy_delta(arr)
     assert result.size == 0
 
 
 def test_compute_energy_delta_single():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     arr = np.array([10])
     result = reader.compute_energy_delta(arr)
     assert np.all(result == np.zeros(0))
 
 
 def test_compute_energy_delta_multiple():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     arr = np.array([10, 15, 25])
     result = reader.compute_energy_delta(arr)
     assert np.all(result == np.array([5, 10]))
 
 
 def test_compute_power_series_1d():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     time_series = np.array([0, 1, 2])
     energy_data = np.array([0, 10, 30])
-    # get_conversion_factor("J") returns 1, so power = delta_energy / delta_time
     power = reader.compute_power_series(time_series, energy_data)
     assert np.allclose(power, np.array([10, 20, 0]))
 
 
 def test_compute_power_series_2d():
-    reader = DummyReader(["energy"])
+    reader = DummyReader([Energy])
     time_series = np.array([0, 1, 2])
     energy_data = np.array([[0, 0], [10, 20], [30, 60]])
     power = reader.compute_power_series(time_series, energy_data)

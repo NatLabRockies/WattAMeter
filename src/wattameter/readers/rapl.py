@@ -4,6 +4,7 @@ import re
 import numpy as np
 
 from .base import BaseReader
+from .utils import Quantity, Energy, Joule, Unit
 
 # Module-level logger
 logger = logging.getLogger(__name__)
@@ -73,10 +74,10 @@ class RAPLDevice(BaseReader):
 
     """
 
-    UNITS = {"energy": "uJ"}
+    UNITS = {Energy: Joule("u")}
 
     def __init__(self, rapl_device_path: str) -> None:
-        super().__init__(("energy",))
+        super().__init__((Energy,))
 
         self.path = rapl_device_path
 
@@ -115,7 +116,7 @@ class RAPLDevice(BaseReader):
     def tags(self) -> list[str]:
         return [self._tag]
 
-    def get_unit(self, quantity: str) -> str:
+    def get_unit(self, quantity: type[Quantity]) -> Unit:
         if quantity in self.UNITS:
             return self.UNITS[quantity]
         else:
@@ -123,7 +124,7 @@ class RAPLDevice(BaseReader):
                 f"Invalid quantity requested: {quantity}. "
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
-            return ""
+            return Unit()
 
     def read_energy(self) -> int:
         """Read the energy counter for the i-th device."""
@@ -165,7 +166,7 @@ class RAPLReader(BaseReader):
     UNITS = RAPLDevice.UNITS
 
     def __init__(self, rapl_dir="/sys/class/powercap/intel-rapl/subsystem") -> None:
-        super().__init__(("energy",))
+        super().__init__((Energy,))
 
         self.rapl_dir = rapl_dir
 
@@ -196,7 +197,7 @@ class RAPLReader(BaseReader):
     def tags(self) -> list[str]:
         return self._tags
 
-    def get_unit(self, quantity: str) -> str:
+    def get_unit(self, quantity: type[Quantity]) -> Unit:
         if quantity in self.UNITS:
             return self.UNITS[quantity]
         else:
@@ -204,7 +205,7 @@ class RAPLReader(BaseReader):
                 f"Invalid quantity requested: {quantity}. "
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
-            return ""
+            return Unit("")
 
     def read_energy_on_device(self, i: int) -> int:
         """Read the energy counter of the i-th device."""

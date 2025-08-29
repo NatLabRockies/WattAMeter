@@ -2,6 +2,7 @@ import pynvml
 import logging
 
 from .base import BaseReader
+from .utils import Power, Energy, Temperature, Quantity, Joule, Watt, Celsius, Unit
 
 # Module-level logger
 logger = logging.getLogger(__name__)
@@ -20,9 +21,9 @@ class NVMLReader(BaseReader):
 
     """
 
-    UNITS = {"energy": "mJ", "temperature": "C", "power": "W"}
+    UNITS = {Energy: Joule("m"), Temperature: Celsius(), Power: Watt()}
 
-    def __init__(self, quantities=("power",)) -> None:
+    def __init__(self, quantities=(Power,)) -> None:
         super().__init__(quantities)
 
         self.devices = []
@@ -57,7 +58,7 @@ class NVMLReader(BaseReader):
     def tags(self) -> list[str]:
         return ["gpu-" + str(i) for i in range(len(self.devices))]
 
-    def get_unit(self, quantity: str) -> str:
+    def get_unit(self, quantity: type[Quantity]) -> Unit:
         if quantity in self.UNITS:
             return self.UNITS[quantity]
         else:
@@ -65,7 +66,7 @@ class NVMLReader(BaseReader):
                 f"Unsupported quantity: {quantity}. "
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
-            return ""
+            return Unit()  # Return a default Unit instance
 
     def read_energy_on_device(self, i: int) -> int:
         """Read the energy counter for the i-th device."""
@@ -118,11 +119,11 @@ class NVMLReader(BaseReader):
         """Read the specified quantities for all devices."""
         res = []
         for q in self.quantities:
-            if q == "energy":
+            if q == Energy:
                 res = res + self.read_energy()
-            elif q == "temperature":
+            elif q == Temperature:
                 res = res + self.read_temperature()
-            elif q == "power":
+            elif q == Power:
                 res = res + self.read_power()
             else:
                 logger.warning(f"Unsupported quantity requested: {q}. Skipping.")

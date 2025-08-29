@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Sequence
 import numpy as np
 
-from .utils import get_conversion_factor
+from .utils import Quantity, Energy, Power, Unit
 
 
 class BaseReader(ABC):
@@ -13,7 +13,7 @@ class BaseReader(ABC):
     .. attribute quantities: List of quantities to read.
     """
 
-    def __init__(self, quantities: Sequence[str]) -> None:
+    def __init__(self, quantities: Sequence[type[Quantity]]) -> None:
         """Initialize the reader with the specified quantities."""
         self.quantities = quantities
 
@@ -26,8 +26,7 @@ class BaseReader(ABC):
     @property
     def energy_without_power(self) -> bool:
         """True if the reader provides energy data but not power data."""
-        reader_q = self.quantities
-        return "energy" in reader_q and "power" not in reader_q
+        return Energy in self.quantities and Power not in self.quantities
 
     @abstractmethod
     def read(self) -> Sequence:
@@ -35,7 +34,7 @@ class BaseReader(ABC):
         pass
 
     @abstractmethod
-    def get_unit(self, quantity: str) -> str:
+    def get_unit(self, quantity: type[Quantity]) -> Unit:
         """Get the unit for a given quantity."""
         pass
 
@@ -75,7 +74,7 @@ class BaseReader(ABC):
         power_series = power_series[:n]
 
         if n >= 2:
-            factor = get_conversion_factor(self.get_unit("energy"))
+            factor = self.get_unit(Energy).to_si()
             energy_delta = factor * self.compute_energy_delta(energy_data[:n])
             time_delta = time_series[1:n] - time_series[: n - 1]
 

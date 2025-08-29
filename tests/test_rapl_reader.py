@@ -12,6 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from wattameter.readers.rapl import RAPLDevice, RAPLReader, _get_rapl_domain_name
+from wattameter.readers.utils import Energy, Power
 
 
 class TestRAPLDomainName:
@@ -115,7 +116,7 @@ class TestRAPLDevice:
         assert device.name == "package-0"
         assert device.max_energy_range == 1000000000
         assert device.path == self.rapl_device_path
-        assert device.quantities == ("energy",)
+        assert device.quantities == (Energy,)
         assert device._energy_file is not None
 
     def test_init_missing_name_file(self, caplog):
@@ -176,7 +177,7 @@ class TestRAPLDevice:
         self.create_rapl_files()
         device = RAPLDevice(self.rapl_device_path)
 
-        assert device.get_unit("energy") == "uJ"
+        assert device.get_unit(Energy) == "uJ"
 
     def test_get_unit_invalid(self, caplog):
         """Test get_unit with invalid quantity."""
@@ -184,7 +185,7 @@ class TestRAPLDevice:
         device = RAPLDevice(self.rapl_device_path)
 
         with caplog.at_level(logging.WARNING):
-            result = device.get_unit("invalid")
+            result = device.get_unit(Power)
 
         assert result == ""
         assert "Invalid quantity requested" in caplog.text
@@ -372,14 +373,14 @@ class TestRAPLReader:
     def test_get_unit_valid(self):
         """Test get_unit with valid quantity."""
         reader = RAPLReader(self.rapl_dir)
-        assert reader.get_unit("energy") == "uJ"
+        assert reader.get_unit(Energy) == "uJ"
 
     def test_get_unit_invalid(self, caplog):
         """Test get_unit with invalid quantity."""
         reader = RAPLReader(self.rapl_dir)
 
         with caplog.at_level(logging.WARNING):
-            result = reader.get_unit("invalid")
+            result = reader.get_unit(Power)
 
         assert result == ""
         assert "Invalid quantity requested" in caplog.text
