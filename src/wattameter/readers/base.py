@@ -23,6 +23,12 @@ class BaseReader(ABC):
         """Return a list of tags for each reading stream."""
         pass
 
+    @property
+    def energy_without_power(self) -> bool:
+        """True if the reader provides energy data but not power data."""
+        reader_q = self.quantities
+        return "energy" in reader_q and "power" not in reader_q
+
     @abstractmethod
     def read(self) -> Sequence:
         """Read the quantities of interest."""
@@ -58,7 +64,7 @@ class BaseReader(ABC):
         In the case time_series and energy_data lengths do not match,
         the shorter length will be used.
 
-        :param time_series: One-dimensional array of time readings.
+        :param time_series: One-dimensional array of time readings (in seconds).
         :param energy_data: One or two-dimensional array of energy readings.
             In case of a two-dimensional array, the first dimension is expected
             to be the time dimension.
@@ -74,8 +80,8 @@ class BaseReader(ABC):
             time_delta = time_series[1:n] - time_series[: n - 1]
 
             if energy_delta.ndim == 1:
-                power_series[1:] = energy_delta / time_delta
+                power_series[:-1] = energy_delta / time_delta
             else:
-                power_series[1:] = energy_delta / time_delta.reshape(-1, 1)
+                power_series[:-1] = energy_delta / time_delta.reshape(-1, 1)
 
         return power_series

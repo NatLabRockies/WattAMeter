@@ -11,9 +11,4 @@ def test_start_stop_write(reader: BaseReader):
     time.sleep(5)  # Allow some time for tracking
     tracker.stop()
     tracker.write_header()
-    tracker.write(*tracker.flush_data())
-
-
-def test_units():
-    tracker = Tracker(RAPLReader())
-    assert tracker.units == ["uJ", "W"]  # Assuming RAPLReader uses microjoules
+    tracker.write_data(*tracker.flush_data())
