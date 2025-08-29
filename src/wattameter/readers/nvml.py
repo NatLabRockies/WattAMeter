@@ -46,9 +46,10 @@ class NVMLReader(BaseReader):
                 logger.error(f"Failed to get handle for device {i}: {e}")
 
         # Set the quantities to read
-        if any(q not in self.UNITS for q in quantities):
-            logger.error(
-                f"Invalid quantities specified: {quantities}. "
+        invalid_quantities = [q for q in quantities if q not in self.UNITS]
+        if invalid_quantities:
+            raise ValueError(
+                f"Unsupported quantities: {invalid_quantities}. "
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
 
@@ -61,7 +62,7 @@ class NVMLReader(BaseReader):
             return self.UNITS[quantity]
         else:
             logger.warning(
-                f"Invalid quantity requested: {quantity}. "
+                f"Unsupported quantity: {quantity}. "
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
             return ""
@@ -116,10 +117,13 @@ class NVMLReader(BaseReader):
     def read(self) -> list[int]:
         """Read the specified quantities for all devices."""
         res = []
-        if "energy" in self.quantities:
-            res = res + self.read_energy()
-        if "temperature" in self.quantities:
-            res = res + self.read_temperature()
-        if "power" in self.quantities:
-            res = res + self.read_power()
+        for q in self.quantities:
+            if q == "energy":
+                res = res + self.read_energy()
+            elif q == "temperature":
+                res = res + self.read_temperature()
+            elif q == "power":
+                res = res + self.read_power()
+            else:
+                logger.warning(f"Unsupported quantity requested: {q}. Skipping.")
         return res
