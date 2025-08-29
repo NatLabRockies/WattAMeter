@@ -11,14 +11,15 @@ import numpy as np
 from collections import deque
 from datetime import datetime
 from abc import abstractmethod
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
 class BaseTracker(AbstractContextManager):
-    def __init__(self, freq: float = 1.0) -> None:
+    def __init__(self, dt_read: float = 1.0) -> None:
         super().__init__()
-        self.freq = freq
+        self.dt_read = dt_read
 
         # Read scheduler for asynchronous reading
         self._async_thread = None
@@ -32,38 +33,49 @@ class BaseTracker(AbstractContextManager):
         """
         pass
 
+    @abstractmethod
+    def write(self, **kwargs) -> None:
+        """Write data."""
+        pass
+
     def _read_and_sleep(self):
         """Read data from the reader and sleep to maintain the desired frequency."""
         # Read data from the reader
         elapsed_s = self.read()
 
         # Sleep for the remaining time if needed
-        if self.freq * elapsed_s < 1.0:
-            time.sleep((1 / self.freq) - elapsed_s)
+        if elapsed_s < self.dt_read:
+            time.sleep(self.dt_read - elapsed_s)
         else:
-            logger.warning(
-                f"Please decrease `freq` value. "
-                f"Current value: {self.freq:.3e} (read every {(1 / self.freq):.3e} seconds). "
-                f"Time taken for reading: {elapsed_s:.3e} seconds."
-            )
+            logger.warning(f"Time taken for reading: {elapsed_s:.3e} seconds.")
 
-    def _update_series(self, event):
+    def _update_series(self, event, dt_write: Optional[float] = None, **kwargs):
         """Asynchronous task to update the power series at the specified frequency.
 
         :param event: threading.Event to signal when to stop the task.
+        :param dt_write: Optional time interval (in seconds) to write the collected data.
         """
-        while not event.is_set():
-            self._read_and_sleep()
+        if dt_write is None:
+            while not event.is_set():
+                self._read_and_sleep()
+        else:
+            next_write_time = time.time() + dt_write
+            while not event.is_set():
+                self._read_and_sleep()
+                current_time = time.time()
+                if current_time >= next_write_time:
+                    self.write(**kwargs)
+                    next_write_time = current_time + dt_write
 
-    def start(self):
+    def start(self, dt_write: Optional[float] = None, **kwargs):
         """Start the asynchronous task to update the power series."""
         if self._async_thread is None:
             # Define the async task to update the power series
             self._stop_event = threading.Event()
             self._async_thread = threading.Thread(
-                name="Tracker",
                 target=self._update_series,
-                args=(self._stop_event,),
+                args=(self._stop_event, dt_write),
+                kwargs=kwargs,
                 daemon=True,
             )
 
@@ -94,18 +106,24 @@ class BaseTracker(AbstractContextManager):
         self.stop()
         return None
 
-    def track_until_forced_exit(self):
-        """Track power and energy consumption until a forced exit."""
+    def track_until_forced_exit(self, dt_write: Optional[float] = None, **kwargs):
+        """Track power and energy consumption until a forced exit.
+
+        :param dt_write: Optional time interval (in seconds) to write the collected data."""
         try:
-            while True:
-                self._read_and_sleep()
+            if dt_write is None:
+                while True:
+                    self._read_and_sleep()
+            else:
+                next_write_time = time.time() + dt_write
+                while True:
+                    self._read_and_sleep()
+                    current_time = time.time()
+                    if current_time >= next_write_time:
+                        self.write(**kwargs)
+                        next_write_time = current_time + dt_write
         except KeyboardInterrupt:
             logger.info("Forced exit detected. Stopping tracker...")
-        except Exception as e:
-            # Propagate other exceptions
-            raise e
-        finally:
-            return None
 
 
 class Tracker(BaseTracker):
@@ -141,8 +159,14 @@ class Tracker(BaseTracker):
         A deque that stores the data read from the reader.
     """
 
-    def __init__(self, reader: BaseReader, freq: float = 1.0, output=None) -> None:
-        super().__init__(freq)
+    def __init__(
+        self,
+        reader: BaseReader,
+        dt_read: float = 1.0,
+        dt_write: float = 3600.0,
+        output=None,
+    ) -> None:
+        super().__init__(dt_read)
 
         # For reading data
         self.reader = reader
@@ -153,6 +177,7 @@ class Tracker(BaseTracker):
         self.data = deque([])
 
         # Output options
+        self.dt_write = dt_write
         self._timestamp_fmt = "%Y-%m-%d_%H:%M:%S.%f"
         self._output = output
 
@@ -169,6 +194,7 @@ class Tracker(BaseTracker):
         # Calculate the timestamp and elapsed time
         timestamp = int((timestamp0 + timestamp1) / 2.0)
         elapsed = timestamp1 - timestamp0
+        logger.debug(f"Read completed in {elapsed / 1e9:.3e} seconds.")
 
         # Store the data in the deques
         with self._lock:
@@ -176,27 +202,41 @@ class Tracker(BaseTracker):
             self.reading_time.append(elapsed)
             self.data.append(data)
 
-        elapsed_s = elapsed / 1e9  # Convert to seconds
-        logger.debug(f"Read completed in {elapsed_s:.3e} seconds.")
+        # Compute the total elapsed time including reading and storing
+        timestamp2 = time.time_ns()
+        elapsed_s = (timestamp2 - timestamp0) / 1e9  # Convert to seconds
 
         return elapsed_s
 
+    def write(self, *, write_header=True, **kwargs):
+        """Write header and data to the output file."""
+        if write_header:
+            self.write_header()
+        self.write_data(*self.flush_data())
+
+    def __enter__(self):
+        """Enter the context manager.
+
+        Start the asynchronous task to update and store the power series.
+        """
+        self.write_header()  # Write header at the beginning
+        super().start(self.dt_write, write_header=False)
+        return self
+
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager."""
-        super().__exit__(exc_type, exc_value, traceback)
-        self.write(*self.flush_data())
+        super().stop()
+        self.write(write_header=False)
         return None
 
-    def track_until_forced_exit(self):
-        """Track power and energy consumption until a forced exit."""
+    def track_until_forced_exit(self, dt_write: Optional[float] = None, **kwargs):
+        self.write_header()  # Write header at the beginning
         try:
-            super().track_until_forced_exit()
-            self.write(*self.flush_data())
-        except Exception as e:
-            self.write(*self.flush_data())
-            logger.error(f"An error occurred: {e}")
-        finally:
-            return None
+            super().track_until_forced_exit(dt_write, write_header=False, **kwargs)
+            self.write(write_header=False)
+        except Exception:
+            # Propagate other exceptions
+            self.write(write_header=False)
+            raise
 
     def flush_data(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Flush all collected data from the tracker.
@@ -277,16 +317,30 @@ class Tracker(BaseTracker):
         with open(self.output, "a", encoding="utf-8") as f:
             f.write(buffer)
 
-    def write(self, time_series, reading_time, data):
-        """Write header and data to the output file."""
-        self.write_header()
-        self.write_data(time_series, reading_time, data)
-
 
 class TrackerArray(BaseTracker):
-    def __init__(self, readers: list[BaseReader], freq: float = 1.0, **kwargs) -> None:
-        super().__init__(freq)
-        self.trackers = [Tracker(reader, output=None, **kwargs) for reader in readers]
+    def __init__(
+        self,
+        readers: list[BaseReader],
+        dt_read: float = 1.0,
+        dt_write: float = 3600.0,
+        outputs: list = [],
+        **kwargs,
+    ) -> None:
+        super().__init__(dt_read)
+
+        if len(outputs) == 0:
+            outputs = [None] * len(readers)
+        if len(outputs) != len(readers):
+            raise ValueError(
+                "Length of outputs must be equal to length of readers or zero."
+            )
+
+        self.trackers = [
+            Tracker(reader, output=o, **kwargs) for reader, o in zip(readers, outputs)
+        ]
+
+        self.dt_write = dt_write
 
     def read(self) -> float:
         """Read data from all readers and store it in the internal buffers.
@@ -298,24 +352,35 @@ class TrackerArray(BaseTracker):
             elapsed_s += tracker.read()
         return elapsed_s
 
-    def write(self):
-        """Write header and data to the output file for all trackers."""
+    def write(self, *, write_header=True, **kwargs):
+        """Write header and data to the output file."""
         for tracker in self.trackers:
-            tracker.write(*tracker.flush_data())
+            if write_header:
+                tracker.write_header()
+            tracker.write(write_header=False, **kwargs)
+
+    def __enter__(self):
+        """Enter the context manager.
+
+        Start the asynchronous task to update and store the power series.
+        """
+        for tracker in self.trackers:
+            tracker.write_header()
+        super().start(self.dt_write, write_header=False)
+        return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        """Exit the context manager."""
-        super().__exit__(exc_type, exc_value, traceback)
-        self.write()
+        super().stop()
+        self.write(write_header=False)
         return None
 
-    def track_until_forced_exit(self):
-        """Track power and energy consumption until a forced exit."""
+    def track_until_forced_exit(self, dt_write: Optional[float] = None, **kwargs):
+        for tracker in self.trackers:
+            tracker.write_header()
         try:
-            super().track_until_forced_exit()
-            self.write()
-        except Exception as e:
-            self.write()
-            logger.error(f"An error occurred: {e}")
-        finally:
-            return None
+            super().track_until_forced_exit(dt_write, write_header=False, **kwargs)
+            self.write(write_header=False)
+        except Exception:
+            # Propagate other exceptions
+            self.write(write_header=False)
+            raise
