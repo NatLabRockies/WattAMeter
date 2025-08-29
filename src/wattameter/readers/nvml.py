@@ -21,7 +21,7 @@ class NVMLReader(BaseReader):
 
     """
 
-    UNITS = {Energy: Joule("m"), Temperature: Celsius(), Power: Watt()}
+    UNITS = {Energy: Joule("m"), Temperature: Celsius(), Power: Watt("m")}
 
     def __init__(self, quantities=(Power,)) -> None:
         super().__init__(quantities)

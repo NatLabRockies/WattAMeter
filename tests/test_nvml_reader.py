@@ -108,7 +108,7 @@ class TestNVMLReader:
         ):
             reader = NVMLReader()
 
-        assert reader.get_unit(Power) == "W"
+        assert reader.get_unit(Power) == "mW"
         assert reader.get_unit(Energy) == "mJ"
         assert reader.get_unit(Temperature) == "C"
         assert reader.get_unit(Quantity) == ""

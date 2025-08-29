@@ -93,6 +93,9 @@ class BaseTracker(AbstractContextManager):
 
             # Mark the async thread as stopped
             self._async_thread = None
+
+            # Final read to capture last data point
+            self.read()
         else:
             logger.warning("Tracker is not running. Nothing to stop.")
 
@@ -124,6 +127,7 @@ class BaseTracker(AbstractContextManager):
                         next_write_time = current_time + dt_write
         except KeyboardInterrupt:
             logger.info("Forced exit detected. Stopping tracker...")
+            self.read()  # Final read to capture last data point
 
 
 class Tracker(BaseTracker):
