@@ -236,37 +236,41 @@ class TestBaseTracker:
                 tracker.track_until_forced_exit()
 
 
+@pytest.fixture()
+def temp_dir():
+    """Fixture to create and clean up a temporary directory for tests."""
+    temp_dir = tempfile.mkdtemp()
+    yield temp_dir
+    import shutil
+
+    shutil.rmtree(temp_dir)
+
+
 class TestTracker:
     """Test cases for Tracker class."""
 
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.temp_dir = tempfile.mkdtemp()
-        self.output_file = os.path.join(self.temp_dir, "test_output.log")
+    @pytest.fixture()
+    def output_file(self, temp_dir):
+        """Fixture to create output file path."""
+        return os.path.join(temp_dir, "test_output.log")
 
-    def teardown_method(self):
-        """Clean up after each test method."""
-        import shutil
-
-        shutil.rmtree(self.temp_dir)
-
-    def test_init(self):
+    def test_init(self, output_file):
         """Test Tracker initialization."""
         reader = MockReader()
-        tracker = Tracker(reader, dt_read=2.0, dt_write=3600.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=2.0, dt_write=3600.0, output=output_file)
 
         assert tracker.reader == reader
         assert tracker.dt_read == 2.0
         assert tracker.dt_write == 3600.0
-        assert tracker._output == self.output_file
+        assert tracker._output == output_file
         assert isinstance(tracker.time_series, deque)
         assert isinstance(tracker.reading_time, deque)
         assert isinstance(tracker.data, deque)
 
-    def test_read(self):
+    def test_read(self, output_file):
         """Test read method stores data correctly."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         elapsed = tracker.read()
 
@@ -277,10 +281,10 @@ class TestTracker:
         assert len(tracker.data) == 1
         assert tracker.data[0] == [10, 20]
 
-    def test_read_multiple_calls(self):
+    def test_read_multiple_calls(self, output_file):
         """Test multiple read calls accumulate data."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         tracker.read()
         tracker.read()
@@ -290,10 +294,10 @@ class TestTracker:
         assert len(tracker.reading_time) == 3
         assert len(tracker.data) == 3
 
-    def test_flush_data(self):
+    def test_flush_data(self, output_file):
         """Test flush_data returns and clears data."""
         reader = MockReader(read_return_value=[10, 20], energy_without_power=False)
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         # Add some data
         tracker.read()
@@ -311,7 +315,7 @@ class TestTracker:
         assert len(tracker.reading_time) == 0
         assert len(tracker.data) == 0
 
-    def test_flush_data_with_power_computation(self):
+    def test_flush_data_with_power_computation(self, output_file):
         """Test flush_data computes power when energy_without_power is True."""
         reader = MockReader(
             quantities=(Energy,),
@@ -323,7 +327,7 @@ class TestTracker:
         with patch.object(
             reader, "compute_power_series", return_value=np.array([[10, 20], [15, 25]])
         ):
-            tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+            tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
             # Add some data
             tracker.read()
@@ -334,19 +338,19 @@ class TestTracker:
             # Should have original data + power data
             assert data.shape == (2, 4)  # 2 readings, 2 energy + 2 power values
 
-    def test_tags_property(self):
+    def test_tags_property(self, output_file):
         """Test tags property includes units."""
         reader = MockReader(quantities=(Power, Energy), energy_without_power=False)
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         tags = tracker.tags
         expected_tags = ["device0[W]", "device1[W]", "device0[J]", "device1[J]"]
         assert tags == expected_tags
 
-    def test_tags_property_with_power_computation(self):
+    def test_tags_property_with_power_computation(self, output_file):
         """Test tags property when power is computed from energy."""
         reader = MockReader(quantities=(Energy,), energy_without_power=True)
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         tags = tracker.tags
         expected_tags = ["device0[J]", "device1[J]", "device0[W]", "device1[W]"]
@@ -366,14 +370,14 @@ class TestTracker:
 
         assert tracker.output == "custom.log"
 
-    def test_write_header(self):
+    def test_write_header(self, output_file):
         """Test write_header creates proper header."""
         reader = MockReader()
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         tracker.write_header()
 
-        with open(self.output_file, "r") as f:
+        with open(output_file, "r") as f:
             content = f.read()
 
         assert "# timestamp" in content
@@ -381,10 +385,10 @@ class TestTracker:
         assert "device0[W]" in content
         assert "device1[W]" in content
 
-    def test_write_data(self):
+    def test_write_data(self, output_file):
         """Test write_data writes data correctly."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         # Create test data
         time_series = np.array([1000000000, 2000000000])  # nanoseconds
@@ -393,17 +397,17 @@ class TestTracker:
 
         tracker.write_data(time_series, reading_time, data)
 
-        with open(self.output_file, "r") as f:
+        with open(output_file, "r") as f:
             content = f.read()
 
         assert "1000000" in content  # reading time
         assert "10" in content and "20" in content  # data values
         assert "15" in content and "25" in content  # data values
 
-    def test_write_method(self):
+    def test_write_method(self, output_file):
         """Test write method coordinates header and data writing."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=1.0, output=self.output_file)
+        tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         # Add some data
         tracker.read()
@@ -422,10 +426,10 @@ class TestTracker:
             mock_header.assert_called_once()
             mock_data.assert_called_once()
 
-    def test_context_manager_writes_header_and_data(self):
+    def test_context_manager_writes_header_and_data(self, output_file):
         """Test context manager writes header and final data."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=0.01, output=self.output_file)
+        tracker = Tracker(reader, dt_read=0.01, output=output_file)
 
         with (
             patch.object(tracker, "write_header") as mock_header,
@@ -437,10 +441,10 @@ class TestTracker:
             mock_header.assert_called_once()
             mock_write.assert_called()
 
-    def test_track_until_forced_exit_writes_header_and_data(self):
+    def test_track_until_forced_exit_writes_header_and_data(self, output_file):
         """Test track_until_forced_exit writes header and final data."""
         reader = MockReader(read_return_value=[10, 20])
-        tracker = Tracker(reader, dt_read=0.01, output=self.output_file)
+        tracker = Tracker(reader, dt_read=0.01, output=output_file)
 
         with (
             patch.object(tracker, "write_header") as mock_header,
@@ -455,16 +459,6 @@ class TestTracker:
 
 class TestTrackerArray:
     """Test cases for TrackerArray class."""
-
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.temp_dir = tempfile.mkdtemp()
-
-    def teardown_method(self):
-        """Clean up after each test method."""
-        import shutil
-
-        shutil.rmtree(self.temp_dir)
 
     def test_init_no_outputs(self):
         """Test TrackerArray initialization without specified outputs."""
@@ -507,10 +501,10 @@ class TestTrackerArray:
         for tracker in tracker_array.trackers:
             assert len(tracker.time_series) == 1
 
-    def test_write(self):
+    def test_write(self, temp_dir):
         """Test write method writes from all trackers."""
         readers = [MockReader(), MockReader()]
-        outputs = [os.path.join(self.temp_dir, f"output{i}.log") for i in range(2)]
+        outputs = [os.path.join(temp_dir, f"output{i}.log") for i in range(2)]
         tracker_array = TrackerArray(readers, dt_read=1.0, outputs=outputs)  # type: ignore
 
         # Add some data to each tracker
@@ -523,10 +517,10 @@ class TestTrackerArray:
         for output in outputs:
             assert os.path.exists(output)
 
-    def test_context_manager(self):
+    def test_context_manager(self, temp_dir):
         """Test TrackerArray context manager functionality."""
         readers = [MockReader(), MockReader()]
-        outputs = [os.path.join(self.temp_dir, f"output{i}.log") for i in range(2)]
+        outputs = [os.path.join(temp_dir, f"output{i}.log") for i in range(2)]
         tracker_array = TrackerArray(readers, dt_read=0.01, outputs=outputs)  # type: ignore
 
         with tracker_array:
@@ -540,10 +534,10 @@ class TestTrackerArray:
                 assert len(content) > 0
                 assert "timestamp" in content
 
-    def test_track_until_forced_exit(self):
+    def test_track_until_forced_exit(self, temp_dir):
         """Test TrackerArray track_until_forced_exit method."""
         readers = [MockReader(), MockReader()]
-        outputs = [os.path.join(self.temp_dir, f"output{i}.log") for i in range(2)]
+        outputs = [os.path.join(temp_dir, f"output{i}.log") for i in range(2)]
         tracker_array = TrackerArray(readers, dt_read=0.01, outputs=outputs)  # type: ignore
 
         with patch.object(
@@ -559,20 +553,10 @@ class TestTrackerArray:
 class TestIntegration:
     """Integration tests for tracker functionality."""
 
-    def setup_method(self):
-        """Set up test fixtures before each test method."""
-        self.temp_dir = tempfile.mkdtemp()
-
-    def teardown_method(self):
-        """Clean up after each test method."""
-        import shutil
-
-        shutil.rmtree(self.temp_dir)
-
-    def test_full_tracking_workflow(self):
+    def test_full_tracking_workflow(self, temp_dir):
         """Test complete tracking workflow from start to finish."""
         reader = MockReader(read_return_value=[100, 200])
-        output_file = os.path.join(self.temp_dir, "tracking_test.log")
+        output_file = os.path.join(temp_dir, "tracking_test.log")
         tracker = Tracker(reader, dt_read=0.01, dt_write=0.05, output=output_file)
 
         # Run tracker for a short time
