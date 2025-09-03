@@ -45,7 +45,7 @@ tracker.stop()
 
 ```sh
 wattameter \
-    --machine-id id \
+    --id id \
     --dt-read 1 \
     --freq-write 3600 \
     --log-level info \
@@ -55,9 +55,9 @@ wattameter \
 
 | Option       | Short | Default  | Description                                              |
 | ------------ | ----- | -------- | -------------------------------------------------------- |
-| --machine-id | -i    | None     | Unique identifier for the machine (used in output files) |
+| --id         | -i    | None     | Unique identifier for the machine (used in output files) |
 | --dt-read    | -t    | 1        | Time interval (seconds) for reading power data           |
-| --freq-write | -f    | 3600     | Frequency (reads) for writing power data to file         |
+| --freq-write | -f    | 3600     | Frequency (# reads) for writing power data to file       |
 | --log-level  | -l    | warning  | Logging level: debug, info, warning, error, critical     |
 | --country    | -c    | USA      | ISO code of the country for CO₂ emissions tracking       |
 | --region     | -r    | colorado | Region for CO₂ emissions tracking                        |
@@ -69,7 +69,6 @@ For asynchronous usage with SLURM, we recommend using our [wattameter.sh](src/wa
 
 ```bash
 #SBATCH --signal=USR1@0 # Send USR1 signal at the end of the job to stop wattameter
-#SBATCH --mem-per-cpu=1G # Should be set according to your needs
 
 # Load Python environment with wattameter installed...
 
@@ -79,14 +78,12 @@ WATTASCRIPT="${WATTAPATH}/utils/wattameter.sh"
 WATTAWAIT="${WATTAPATH}/utils/wattawait.sh"
 
 # Run wattameter on all nodes
-srun --overlap --wait=0 --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTAWAIT}" &
+srun --overlap --wait=0 --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTAWAIT}" $SLURM_JOB_ID &
 WAIT_PID=$!
 srun --overlap --wait=0 --output=slurm-$SLURM_JOB_ID-wattameter.txt --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTASCRIPT}" -i $SLURM_JOB_ID \
     [-t dt_read] \
     [-f freq_write] \
     [-l log_level] \
-    [-c country] \
-    [-r region] \
     &
 wait $WAIT_PID
 
@@ -96,7 +93,7 @@ wait $WAIT_PID
 scancel $SLURM_JOB_ID
 ```
 
-Almost all options are the same as the regular command-line interface. The exception is that the `--machine-id` option is replaced with `--run-id`, which is used to identify the SLURM job run. The script will automatically handle the output file naming based on the provided run ID and node information.
+Almost all options are the same as the regular command-line interface. The script will automatically handle the output file naming based on the provided SLURM_JOB_ID and node information. Mind that this option currently does not compute carbon emissions.
 
 ## Contributing
 
