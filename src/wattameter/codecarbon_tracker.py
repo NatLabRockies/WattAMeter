@@ -96,7 +96,9 @@ class CodeCarbonTracker(OfflineEmissionsTracker):
             power_len = len(f"{0:{self.power_fmt}}")
 
             with open(self.output_power_file, "a", encoding="utf-8") as f:
-                f.write(f"# {timestamp_str} - Tracking started\n")
+                f.write(
+                    f"# {timestamp_str} - Tracking started using CodeCarbonTracker\n"
+                )
                 f.write("# timestamp" + " " * (timestamp_len - 9))
                 f.write(" time (s)" + " " * (time_len - 8))
                 for i in range(len(self._power_series["cpu"])):
