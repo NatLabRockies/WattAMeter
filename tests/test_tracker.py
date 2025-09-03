@@ -34,21 +34,15 @@ class MockReader(BaseReader):
         quantities=(Power,),
         read_return_value=None,
         read_delay=0.0,
-        energy_without_power=False,
     ):
         super().__init__(quantities)
         self.read_return_value = read_return_value or [100, 200]
         self.read_delay = read_delay
         self.read_count = 0
-        self._energy_without_power = energy_without_power
-
-    @property
-    def energy_without_power(self):
-        return self._energy_without_power
 
     @property
     def tags(self):
-        return ["device0", "device1"]
+        return ["device0[W]", "device1[W]"]
 
     def get_unit(self, quantity) -> Unit:
         units = {Power: Watt(), Energy: Joule(), Temperature: Celsius()}
@@ -81,8 +75,8 @@ class ConcreteTracker(BaseTracker):
         self.read_calls.append(elapsed)
         return elapsed
 
-    def write(self, **kwargs) -> None:
-        self.write_calls.append(kwargs)
+    def write(self) -> None:
+        self.write_calls.append(0)
 
 
 class TestBaseTracker:
@@ -93,7 +87,6 @@ class TestBaseTracker:
         tracker = ConcreteTracker(dt_read=2.0)
         assert tracker.dt_read == 2.0
         assert tracker._async_thread is None
-        assert hasattr(tracker, "_lock")
 
     def test_read_and_sleep_normal_case(self):
         """Test _read_and_sleep when read time is less than dt_read."""
@@ -199,8 +192,7 @@ class TestBaseTracker:
         # Start the update series with write interval
         thread = threading.Thread(
             target=tracker._update_series,
-            args=(stop_event, 0.02),  # Write every 20ms
-            kwargs={"test_param": "value"},
+            args=(stop_event, 2),  # Write every 20ms
         )
         thread.start()
 
@@ -211,8 +203,6 @@ class TestBaseTracker:
 
         assert len(tracker.read_calls) > 0
         assert len(tracker.write_calls) > 0
-        # Check that kwargs are passed to write
-        assert tracker.write_calls[0]["test_param"] == "value"
 
     def test_track_until_forced_exit_keyboard_interrupt(self, caplog):
         """Test track_until_forced_exit with KeyboardInterrupt."""
@@ -257,15 +247,16 @@ class TestTracker:
     def test_init(self, output_file):
         """Test Tracker initialization."""
         reader = MockReader()
-        tracker = Tracker(reader, dt_read=2.0, dt_write=3600.0, output=output_file)
+        tracker = Tracker(reader, dt_read=2.0, freq_write=3600, output=output_file)
 
         assert tracker.reader == reader
         assert tracker.dt_read == 2.0
-        assert tracker.dt_write == 3600.0
+        assert tracker.freq_write == 3600.0
         assert tracker._output == output_file
         assert isinstance(tracker.time_series, deque)
         assert isinstance(tracker.reading_time, deque)
         assert isinstance(tracker.data, deque)
+        assert hasattr(tracker, "_lock")
 
     def test_read(self, output_file):
         """Test read method stores data correctly."""
@@ -296,7 +287,7 @@ class TestTracker:
 
     def test_flush_data(self, output_file):
         """Test flush_data returns and clears data."""
-        reader = MockReader(read_return_value=[10, 20], energy_without_power=False)
+        reader = MockReader(read_return_value=[10, 20])
         tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
         # Add some data
@@ -308,53 +299,12 @@ class TestTracker:
         # Check returned data
         assert len(time_series) == 2
         assert len(reading_time) == 2
-        assert data.shape == (2, 2)  # 2 readings, 2 values each
+        assert np.asarray(data).shape == (2, 2)  # 2 readings, 2 values each
 
         # Check data is cleared
         assert len(tracker.time_series) == 0
         assert len(tracker.reading_time) == 0
         assert len(tracker.data) == 0
-
-    def test_flush_data_with_power_computation(self, output_file):
-        """Test flush_data computes power when energy_without_power is True."""
-        reader = MockReader(
-            quantities=(Energy,),
-            read_return_value=[100, 200],
-            energy_without_power=True,
-        )
-
-        # Mock compute_power_series to return known values
-        with patch.object(
-            reader, "compute_power_series", return_value=np.array([[10, 20], [15, 25]])
-        ):
-            tracker = Tracker(reader, dt_read=1.0, output=output_file)
-
-            # Add some data
-            tracker.read()
-            tracker.read()
-
-            time_series, reading_time, data = tracker.flush_data()
-
-            # Should have original data + power data
-            assert data.shape == (2, 4)  # 2 readings, 2 energy + 2 power values
-
-    def test_tags_property(self, output_file):
-        """Test tags property includes units."""
-        reader = MockReader(quantities=(Power, Energy), energy_without_power=False)
-        tracker = Tracker(reader, dt_read=1.0, output=output_file)
-
-        tags = tracker.tags
-        expected_tags = ["device0[W]", "device1[W]", "device0[J]", "device1[J]"]
-        assert tags == expected_tags
-
-    def test_tags_property_with_power_computation(self, output_file):
-        """Test tags property when power is computed from energy."""
-        reader = MockReader(quantities=(Energy,), energy_without_power=True)
-        tracker = Tracker(reader, dt_read=1.0, output=output_file)
-
-        tags = tracker.tags
-        expected_tags = ["device0[J]", "device1[J]", "device0[W]", "device1[W]"]
-        assert tags == expected_tags
 
     def test_output_property_default(self):
         """Test output property with default filename."""
@@ -405,7 +355,7 @@ class TestTracker:
         assert "15" in content and "25" in content  # data values
 
     def test_write_method(self, output_file):
-        """Test write method coordinates header and data writing."""
+        """Test write method coordinates data writing."""
         reader = MockReader(read_return_value=[10, 20])
         tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
@@ -413,7 +363,6 @@ class TestTracker:
         tracker.read()
 
         with (
-            patch.object(tracker, "write_header") as mock_header,
             patch.object(tracker, "write_data") as mock_data,
             patch.object(
                 tracker,
@@ -421,9 +370,8 @@ class TestTracker:
                 return_value=(np.array([1]), np.array([2]), np.array([[3]])),
             ),
         ):
-            tracker.write(write_header=True)
+            tracker.write()
 
-            mock_header.assert_called_once()
             mock_data.assert_called_once()
 
     def test_context_manager_writes_header_and_data(self, output_file):
@@ -464,11 +412,11 @@ class TestTrackerArray:
         """Test TrackerArray initialization without specified outputs."""
         readers = [MockReader(), MockReader()]
         # Use type: ignore to suppress the type checker warning for tests
-        tracker_array = TrackerArray(readers, dt_read=1.0, dt_write=3600.0)  # type: ignore
+        tracker_array = TrackerArray(readers, dt_read=1.0, freq_write=3600.0)  # type: ignore
 
         assert len(tracker_array.trackers) == 2
         assert tracker_array.dt_read == 1.0
-        assert tracker_array.dt_write == 3600.0
+        assert tracker_array.freq_write == 3600.0
 
     def test_init_with_outputs(self):
         """Test TrackerArray initialization with specified outputs."""
@@ -511,7 +459,7 @@ class TestTrackerArray:
         for tracker in tracker_array.trackers:
             tracker.read()
 
-        tracker_array.write(write_header=True)
+        tracker_array.write()
 
         # Check that files were created
         for output in outputs:
@@ -557,7 +505,7 @@ class TestIntegration:
         """Test complete tracking workflow from start to finish."""
         reader = MockReader(read_return_value=[100, 200])
         output_file = os.path.join(temp_dir, "tracking_test.log")
-        tracker = Tracker(reader, dt_read=0.01, dt_write=0.05, output=output_file)
+        tracker = Tracker(reader, dt_read=0.01, freq_write=5, output=output_file)
 
         # Run tracker for a short time
         start_time = time.time()
@@ -605,5 +553,7 @@ if __name__ == "__main__":
     # Configure logging for tests
     logging.basicConfig(level=logging.INFO)
 
-    # Run tests
-    pytest.main([__file__, "-v"])
+    # # Run tests
+    # pytest.main([__file__, "-v"])
+
+    TestBaseTracker().test_update_series_no_write()

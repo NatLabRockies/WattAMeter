@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from wattameter.readers.rapl import RAPLDevice, RAPLReader, _get_rapl_domain_name
-from wattameter.readers.utils import Energy, Power
+from wattameter.readers.utils import Energy, Second, Temperature
 
 
 class TestRAPLDomainName:
@@ -117,7 +117,7 @@ class TestRAPLDevice:
         assert device.max_energy_range == 1000000000
         assert device.path == self.rapl_device_path
         assert device.quantities == (Energy,)
-        assert device._energy_file is not None
+        assert device.energy_file is not None
 
     def test_init_missing_name_file(self, caplog):
         """Test initialization when name file is missing."""
@@ -159,7 +159,7 @@ class TestRAPLDevice:
             device = RAPLDevice(self.rapl_device_path)
 
         assert "Energy file not found" in caplog.text
-        assert device._energy_file is None
+        assert device.energy_file is None
 
     def test_tags_property(self):
         """Test tags property."""
@@ -170,7 +170,7 @@ class TestRAPLDevice:
         ):
             device = RAPLDevice(self.rapl_device_path)
 
-        assert device.tags == ["cpu-0"]
+        assert device.tags == ["cpu-0[uJ]"]
 
     def test_get_unit_valid(self):
         """Test get_unit with valid quantity."""
@@ -185,7 +185,7 @@ class TestRAPLDevice:
         device = RAPLDevice(self.rapl_device_path)
 
         with caplog.at_level(logging.WARNING):
-            result = device.get_unit(Power)
+            result = device.get_unit(Temperature)
 
         assert result == ""
         assert "Invalid quantity requested" in caplog.text
@@ -204,9 +204,9 @@ class TestRAPLDevice:
         device = RAPLDevice(self.rapl_device_path)
 
         # Close the file to simulate missing file
-        if device._energy_file:
-            device._energy_file.close()
-        device._energy_file = None
+        if device.energy_file:
+            device.energy_file.close()
+        device.energy_file = None
 
         with caplog.at_level(logging.ERROR):
             energy = device.read_energy()
@@ -240,11 +240,12 @@ class TestRAPLDevice:
         device.max_energy_range = 1000
 
         # Test overflow scenario: [900, 100] should become [900, 1100]
-        energy_series = np.array([900, 100, 200])
-        result = device.compute_energy_delta(energy_series)
+        time_series = [0, 1, 2]
+        energy_series = [900, 100, 200]
+        result = device.compute_derived(time_series, energy_series, Second("u"))
 
         # Expected: [100-900+1000, 200-100] = [200, 100]
-        expected = np.array([200, 100])
+        expected = [200, 100]
         np.testing.assert_array_equal(result, expected)
 
     def test_compute_energy_delta_no_overflow(self):
@@ -254,10 +255,11 @@ class TestRAPLDevice:
         device.max_energy_range = 1000
 
         # Test normal scenario: [100, 200, 300]
-        energy_series = np.array([100, 200, 300])
-        result = device.compute_energy_delta(energy_series)
+        time_series = [0, 1, 2]
+        energy_series = [100, 200, 300]
+        result = device.compute_derived(time_series, energy_series, Second("u"))
 
-        expected = np.array([100, 100])
+        expected = [100, 100]
         np.testing.assert_array_equal(result, expected)
 
     def test_destructor_closes_file(self):
@@ -265,7 +267,7 @@ class TestRAPLDevice:
         self.create_rapl_files()
         device = RAPLDevice(self.rapl_device_path)
 
-        energy_file = device._energy_file
+        energy_file = device.energy_file
         if energy_file:
             assert not energy_file.closed
 
@@ -322,7 +324,7 @@ class TestRAPLReader:
             reader = RAPLReader(self.rapl_dir)
 
         assert len(reader.devices) == 1
-        assert reader.tags == ["cpu-0"]
+        assert reader.tags == ["cpu-0[uJ]"]
 
     def test_init_multiple_devices(self):
         """Test initialization with multiple RAPL devices."""
@@ -343,8 +345,8 @@ class TestRAPLReader:
             reader = RAPLReader(self.rapl_dir)
 
         assert len(reader.devices) == 2
-        assert "cpu-0" in reader.tags
-        assert "cpu-1" in reader.tags
+        assert "cpu-0[uJ]" in reader.tags
+        assert "cpu-1[uJ]" in reader.tags
 
     def test_init_unknown_devices(self):
         """Test initialization with devices that have unknown names."""
@@ -368,7 +370,7 @@ class TestRAPLReader:
         ):
             reader = RAPLReader(self.rapl_dir)
 
-        assert reader.tags == ["cpu-0"]
+        assert reader.tags == ["cpu-0[uJ]"]
 
     def test_get_unit_valid(self):
         """Test get_unit with valid quantity."""
@@ -380,7 +382,7 @@ class TestRAPLReader:
         reader = RAPLReader(self.rapl_dir)
 
         with caplog.at_level(logging.WARNING):
-            result = reader.get_unit(Power)
+            result = reader.get_unit(Temperature)
 
         assert result == ""
         assert "Invalid quantity requested" in caplog.text
@@ -459,7 +461,8 @@ class TestRAPLReader:
             ]
         )
 
-        result = reader.compute_energy_delta(energy_series)
+        time_series = [0, 1, 2]
+        result = reader.compute_derived(time_series, energy_series, Second("u"))
 
         # Expected deltas:
         # Device 0: [100-900+1000, 200-100] = [200, 100]

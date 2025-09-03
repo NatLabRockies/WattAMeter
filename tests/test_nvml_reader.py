@@ -97,7 +97,7 @@ class TestNVMLReader:
         with patch("pynvml.nvmlDeviceGetHandleByIndex"):
             reader = NVMLReader(quantities=(Power, Energy))
 
-        expected_tags = ["gpu-0", "gpu-1"]
+        expected_tags = ["gpu-0[mW]", "gpu-1[mW]", "gpu-0[mJ]", "gpu-1[mJ]"]
         assert reader.tags == expected_tags
 
     def test_get_unit(self):

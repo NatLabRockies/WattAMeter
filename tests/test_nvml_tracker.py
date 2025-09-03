@@ -6,6 +6,9 @@ import pytest
 
 def test_integration_of_power_tracker():
     reader = NVMLReader((Power,))
+    if len(reader.tags) == 0:
+        pytest.skip("No NVML devices found, skipping test.")
+
     tracker = Tracker(reader, dt_read=0.1)
 
     # Read
@@ -16,7 +19,6 @@ def test_integration_of_power_tracker():
     e1 = reader.read_energy_on_device(0)
 
     # Collect power and time data
-    assert "[mW]" in tracker.tags[0]
     power_data = [p[0] for p in tracker.data]  # Power data for device 0
 
     # Integrate power using trapezoidal rule
