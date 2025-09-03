@@ -9,7 +9,6 @@
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
 #SBATCH --signal=USR1@0
-#SBATCH --mem-per-cpu=1G
 
 # Conda environment path
 CONDAENV=/scratch/$USER/.conda-envs/wattameter
@@ -18,18 +17,15 @@ CONDAENV=/scratch/$USER/.conda-envs/wattameter
 ml conda
 conda activate $CONDAENV
 
-# Add "Intel Xeon Platinum 8470QL" to the CPU database
-python -c "from wattameter.utils.codecarbon import add_cpu; add_cpu('Intel Xeon Platinum 8470QL', 350)"
-
 # Get the path of the wattameter script
 WATTAPATH=$(python -c 'import wattameter; import os; print(os.path.dirname(wattameter.__file__))')
 WATTASCRIPT="${WATTAPATH}/utils/wattameter.sh"
 WATTAWAIT="${WATTAPATH}/utils/wattawait.sh"
 
 # Run wattameter on all nodes
-srun --overlap --wait=0 --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTAWAIT}" &
+srun --overlap --wait=0 --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTAWAIT}" $SLURM_JOB_ID &
 WAIT_PID=$!
-srun --overlap --wait=0 --output=slurm-$SLURM_JOB_ID-wattameter.txt --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTASCRIPT}" -i $SLURM_JOB_ID &
+srun --overlap --wait=0 --output=slurm-$SLURM_JOB_ID-wattameter.txt --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTASCRIPT}" -i $SLURM_JOB_ID -t 0.1 -l info &
 wait $WAIT_PID
 
 # Run your script here, e.g.,

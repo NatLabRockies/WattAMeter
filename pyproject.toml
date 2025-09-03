@@ -14,15 +14,18 @@ license = {text = "BSD-3-Clause"}
 
 [project.scripts]
 wattameter = "wattameter.cli.main:main"
-wattameter_powerlog_filename = "wattameter.cli.main:print_powerlog_filename"
-wattameter_emissions_filename = "wattameter.cli.main:print_emissions_filename"
+wattameter_powerlog_filename = "wattameter.cli.utils:print_powerlog_filename"
+wattameter_codecarbon = "wattameter.cli.main_codecarbon:main"
+wattameter_emissions_filename = "wattameter.cli.utils:print_emissions_filename"
 
 [dependency-groups]
 example = [
     "jupyter",
+    "ipykernel",
     "matplotlib",
     "py-cpuinfo",
     "nvidia-ml-py",
+    "pandas",
 ]
 test = [
     "pytest",
