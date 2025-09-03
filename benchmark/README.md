@@ -4,7 +4,7 @@ This directory contains benchmark scripts for measuring and analyzing the perfor
 
 ## Files
 
-### [overhead.py](overhead.py)
+### [overhead_carbontracker.py](overhead_carbontracker.py)
 
 A comprehensive benchmarking script that measures the performance overhead introduced by CodeCarbonTracker. This script is particularly useful for:
 
@@ -15,7 +15,7 @@ A comprehensive benchmarking script that measures the performance overhead intro
 **Usage:**
 
 ```bash
-python overhead.py
+python overhead_carbontracker.py
 ```
 
 The script measures two types of overhead:
@@ -52,17 +52,7 @@ Utility functions shared across benchmark scripts.
 
 ## Running Benchmarks
 
-Make sure you have WattAMeter installed in your environment:
-
-```bash
-# If using pip
-pip install -e .
-
-# If using pdm
-pdm install
-```
-
-Then run any of the benchmark scripts directly:
+Run any of the benchmark scripts directly:
 
 ```bash
 cd benchmark
@@ -79,5 +69,5 @@ python main.py
 ## Notes
 
 - Benchmark results are machine-dependent and should be used for relative comparisons rather than absolute values
-- Some benchmarks require NVIDIA GPUs and the `pynvml` library
+- Some benchmarks require NVIDIA GPUs
 - Results may vary based on system load, hardware configuration, and driver versions

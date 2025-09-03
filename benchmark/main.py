@@ -13,7 +13,10 @@ Usage:
     python main.py
 """
 
-from overhead import benchmark_initialization_overhead, benchmark_measurement_overhead
+from overhead_carbontracker import (
+    benchmark_initialization_overhead,
+    benchmark_measurement_overhead,
+)
 from update_time import benchmark_pynvml_update_time, benchmark_rapl_update_time
 
 from utils import print_system_info

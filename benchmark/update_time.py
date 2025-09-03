@@ -112,21 +112,6 @@ def benchmark_pynvml_update_time():
 
                 print(f"\n🔍 Benchmarking GPU {gpu_id}: {name}")
 
-                # Benchmark power usage
-                print("\n⚡ Power Usage Benchmark")
-
-                def get_power_usage():
-                    try:
-                        power_mW = pynvml.nvmlDeviceGetPowerUsage(handle)
-                        return power_mW  # Returns power in milliwatts
-                    except pynvml.NVMLError as e:
-                        raise RuntimeError(f"Failed to get power usage: {e}")
-
-                try:
-                    _benchmark_metric("Power Usage", get_power_usage, "mW", 1000)
-                except RuntimeError as e:
-                    print(f"   ❌ Cannot get power readings: {e}")
-
                 # Benchmark energy consumption
                 print("\n🔋 Energy Consumption Benchmark")
 
