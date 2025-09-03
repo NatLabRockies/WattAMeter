@@ -2,42 +2,42 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 #
-# This script is used to wait for the WattAMeter timer to start before proceeding.
+# This script is used to wait until "run ID" can be read from the file path.
+# If no file path is given, it will use the wattameter_powerlog_filename
+# utility to get the file path for the current node.
 
-# Record the timestamp of the script start
-START_TIME=$(date +%s)
+# Usage function to display help
+usage() {
+    echo "Usage: $0 (ID) [filepath]"
+    exit 1
+}
 
-# Get the hostname of the current node
-NODE=$(hostname)
+# Get the ID from the command line argument
+if [ $# -ge 1 ]; then
+    ID="$1"
+else
+    usage
+fi
 
 # Check if an input filename was given
-if [ $# -ge 1 ]; then
-    WATTAMETER_FILENAME="$1"
+if [ $# -ge 2 ]; then
+    FILEPATH="$2"
 else
-    # Get the WattAMeter powerlog filename for the current node
-    WATTAMETER_FILENAME=$(wattameter_powerlog_filename --machine-id "${NODE}")
+    # Get the WattAMeter powerlog file path for the current node
+    NODE=$(hostname)
+    FILEPATH=$(wattameter_powerlog_filename --suffix "${NODE}")
+    echo "Waiting for ${FILEPATH} to be ready for run ID ${ID}..."
 fi
 
-# Wait for the WattAMeter powerlog file to be created or updated
-if [ -f "${WATTAMETER_FILENAME}" ]; then
-    # Check if the file was created after $START_TIME
-    FILE_CREATION_TIME=$(stat -c %W "${WATTAMETER_FILENAME}")
-    if [ "${FILE_CREATION_TIME}" -ge "${START_TIME}" ]; then
-        echo "${WATTAMETER_FILENAME} file created."
-    else
-        # Wait until the WattAMeter powerlog file is updated
-        LAST_MODIFIED="${START_TIME}"
-        while [ "${LAST_MODIFIED}" -le "${START_TIME}" ]; do
-            # Read the timestamp of the last modification
-            LAST_MODIFIED=$(stat -c %Y "${WATTAMETER_FILENAME}")
-            sleep 1  # Wait for 1 second before checking again
-        done
-        echo "${WATTAMETER_FILENAME} file updated."
-    fi
-else
-    # Wait for the WattAMeter-PowerLog-Filename CLI tool to create the file
-    until [ -f "${WATTAMETER_FILENAME}" ]; do
-        sleep 1
-    done
-    echo "${WATTAMETER_FILENAME} file created."
-fi
+# Wait for the file to be created
+until [ -f "${FILEPATH}" ]; do
+    sleep 1  # Wait for 1 second before checking again
+done
+
+# Wait until ID can be read from the file
+until grep -q "run $ID" "${FILEPATH}"; do
+    sleep 1  # Wait for 1 second before checking again
+done
+
+echo "${FILEPATH} is ready for run ID ${ID}."
+exit 0
