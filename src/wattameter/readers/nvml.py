@@ -56,7 +56,8 @@ class NVMLReader(BaseReader):
 
     @property
     def tags(self) -> list[str]:
-        return ["gpu-" + str(i) for i in range(len(self.devices))]
+        units = [self.get_unit(q) for q in self.quantities]
+        return [f"gpu-{i}[{unit}]" for unit in units for i in range(len(self.devices))]
 
     def get_unit(self, quantity: type[Quantity]) -> Unit:
         if quantity in self.UNITS:

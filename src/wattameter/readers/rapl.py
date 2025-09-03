@@ -1,10 +1,19 @@
 import logging
 import os
 import re
-import numpy as np
+from typing import Iterable
 
 from .base import BaseReader
-from .utils import Quantity, Energy, Joule, Unit
+from .utils import (
+    Quantity,
+    Energy,
+    Joule,
+    Unit,
+    Watt,
+    Power,
+    compute_rate_of_change,
+    Second,
+)
 
 # Module-level logger
 logger = logging.getLogger(__name__)
@@ -74,8 +83,6 @@ class RAPLDevice(BaseReader):
 
     """
 
-    UNITS = {Energy: Joule("u")}
-
     def __init__(self, rapl_device_path: str) -> None:
         super().__init__((Energy,))
 
@@ -98,40 +105,55 @@ class RAPLDevice(BaseReader):
             logger.warning(f"Max energy range file not found for {self.path}")
 
         # Open handle to energy file, which is used to read the energy counter
-        self._energy_file = None
+        self.energy_file = None
         try:
-            self._energy_file = open(os.path.join(self.path, "energy_uj"), "r")
+            self.energy_file = open(os.path.join(self.path, "energy_uj"), "r")
         except FileNotFoundError:
             logger.warning(f"Energy file not found for {self.path}")
 
-        # Post-process tags
-        self._tag = _get_rapl_domain_name(self.path, tag_for_unnamed_device="unknown")
+        # Post-process device name
+        self._device_name = _get_rapl_domain_name(
+            self.path, tag_for_unnamed_device="unknown"
+        )
 
     def __del__(self):
         """Ensure the energy file is closed when the object is deleted."""
-        if self._energy_file:
-            self._energy_file.close()
+        if self.energy_file:
+            self.energy_file.close()
+
+    @property
+    def derived_quantities(self) -> list[type[Quantity]]:
+        return [Power]
 
     @property
     def tags(self) -> list[str]:
-        return [self._tag]
+        return [f"{self._device_name}[{self.get_unit(q)}]" for q in self.quantities]
+
+    @property
+    def derived_tags(self) -> list[str]:
+        return [
+            f"{self._device_name}[{self.get_unit(q)}]" for q in self.derived_quantities
+        ]
 
     def get_unit(self, quantity: type[Quantity]) -> Unit:
-        if quantity in self.UNITS:
-            return self.UNITS[quantity]
+        UNITS = {Energy: Joule("u")}
+        if quantity in UNITS:
+            return UNITS[quantity]
+        elif quantity in self.derived_quantities:
+            return Watt()
         else:
             logger.warning(
                 f"Invalid quantity requested: {quantity}. "
-                f"Supported quantities are: {list(self.UNITS.keys())}."
+                f"Supported quantities are: {list(UNITS.keys())}."
             )
             return Unit()
 
     def read_energy(self) -> int:
         """Read the energy counter for the i-th device."""
-        if self._energy_file:
+        if self.energy_file:
             try:
-                self._energy_file.seek(0)
-                return int(self._energy_file.read().strip())
+                self.energy_file.seek(0)
+                return int(self.energy_file.read().strip())
             except ValueError as e:
                 logger.error(f"Failed to read energy for {self.path}: {e}")
                 return 0
@@ -142,11 +164,14 @@ class RAPLDevice(BaseReader):
     def read(self) -> list[int]:
         return [self.read_energy()]
 
-    def compute_energy_delta(self, energy_series: np.ndarray) -> np.ndarray:
-        res = super().compute_energy_delta(energy_series)
+    def compute_derived(
+        self, time_series: Iterable, data_series: Iterable, time_unit: Second = Second()
+    ):
+        res = compute_rate_of_change(data_series, time_series)
+        res *= self.get_unit(Energy).to_si() / time_unit.to_si()  # Convert to Watts
         if len(res) > 0:
             res[res < 0] += self.max_energy_range
-        return res
+        return res.tolist()
 
 
 class RAPLReader(BaseReader):
@@ -163,8 +188,6 @@ class RAPLReader(BaseReader):
         List of RAPLDevice instances for available RAPL devices.
     """
 
-    UNITS = RAPLDevice.UNITS
-
     def __init__(self, rapl_dir="/sys/class/powercap/intel-rapl/subsystem") -> None:
         super().__init__((Energy,))
 
@@ -176,7 +199,9 @@ class RAPLReader(BaseReader):
             for dir_name in dirs:
                 rapl_file = os.path.join(root, dir_name, "energy_uj")
                 if os.path.exists(rapl_file):
-                    self.devices.append(RAPLDevice(os.path.join(root, dir_name)))
+                    d = RAPLDevice(os.path.join(root, dir_name))
+                    if d.energy_file:
+                        self.devices.append(d)
 
         # Order devices by their path for consistency
         self.devices.sort(key=lambda d: d.path)
@@ -194,18 +219,33 @@ class RAPLReader(BaseReader):
             self._tags.append(tag)
 
     @property
+    def derived_quantities(self) -> list[type[Quantity]]:
+        return [Power]
+
+    @property
     def tags(self) -> list[str]:
-        return self._tags
+        return [
+            tag if "unknown" not in tag else f"unknown-{i}"
+            for i, device in enumerate(self.devices)
+            for tag in device.tags
+        ]
+
+    @property
+    def derived_tags(self) -> list[str]:
+        return [tag for device in self.devices for tag in device.derived_tags]
 
     def get_unit(self, quantity: type[Quantity]) -> Unit:
-        if quantity in self.UNITS:
-            return self.UNITS[quantity]
+        UNITS = {Energy: Joule("u")}
+        if quantity in UNITS:
+            return UNITS[quantity]
+        elif quantity in self.derived_quantities:
+            return Watt()
         else:
             logger.warning(
                 f"Invalid quantity requested: {quantity}. "
-                f"Supported quantities are: {list(self.UNITS.keys())}."
+                f"Supported quantities are: {list(UNITS.keys())}."
             )
-            return Unit("")
+            return Unit()
 
     def read_energy_on_device(self, i: int) -> int:
         """Read the energy counter of the i-th device."""
@@ -225,10 +265,12 @@ class RAPLReader(BaseReader):
     # Alias for read_energy to match the BaseReader interface
     read = read_energy
 
-    def compute_energy_delta(self, energy_series: np.ndarray) -> np.ndarray:
-        res = super().compute_energy_delta(energy_series)
-        if len(res) > 0:
-            for i in range(len(self.devices)):
-                res_i = res[:, i]
-                res_i[res_i < 0] += self.devices[i].max_energy_range
-        return res
+    def compute_derived(
+        self, time_series: Iterable, data_series: Iterable, time_unit: Second = Second()
+    ):
+        data_series_t = list(zip(*data_series))  # Transpose to group by device
+        res = [
+            d.compute_derived(time_series, ds, time_unit)
+            for d, ds in zip(self.devices, data_series_t)
+        ]
+        return list(zip(*res))  # Transpose to match expected output format
