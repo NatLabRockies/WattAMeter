@@ -33,6 +33,7 @@ async def test_wattawait_waits_for_file_creation(temp_dir):
     # Start wattawait.sh in the background
     proc = await asyncio.create_subprocess_exec(
         script_path,
+        "42",  # Arbitrary ID to pass to the script
         str(log_file_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -41,8 +42,10 @@ async def test_wattawait_waits_for_file_creation(temp_dir):
     # Give it a moment to start waiting
     await asyncio.sleep(2)
 
-    # Create the file, which should unblock wattawait.sh
+    # Create the file and write 'run 42', which should unblock wattawait.sh
     log_file_path.touch()
+    with open(log_file_path, "w") as f:
+        f.write("run 42\n")
 
     try:
         # Wait for wattawait.sh to finish
@@ -53,7 +56,7 @@ async def test_wattawait_waits_for_file_creation(temp_dir):
         pytest.fail("wattawait.sh did not terminate after file creation.")
 
     # Check that the script output indicates successful creation
-    assert f"{log_file_path} file created." in stdout.decode()
+    assert f"{log_file_path} is ready for run ID 42." in stdout.decode()
 
 
 @pytest.mark.asyncio
@@ -79,6 +82,7 @@ async def test_wattawait_waits_for_file_update(temp_dir):
     # Start wattawait.sh in the background
     proc = await asyncio.create_subprocess_exec(
         script_path,
+        "42",  # Arbitrary ID to pass to the script
         str(log_file_path),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
@@ -89,7 +93,7 @@ async def test_wattawait_waits_for_file_update(temp_dir):
 
     # Update the file, which should unblock wattawait.sh
     with open(log_file_path, "a") as f:
-        f.write("update\n")
+        f.write("run 42\n")
 
     try:
         # Wait for wattawait.sh to finish
@@ -100,4 +104,4 @@ async def test_wattawait_waits_for_file_update(temp_dir):
         pytest.fail("wattawait.sh did not terminate after file update.")
 
     # Check that the script output indicates successful update
-    assert f"{log_file_path} file updated." in stdout.decode()
+    assert f"{log_file_path} is ready for run ID 42." in stdout.decode()

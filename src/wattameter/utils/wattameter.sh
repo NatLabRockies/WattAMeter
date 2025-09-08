@@ -20,8 +20,6 @@ main() {
     DT_READ=1
     FREQ_WRITE=3600
     LOG_LEVEL="warning"
-    COUNTRY="USA"
-    REGION="colorado"
 
     # Find the WattAMeter CLI tool
     if ! command -v wattameter 2>&1 >/dev/null; then
@@ -38,19 +36,17 @@ main() {
 
     # Usage function to display help
     usage() {
-        echo "Usage: $0 [-i run_id] [-t dt_read] [-f freq_write] [-l log_level] [-c country] [-r region]"
+        echo "Usage: $0 [-i run_id] [-t dt_read] [-f freq_write] [-l log_level]"
         exit 1
     }
 
     # Parse command line options
-    while getopts ":i:t:f:l:c:r:" opt; do
+    while getopts ":i:t:f:l:" opt; do
         case $opt in
             i) RUN_ID="$OPTARG" ;;
             t) DT_READ="$OPTARG" ;;
             f) FREQ_WRITE="$OPTARG" ;;
             l) LOG_LEVEL="$OPTARG" ;;
-            c) COUNTRY="$OPTARG" ;;
-            r) REGION="$OPTARG" ;;
             \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
             :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
         esac
@@ -63,26 +59,23 @@ main() {
     log_file=$(get_log_file_name)
     echo "Logging execution on ${NODE} to ${log_file}"
 
-    # Kill other instances of CodeCarbon that might be running
-    find /tmp/ -name ".codecarbon.lock" 2>/dev/null | xargs rm -f
-
     # Start the power series tracking and log the output
     ${WATTAMETER} \
-        --machine-id "${NODE}" \
+        --suffix "${NODE}" \
+        --id "${RUN_ID}" \
         --dt-read "${DT_READ}" \
         --freq-write "${FREQ_WRITE}" \
-        --log-level "${LOG_LEVEL}" \
-        --country "${COUNTRY}" \
-        --region "${REGION}" > "${log_file}" 2>&1 &
+        --log-level "${LOG_LEVEL}" > "${log_file}" 2>&1 &
     WATTAMETER_PID=$!
 
     # Gracefully terminates the tracking process on exit.
+    SIGNAL=""
     on_exit() {
+        echo "WattAMeter interrupted on ${NODE} by signal ${SIGNAL}. Terminating..."
         if [ -n "$EXITING" ]; then
             return
         fi
         EXITING=1
-        echo "WattAMeter interrupted on ${NODE}!"
         kill -TERM "$WATTAMETER_PID" 2>/dev/null
         wait "$WATTAMETER_PID" 2>/dev/null
         while kill -0 "$WATTAMETER_PID" 2>/dev/null; do
@@ -90,7 +83,10 @@ main() {
         done
         echo "WattAMeter has been terminated on node ${NODE}."
     }
-    trap on_exit INT TERM HUP USR1
+    trap 'SIGNAL=INT; on_exit' INT
+    trap 'SIGNAL=TERM; on_exit' TERM
+    trap 'SIGNAL=HUP; on_exit' HUP
+    trap 'SIGNAL=USR1; on_exit' USR1
     trap 'echo "WattAMeter exiting on ${NODE}..."' EXIT
 
     # Wait for the WattAMeter process to finish

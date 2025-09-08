@@ -1,6 +1,6 @@
 """wattameter package"""
 
-__all__ = ["power_tracker", "cli", "utils", "PowerTracker"]
+from .codecarbon_tracker import CodeCarbonTracker
+from .tracker import Tracker
 
-from . import power_tracker, cli, utils
-from .power_tracker import PowerTracker
+__all__ = ["CodeCarbonTracker", "Tracker"]
