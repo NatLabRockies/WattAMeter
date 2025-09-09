@@ -1,6 +1,6 @@
 [project]
 name = "wattameter"
-version = "0.5.0"
+version = "0.6.0"
 description = "Default template for PDM package"
 authors = [
     {name = "Weslley da Silva Pereira", email = "wdasilv@nrel.gov"},
