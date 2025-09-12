@@ -2,18 +2,10 @@ import logging
 import os
 import re
 from typing import Iterable
+import numpy as np
 
 from .base import BaseReader
-from .utils import (
-    Quantity,
-    Energy,
-    Joule,
-    Unit,
-    Watt,
-    Power,
-    compute_rate_of_change,
-    Second,
-)
+from .utils import Quantity, Energy, Joule, Unit, Watt, Power, Second
 
 # Module-level logger
 logger = logging.getLogger(__name__)
@@ -164,13 +156,17 @@ class RAPLDevice(BaseReader):
     def read(self) -> list[int]:
         return [self.read_energy()]
 
-    def compute_derived(
-        self, time_series: Iterable, data_series: Iterable, time_unit: Second = Second()
-    ):
-        res = compute_rate_of_change(data_series, time_series)
+    def compute_derived(self, time_series, data_series, time_unit: Second = Second()):
+        # Compute deltas
+        energy_delta = np.subtract(data_series[1:], data_series[:-1])
+        time_delta = np.subtract(time_series[1:], time_series[:-1])
+        if len(energy_delta) > 0:
+            energy_delta[energy_delta < 0] += self.max_energy_range
+
+        # Compute power in Watts
+        res = np.asarray([(num / den) for num, den in zip(energy_delta, time_delta)])
         res *= self.get_unit(Energy).to_si() / time_unit.to_si()  # Convert to Watts
-        if len(res) > 0:
-            res[res < 0] += self.max_energy_range
+
         return res.tolist()
 
 

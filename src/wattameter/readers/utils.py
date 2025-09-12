@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from enum import Enum
-import numpy as np
 
 
 class SIPrefix(Enum):
@@ -145,18 +144,3 @@ class Temperature(Quantity):
     @staticmethod
     def units() -> list[type[Unit]]:
         return [Celsius]
-
-
-def compute_rate_of_change(numerator_series, denominator_series):
-    """Compute the rate of change between two series.
-
-    :param numerator_series: Array-like sequence of numerator values.
-    :param denominator_series: Array-like sequence of denominator values.
-    :raises ValueError: If the lengths of the two series do not match.
-    :return: A list of rate of change values.
-    """
-
-    num_delta = np.subtract(numerator_series[1:], numerator_series[:-1])
-    den_delta = np.subtract(denominator_series[1:], denominator_series[:-1])
-
-    return np.asarray([(num / den) for num, den in zip(num_delta, den_delta)])
