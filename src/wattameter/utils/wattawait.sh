@@ -25,7 +25,7 @@ if [ $# -ge 2 ]; then
 else
     # Get the WattAMeter powerlog file path for the current node
     NODE=$(hostname)
-    FILEPATH=$(wattameter_powerlog_filename --suffix "${NODE}")
+    FILEPATH=$(wattameter_powerlog_filename --suffix "${ID}-${NODE}")
     echo "Waiting for ${FILEPATH} to be ready for run ID ${ID}..."
 fi
 

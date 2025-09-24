@@ -61,7 +61,7 @@ main() {
 
     # Start the power series tracking and log the output
     ${WATTAMETER} \
-        --suffix "${NODE}" \
+        --suffix "${RUN_ID}-${NODE}" \
         --id "${RUN_ID}" \
         --dt-read "${DT_READ}" \
         --freq-write "${FREQ_WRITE}" \
