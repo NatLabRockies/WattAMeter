@@ -12,11 +12,13 @@ Usage:
     python update_time.py
 """
 
-from utils import estimate_dt
+from utils import estimate_dt, compile_gpu_burn, get_gpu_burn_dir, stress_cpu
 import numpy as np
+import logging
+import time
 
 
-def _benchmark_metric(metric_name, get_metric_func, unit, conversion_factor=1):
+def _benchmark_metric(metric_name, get_metric_func, unit):
     """
     Helper function to benchmark a specific NVML metric.
 
@@ -24,36 +26,32 @@ def _benchmark_metric(metric_name, get_metric_func, unit, conversion_factor=1):
         metric_name: Name of the metric being benchmarked
         get_metric_func: Function that returns the metric value
         unit: Unit of the metric (e.g., "mW", "mJ")
-        conversion_factor: Factor to convert to human-readable units (e.g., 1000 for mW to W)
     """
     try:
         # Test initial reading
         initial_value = get_metric_func()
-        if conversion_factor > 1:
-            print(
-                f"   Initial {metric_name.lower()} reading: {initial_value} {unit} ({initial_value / conversion_factor:.2f} {unit[1:]})"
-            )
-        else:
-            print(f"   Initial {metric_name.lower()} reading: {initial_value} {unit}")
+        print(f"   Initial {metric_name.lower()} reading: {initial_value} {unit}")
 
         # Estimate update frequency
         print(f"   🕐 Estimating {metric_name.lower()} update interval...")
+        t0 = time.perf_counter()
         estimated_dt = estimate_dt(
             get_metric_func,
-            n_trials=100,
+            n_trials=1000,
             ntmax=2000,
         )
+        t1 = time.perf_counter()
 
         freq = 1.0 / np.asarray(estimated_dt)
         min_freq = np.min(freq)
         max_freq = np.max(freq)
-        mean_freq = np.mean(freq)
-        std_freq = np.std(freq)
+        median_freq = np.median(freq)
+        mean_freq = len(estimated_dt) / (t1 - t0)
 
-        print(f"   📈 Average update frequency: {mean_freq:.6f} Hz")
-        print(f"                           Min: {min_freq:.6f} Hz")
-        print(f"                           Max: {max_freq:.6f} Hz")
-        print(f"                           Std: {std_freq:.6f} Hz")
+        print(f"   📈 Mean update frequency: {mean_freq:.6f} Hz")
+        print(f"                     Median: {median_freq:.6f} Hz")
+        print(f"                        Min: {min_freq:.6f} Hz")
+        print(f"                        Max: {max_freq:.6f} Hz")
 
         # Provide context on update frequency
         if mean_freq > 100:  # < 10ms (> 100Hz)
@@ -84,6 +82,7 @@ def benchmark_pynvml_update_time():
         print("❌ pynvml not available. Skipping benchmark.")
         return
 
+    gpu_burn_process = None
     try:
         pynvml.nvmlInit()
         print("✅ NVML initialized successfully")
@@ -101,6 +100,23 @@ def benchmark_pynvml_update_time():
             print(f"❌ Error getting device count: {e}")
             pynvml.nvmlShutdown()
             return
+
+        # Stress GPUs if gpu_burn is available
+        try:
+            import subprocess
+
+            gpu_burn_path = compile_gpu_burn()
+            print("🔥 Starting gpu_burn to stress GPUs...")
+            gpu_burn_process = subprocess.Popen(
+                [gpu_burn_path, "3600"],
+                cwd=get_gpu_burn_dir(),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            time.sleep(10)  # Give it some time to start
+            print("✅ gpu_burn started successfully")
+        except Exception as e:
+            print(f"⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs.")
 
         # Benchmark each GPU
         for gpu_id in range(device_count):
@@ -126,13 +142,40 @@ def benchmark_pynvml_update_time():
                     _benchmark_metric(
                         "Energy Consumption", get_energy_consumption, "mJ"
                     )
-                except pynvml.NVMLError as e:
-                    print(
-                        f"   ❌ Energy consumption not supported on GPU {gpu_id}: {e}"
-                    )
-                    print("   � This feature may require newer GPU models or drivers")
                 except RuntimeError as e:
                     print(f"   ❌ Cannot get energy readings: {e}")
+
+                # Benchmark power usage
+                print("\n⚡ Power Usage Benchmark")
+
+                def get_power_usage():
+                    try:
+                        power_mW = pynvml.nvmlDeviceGetPowerUsage(handle)
+                        return power_mW  # Returns power in milliwatts
+                    except pynvml.NVMLError as e:
+                        raise RuntimeError(f"Failed to get power usage: {e}")
+
+                try:
+                    _benchmark_metric("Power Usage", get_power_usage, "mW")
+                except RuntimeError as e:
+                    print(f"   ❌ Cannot get power readings: {e}")
+
+                # Benchmark temperature
+                print("\n🌡️  Temperature Benchmark")
+
+                def get_temperature():
+                    try:
+                        temp_c = pynvml.nvmlDeviceGetTemperature(
+                            handle, pynvml.NVML_TEMPERATURE_GPU
+                        )
+                        return temp_c  # Returns temperature in Celsius
+                    except pynvml.NVMLError as e:
+                        raise RuntimeError(f"Failed to get temperature: {e}")
+
+                try:
+                    _benchmark_metric("Temperature", get_temperature, "°C")
+                except RuntimeError as e:
+                    print(f"   ❌ Cannot get temperature readings: {e}")
 
             except pynvml.NVMLError as e:
                 print(f"   ❌ Error accessing GPU {gpu_id}: {e}")
@@ -142,6 +185,14 @@ def benchmark_pynvml_update_time():
         print(f"❌ Failed to initialize NVML: {e}")
         return
     finally:
+        # Terminate gpu_burn if it was started
+        if gpu_burn_process is not None:
+            print("\n🛑 Terminating gpu_burn...")
+            gpu_burn_process.terminate()
+            gpu_burn_process.wait()
+            print("✅ gpu_burn terminated")
+
+        # Shutdown NVML
         try:
             pynvml.nvmlShutdown()
             print("\n✅ NVML shutdown completed")
@@ -163,6 +214,19 @@ def benchmark_rapl_update_time():
         print(f"❌ IntelRAPL not available. Skipping benchmark. Error: {e}")
         return
 
+    # Stress CPUs
+    cpu_stress_process = None
+    try:
+        import multiprocessing
+
+        print("🔥 Starting stressing CPUs...")
+        cpu_stress_process = multiprocessing.Process(target=stress_cpu)
+        cpu_stress_process.start()
+        time.sleep(5)  # Give it some time to start
+        print("✅ cpu_stress_process started successfully")
+    except Exception as e:
+        print(f"⚠️  Could not start CPU stress process: {e}. Continuing with idle CPUs.")
+
     # Benchmark each RAPL file
     for rapl_file in rapl._rapl_files:
         print(f"\n🔍 Benchmarking RAPL file: {rapl_file.path}")
@@ -175,14 +239,21 @@ def benchmark_rapl_update_time():
                 return energy_uj  # Returns energy in uJ
 
             try:
-                _benchmark_metric(
-                    "Energy Consumption", get_energy_consumption, "uJ", 1000000
-                )
+                _benchmark_metric("Energy Consumption", get_energy_consumption, "uJ")
             except RuntimeError as e:
                 print(f"   ❌ Cannot get energy readings: {e}")
 
+    # Terminate CPU stress process
+    if cpu_stress_process is not None:
+        print("\n🛑 Terminating CPU stress process...")
+        cpu_stress_process.terminate()
+        cpu_stress_process.join()
+        print("✅ CPU stress process terminated")
+
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+
     print("WattAMeter Frequency of Update Benchmark")
     print("This script measures the frequency of update in different devices.")
     print("Results are machine-dependent and should be used for reference only.\n")
