@@ -24,6 +24,7 @@ example = [
     "matplotlib",
     "py-cpuinfo",
     "pandas",
+    "marimo",
 ]
 test = [
     "pytest",

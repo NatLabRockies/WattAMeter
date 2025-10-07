@@ -1,4 +1,0 @@
-/scratch/wdasilv/.conda-envs/wattameter/lib/python3.12/site-packages/requests/__init__.py:86: RequestsDependencyWarning: Unable to find acceptable character detection dependency (chardet or charset_normalizer).
-  warnings.warn(
-[codecarbon INFO @ 11:22:09] offline tracker init
-[codecarbon WARNING @ 11:22:09] Multiple instances of codecarbon are allowed to run at the same time.

@@ -1,5 +1,0 @@
-Logging execution on x3108c0s17b0n0 to wattameter-9325971-x3108c0s17b0n0.txt
-Logging execution on x3106c0s17b0n0 to wattameter-9325971-x3106c0s17b0n0.txt
-WattAMeter interrupted on x3108c0s17b0n0!
-slurmstepd: error: *** STEP 9325971.0 ON x3106c0s17b0n0 CANCELLED AT 2025-06-11T11:22:39 ***
-WattAMeter interrupted on x3106c0s17b0n0!
