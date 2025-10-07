@@ -4,27 +4,6 @@ This directory contains benchmark scripts for measuring and analyzing the perfor
 
 ## Files
 
-### [overhead_carbontracker.py](overhead_carbontracker.py)
-
-A comprehensive benchmarking script that measures the performance overhead introduced by CodeCarbonTracker. This script is particularly useful for:
-
-- **Performance evaluation**: Understanding how much overhead CodeCarbonTracker adds to your application
-- **System comparison**: Comparing overhead across different machines or configurations
-- **Optimization validation**: Verifying that code changes don't introduce excessive overhead
-
-**Usage:**
-
-```bash
-python overhead_carbontracker.py
-```
-
-The script measures two types of overhead:
-
-- **Initialization overhead**: Time taken to create, start, and stop a CodeCarbonTracker instance
-- **Measurement overhead**: Time taken for individual power measurements
-
-Results are machine-dependent and should be used for reference only.
-
 ### [update_time.py](update_time.py)
 
 A benchmarking script that measures the frequency of updates for various NVML power and energy metrics. This script helps determine how often power readings are updated by the hardware.

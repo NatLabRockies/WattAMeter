@@ -13,10 +13,6 @@ Usage:
     python main.py
 """
 
-from overhead_carbontracker import (
-    benchmark_initialization_overhead,
-    benchmark_measurement_overhead,
-)
 from update_time import benchmark_pynvml_update_time, benchmark_rapl_update_time
 
 from utils import print_system_info
@@ -27,8 +23,6 @@ if __name__ == "__main__":
     print("Results are machine-dependent and should be used for reference only.\n")
 
     print_system_info()
-    benchmark_initialization_overhead()
-    benchmark_measurement_overhead()
     benchmark_pynvml_update_time()
     benchmark_rapl_update_time()
 
