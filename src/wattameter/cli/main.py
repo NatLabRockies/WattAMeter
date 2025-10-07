@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 
-from ..tracker import TrackerArray
+from ..tracker import TrackerArray, Tracker
 from ..readers import NVMLReader, RAPLReader
-from ..readers import Power, Temperature
+from ..readers import Power, Temperature, DataThroughput, Utilization
 from .utils import powerlog_filename, ForcedExit, handle_signal, default_cli_arguments
 
 import signal
@@ -44,9 +44,15 @@ def main():
         logging.error("No valid readers available. Exiting.")
         return
 
-    # Initialize the tracker
-    tracker = TrackerArray(
+    # Initialize the trackers
+    tracker0 = TrackerArray(
         readers, dt_read=args.dt_read, freq_write=args.freq_write, outputs=outputs
+    )
+    tracker1 = Tracker(
+        reader=NVMLReader((Utilization,)),
+        dt_read=1.0,
+        freq_write=args.freq_write,
+        output=f"nvml_util_data_{base_output_filename}",
     )
 
     # Record the start time
@@ -54,25 +60,31 @@ def main():
 
     # Signal that the tracker is starting
     with open(base_output_filename, "a") as f:
-        timestamp = tracker.trackers[0].format_timestamp(t0)
-        f.write(f"# {timestamp} - Power data for run {args.id}\n")
+        timestamp = tracker0.trackers[0].format_timestamp(t0)
+        f.write(f"# {timestamp} - Data for run {args.id}\n")
         f.write(f"# {timestamp} - Tracking started\n")
 
     # Write initial headers to all output files
     for i in range(len(outputs)):
-        timestamp = tracker.trackers[i].format_timestamp(t0)
+        timestamp = tracker0.trackers[i].format_timestamp(t0)
         with open(outputs[i], "a") as f:
             f.write(f"# {timestamp} - Power data for run {args.id}\n")
             f.write(f"# {timestamp} - Tracking started\n")
+    timestamp = tracker1.format_timestamp(t0)
+    with open(tracker1.output, "a") as f:
+        f.write(f"# {timestamp} - Utilization data for run {args.id}\n")
+        f.write(f"# {timestamp} - Tracking started\n")
 
     # Repeat until interrupted
     try:
         logging.info("Tracking power...")
-        tracker.track_until_forced_exit()
+        tracker1.start(freq_write=args.freq_write)
+        tracker0.track_until_forced_exit()
     except ForcedExit:
         logging.info("Forced exit detected. Stopping tracker...")
     finally:
-        tracker.write()
+        tracker0.write()
+        tracker1.stop(freq_write=args.freq_write)
         t1 = time.time_ns()
         elapsed_s = (t1 - t0) * 1e-9
         logging.info(f"Tracker stopped. Elapsed time: {elapsed_s:.2f} seconds.")

@@ -1,6 +1,5 @@
 """wattameter package"""
 
-from .codecarbon_tracker import CodeCarbonTracker
-from .tracker import Tracker
+from .tracker import Tracker, TrackerArray
 
-__all__ = ["CodeCarbonTracker", "Tracker"]
+__all__ = ["Tracker", "TrackerArray"]

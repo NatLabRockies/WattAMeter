@@ -1,12 +1,12 @@
 [project]
 name = "wattameter"
-version = "0.6.2"
+version = "0.7.0"
 description = "Default template for PDM package"
 authors = [
     {name = "Weslley da Silva Pereira", email = "wdasilv@nrel.gov"},
 ]
 dependencies = [
-    "codecarbon>=3.0.0",
+    "nvidia-ml-py",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -15,7 +15,6 @@ license = {text = "BSD-3-Clause"}
 [project.scripts]
 wattameter = "wattameter.cli.main:main"
 wattameter_powerlog_filename = "wattameter.cli.utils:print_powerlog_filename"
-wattameter_codecarbon = "wattameter.cli.main_codecarbon:main"
 wattameter_emissions_filename = "wattameter.cli.utils:print_emissions_filename"
 
 [dependency-groups]
@@ -24,7 +23,6 @@ example = [
     "ipykernel",
     "matplotlib",
     "py-cpuinfo",
-    "nvidia-ml-py",
     "pandas",
 ]
 test = [

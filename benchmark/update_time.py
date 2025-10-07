@@ -160,6 +160,25 @@ def benchmark_pynvml_update_time():
                 except RuntimeError as e:
                     print(f"   ❌ Cannot get power readings: {e}")
 
+                # Benchmark utilization rates
+                print("\n📊 Utilization Rates Benchmark")
+
+                def get_memory_utilization():
+                    try:
+                        utilization = pynvml.nvmlDeviceGetUtilizationRates(
+                            handle
+                        ).memory
+                        return utilization  # Returns utilization
+                    except pynvml.NVMLError as e:
+                        raise RuntimeError(f"Failed to get utilization rates: {e}")
+
+                try:
+                    _benchmark_metric(
+                        "Memory utilization Rate", get_memory_utilization, "%"
+                    )
+                except RuntimeError as e:
+                    print(f"   ❌ Cannot get utilization readings: {e}")
+
                 # Benchmark temperature
                 print("\n🌡️  Temperature Benchmark")
 
@@ -207,11 +226,11 @@ def benchmark_rapl_update_time():
     print("=" * 60)
 
     try:
-        from codecarbon.core.cpu import IntelRAPL
+        from wattameter.readers import RAPLReader
 
-        rapl = IntelRAPL()
-    except (FileNotFoundError, ImportError, SystemError, PermissionError) as e:
-        print(f"❌ IntelRAPL not available. Skipping benchmark. Error: {e}")
+        rapl = RAPLReader()
+    except ImportError:
+        print("❌ wattameter.readers.rapl not available. Skipping benchmark.")
         return
 
     # Stress CPUs
@@ -228,20 +247,13 @@ def benchmark_rapl_update_time():
         print(f"⚠️  Could not start CPU stress process: {e}. Continuing with idle CPUs.")
 
     # Benchmark each RAPL file
-    for rapl_file in rapl._rapl_files:
+    for rapl_file in rapl.devices:
         print(f"\n🔍 Benchmarking RAPL file: {rapl_file.path}")
 
-        with open(rapl_file.path, "r") as f:
-
-            def get_energy_consumption():
-                f.seek(0)
-                energy_uj = int(f.readline())
-                return energy_uj  # Returns energy in uJ
-
-            try:
-                _benchmark_metric("Energy Consumption", get_energy_consumption, "uJ")
-            except RuntimeError as e:
-                print(f"   ❌ Cannot get energy readings: {e}")
+        try:
+            _benchmark_metric("Energy Consumption", rapl_file.read_energy, "uJ")
+        except RuntimeError as e:
+            print(f"   ❌ Cannot get energy readings: {e}")
 
     # Terminate CPU stress process
     if cpu_stress_process is not None:
