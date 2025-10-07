@@ -14,6 +14,13 @@ class SIPrefix(Enum):
     GIGA = 1e9
     TERA = 1e12
 
+    # Addendum for binary prefixes
+    KIBI = 2**10
+    MIBI = 2**20
+    GIBI = 2**30
+    TEBI = 2**40
+    PEBI = 2**50
+
     @classmethod
     def from_string(cls, prefix: str) -> "SIPrefix":
         """Get the SIPrefix enum member from a string.
@@ -30,6 +37,11 @@ class SIPrefix(Enum):
             "M": cls.MEGA,
             "G": cls.GIGA,
             "T": cls.TERA,
+            "Ki": cls.KIBI,
+            "Mi": cls.MIBI,
+            "Gi": cls.GIBI,
+            "Ti": cls.TEBI,
+            "Pi": cls.PEBI,
         }
         if prefix in mapping:
             return mapping[prefix]
@@ -112,6 +124,17 @@ class Celsius(Unit):
         return self.si_prefix.value
 
 
+class Byte(Unit):
+    """Byte unit."""
+
+    @staticmethod
+    def symbol() -> str:
+        return "B"
+
+    def to_si(self) -> float:
+        return self.si_prefix.value
+
+
 class Quantity(float):
     """A base class for physical quantities."""
 
@@ -144,3 +167,11 @@ class Temperature(Quantity):
     @staticmethod
     def units() -> list[type[Unit]]:
         return [Celsius]
+
+
+class Utilization(Quantity):
+    """Percentage utilization quantity."""
+
+    @staticmethod
+    def units() -> list[type[Unit]]:
+        return [Unit]

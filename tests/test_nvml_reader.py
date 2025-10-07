@@ -3,8 +3,8 @@ import logging
 from unittest.mock import Mock, patch
 import pynvml
 
-from wattameter.readers.nvml import NVMLReader
-from wattameter.readers.utils import Quantity, Energy, Power, Temperature
+from wattameter.readers.nvml import NVMLReader, DataThroughput
+from wattameter.readers.utils import Quantity, Energy, Power, Temperature, Utilization
 
 
 class TestNVMLReader:
@@ -88,6 +88,17 @@ class TestNVMLReader:
             with pytest.raises(ValueError, match="Unsupported quantities"):
                 NVMLReader(quantities=(Quantity,))
 
+    def test_init_valid_new_quantities(self):
+        """Test initialization with new valid quantities."""
+        with (
+            patch("pynvml.nvmlInit"),
+            patch("pynvml.nvmlDeviceGetCount", return_value=0),
+            patch("pynvml.nvmlDeviceGetHandleByIndex"),
+        ):
+            # Should not raise an exception
+            reader = NVMLReader(quantities=(Utilization, DataThroughput))
+            assert reader.quantities == (Utilization, DataThroughput)
+
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
     def test_tags_property(self, mock_get_count, mock_init):
@@ -100,6 +111,30 @@ class TestNVMLReader:
         expected_tags = ["gpu-0[mW]", "gpu-1[mW]", "gpu-0[mJ]", "gpu-1[mJ]"]
         assert reader.tags == expected_tags
 
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    def test_tags_property_utilization(self, mock_get_count, mock_init):
+        """Test tags property with utilization quantities."""
+        mock_get_count.return_value = 1
+
+        with patch("pynvml.nvmlDeviceGetHandleByIndex"):
+            reader = NVMLReader(quantities=(Utilization,))
+
+        expected_tags = ["gpu-0[%gpu]", "gpu-0[%mem]"]
+        assert reader.tags == expected_tags
+
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    def test_tags_property_data_throughput(self, mock_get_count, mock_init):
+        """Test tags property with data throughput quantities."""
+        mock_get_count.return_value = 1
+
+        with patch("pynvml.nvmlDeviceGetHandleByIndex"):
+            reader = NVMLReader(quantities=(DataThroughput,))
+
+        expected_tags = ["gpu-0[TX KiB]", "gpu-0[RX KiB]"]
+        assert reader.tags == expected_tags
+
     def test_get_unit(self):
         """Test get_unit method."""
         with (
@@ -108,10 +143,12 @@ class TestNVMLReader:
         ):
             reader = NVMLReader()
 
-        assert reader.get_unit(Power) == "mW"
-        assert reader.get_unit(Energy) == "mJ"
-        assert reader.get_unit(Temperature) == "C"
-        assert reader.get_unit(Quantity) == ""
+        # Now returns Unit objects, not strings
+        assert str(reader.get_unit(Power)) == "mW"
+        assert str(reader.get_unit(Energy)) == "mJ"
+        assert str(reader.get_unit(Temperature)) == "C"
+        assert str(reader.get_unit(DataThroughput)) == "KiB"
+        assert str(reader.get_unit(Quantity)) == ""
 
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
@@ -205,6 +242,61 @@ class TestNVMLReader:
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
     @patch("pynvml.nvmlDeviceGetHandleByIndex")
+    @patch("pynvml.nvmlDeviceGetUtilizationRates")
+    def test_read_utilization_on_device_success(
+        self, mock_util, mock_get_handle, mock_get_count, mock_init
+    ):
+        """Test successful utilization reading."""
+        mock_get_count.return_value = 1
+        mock_device = Mock()
+        mock_get_handle.return_value = mock_device
+
+        # Mock utilization object
+        mock_utilization = Mock()
+        mock_utilization.gpu = 75
+        mock_utilization.memory = 60
+        mock_util.return_value = mock_utilization
+
+        reader = NVMLReader()
+        result = reader.read_utilization_on_device(0)
+
+        assert result == (75, 60)
+        mock_util.assert_called_once_with(mock_device)
+
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    @patch("pynvml.nvmlDeviceGetHandleByIndex")
+    @patch("pynvml.nvmlDeviceGetFieldValues")
+    def test_read_nvlink_throughput_on_device_success(
+        self, mock_field_values, mock_get_handle, mock_get_count, mock_init
+    ):
+        """Test successful NVLink throughput reading."""
+        mock_get_count.return_value = 1
+        mock_device = Mock()
+        mock_get_handle.return_value = mock_device
+
+        # Mock field values
+        mock_tx = Mock()
+        mock_tx.value.ullVal = 1024
+        mock_rx = Mock()
+        mock_rx.value.ullVal = 2048
+        mock_field_values.return_value = [mock_tx, mock_rx]
+
+        reader = NVMLReader()
+        result = reader.read_nvlink_throughput_on_device(0)
+
+        assert result == (1024, 2048)
+        mock_field_values.assert_called_once_with(
+            mock_device,
+            [
+                pynvml.NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX,
+                pynvml.NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX,
+            ],
+        )
+
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    @patch("pynvml.nvmlDeviceGetHandleByIndex")
     def test_read_energy_multiple_devices(
         self, mock_get_handle, mock_get_count, mock_init
     ):
@@ -238,6 +330,44 @@ class TestNVMLReader:
             result = reader.read()
 
         assert result == [250, 1000, 65]
+
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    @patch("pynvml.nvmlDeviceGetHandleByIndex")
+    def test_read_utilization_quantities(
+        self, mock_get_handle, mock_get_count, mock_init
+    ):
+        """Test reading utilization quantities."""
+        mock_get_count.return_value = 1
+        mock_get_handle.return_value = Mock()
+
+        reader = NVMLReader(quantities=(Utilization,))
+
+        with patch.object(reader, "read_utilization_on_device", return_value=(75, 60)):
+            result = reader.read()
+
+        # Should return GPU utilization first, then memory utilization
+        assert result == [75, 60]
+
+    @patch("pynvml.nvmlInit")
+    @patch("pynvml.nvmlDeviceGetCount")
+    @patch("pynvml.nvmlDeviceGetHandleByIndex")
+    def test_read_data_throughput_quantities(
+        self, mock_get_handle, mock_get_count, mock_init
+    ):
+        """Test reading data throughput quantities."""
+        mock_get_count.return_value = 1
+        mock_get_handle.return_value = Mock()
+
+        reader = NVMLReader(quantities=(DataThroughput,))
+
+        with patch.object(
+            reader, "read_nvlink_throughput_on_device", return_value=(1024, 2048)
+        ):
+            result = reader.read()
+
+        # Should return TX throughput first, then RX throughput
+        assert result == [1024, 2048]
 
     @patch("pynvml.nvmlInit")
     @patch("pynvml.nvmlDeviceGetCount")
