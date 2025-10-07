@@ -18,6 +18,8 @@ The script benchmarks:
 
 - **Power Usage**: Update frequency of `nvmlDeviceGetPowerUsage`
 - **Energy Consumption**: Update frequency of `nvmlDeviceGetTotalEnergyConsumption`
+- **GPU Utilization**: Update frequency of `nvmlDeviceGetUtilizationRates`
+- **Temperature**: Update frequency of `nvmlDeviceGetTemperature`
 
 Results include estimated update intervals and frequencies for each available GPU.
 
@@ -28,6 +30,10 @@ Main benchmark runner that can execute multiple benchmark scripts.
 ### [utils.py](utils.py)
 
 Utility functions shared across benchmark scripts.
+
+### [sleep.ipynb](sleep.ipynb)
+
+A Jupyter notebook that measures the error between requested sleep times and actual sleep durations. This helps understand the precision of sleep functions in Python.
 
 ## Running Benchmarks
 
