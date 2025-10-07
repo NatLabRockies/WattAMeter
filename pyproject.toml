@@ -40,4 +40,7 @@ includes = ["src/wattameter/utils/*.sh"]
 devwattameter = { call = "wattameter.cli.main:main" }
 
 [tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests requiring actual hardware",
+]
 testpaths = ["tests"]
