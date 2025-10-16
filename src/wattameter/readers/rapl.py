@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
+
 import logging
 import os
 import re

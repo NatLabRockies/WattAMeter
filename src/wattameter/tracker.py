@@ -38,6 +38,11 @@ class BaseTracker(AbstractContextManager):
         pass
 
     @abstractmethod
+    def write_header(self) -> None:
+        """Write header."""
+        pass
+
+    @abstractmethod
     def write(self) -> None:
         """Write data."""
         pass
@@ -78,6 +83,8 @@ class BaseTracker(AbstractContextManager):
         :param freq_write: Frequency (in number of reads) to write the collected data.
             If set to 0, data is never written.
         """
+        if freq_write > 0:
+            self.write_header()  # Write header at the beginning
         if self._async_thread is None:
             # Define the async task to update the power series
             self._stop_event = threading.Event()
@@ -249,7 +256,6 @@ class Tracker(BaseTracker):
         self.write_data(*self.flush_data())
 
     def __enter__(self):
-        self.write_header()  # Write header at the beginning
         super().start(self.freq_write)
         return self
 
@@ -396,13 +402,15 @@ class TrackerArray(BaseTracker):
             elapsed_s += tracker.read()
         return elapsed_s
 
+    def write_header(self) -> None:
+        for tracker in self.trackers:
+            tracker.write_header()
+
     def write(self):
         for tracker in self.trackers:
             tracker.write()
 
     def __enter__(self):
-        for tracker in self.trackers:
-            tracker.write_header()
         super().start(self.freq_write)
         return self
 
@@ -415,6 +423,5 @@ class TrackerArray(BaseTracker):
         return None
 
     def track_until_forced_exit(self):
-        for tracker in self.trackers:
-            tracker.write_header()
+        self.write_header()
         super().track_until_forced_exit(self.freq_write)

@@ -1,3 +1,15 @@
+"""
+Test suite for tracker.py module.
+
+This module tests all tracker classes (BaseTracker, Tracker, TrackerArray) with
+particular focus on the track_until_forced_exit method functionality, including:
+- Header writing behavior
+- Final operations in finally block
+- Exception handling (KeyboardInterrupt vs others)
+- Periodic write operations based on freq_write parameter
+- Parameter passing between subclasses and base class
+"""
+
 import pytest
 import logging
 import tempfile
@@ -66,6 +78,7 @@ class ConcreteTracker(BaseTracker):
         super().__init__(dt_read)
         self.read_calls = []
         self.write_calls = []
+        self.write_header_calls = []
 
     def read(self) -> float:
         start_time = time.perf_counter()
@@ -76,7 +89,10 @@ class ConcreteTracker(BaseTracker):
         return elapsed
 
     def write(self) -> None:
-        self.write_calls.append(0)
+        self.write_calls.append(time.time())
+
+    def write_header(self) -> None:
+        self.write_header_calls.append(time.time())
 
 
 class TestBaseTracker:
@@ -224,6 +240,67 @@ class TestBaseTracker:
         ):
             with pytest.raises(ValueError, match="Test error"):
                 tracker.track_until_forced_exit()
+
+    def test_track_until_forced_exit_final_operations_freq_write_zero(self):
+        """Test BaseTracker performs final read but no write when freq_write=0."""
+        tracker = ConcreteTracker(dt_read=0.01)
+
+        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+            tracker.track_until_forced_exit(freq_write=0)
+
+        # Final read should occur
+        assert len(tracker.read_calls) == 1
+        # No writes when freq_write=0
+        assert len(tracker.write_calls) == 0
+        # BaseTracker doesn't call write_header itself
+        assert len(tracker.write_header_calls) == 0
+
+    def test_track_until_forced_exit_final_operations_freq_write_positive(self):
+        """Test BaseTracker performs final read and write when freq_write > 0."""
+        tracker = ConcreteTracker(dt_read=0.01)
+
+        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+            tracker.track_until_forced_exit(freq_write=5)
+
+        # Final read should occur
+        assert len(tracker.read_calls) == 1
+        # Final write should occur when freq_write > 0
+        assert len(tracker.write_calls) == 1
+        # BaseTracker doesn't call write_header itself
+        assert len(tracker.write_header_calls) == 0
+
+    def test_track_until_forced_exit_periodic_writes_based_on_freq_write(self):
+        """Test BaseTracker performs periodic writes based on freq_write parameter."""
+        tracker = ConcreteTracker(dt_read=0.01)
+
+        call_count = 0
+
+        def mock_read_and_sleep():
+            nonlocal call_count
+            call_count += 1
+            if call_count >= 5:  # Stop after 5 calls
+                raise KeyboardInterrupt()
+
+        with patch.object(tracker, "_read_and_sleep", side_effect=mock_read_and_sleep):
+            tracker.track_until_forced_exit(freq_write=2)
+
+        # Should have periodic writes: at calls 2, 4 + final write = 3 total
+        assert len(tracker.write_calls) == 3
+        # Should have final read
+        assert len(tracker.read_calls) == 1
+
+    def test_track_until_forced_exit_final_operations_always_execute(self):
+        """Test that final read/write operations always execute in finally block."""
+        tracker = ConcreteTracker(dt_read=0.01)
+
+        # Even with an exception in the loop, final operations should execute
+        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+            tracker.track_until_forced_exit(freq_write=1)
+
+        # Final read should always happen
+        assert len(tracker.read_calls) == 1
+        # Final write should happen when freq_write > 0
+        assert len(tracker.write_calls) == 1
 
 
 @pytest.fixture()
@@ -404,6 +481,52 @@ class TestTracker:
             mock_header.assert_called_once()
             mock_write.assert_called()
 
+    def test_track_until_forced_exit_writes_header_to_file(self, output_file):
+        """Test track_until_forced_exit actually writes header to output file."""
+        reader = MockReader(read_return_value=[10, 20])
+        tracker = Tracker(reader, dt_read=0.01, output=output_file)
+
+        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+            tracker.track_until_forced_exit()
+
+        # Check that header was written to file
+        assert os.path.exists(output_file)
+        with open(output_file, "r") as f:
+            content = f.read()
+            assert "# timestamp" in content
+            assert "reading-time[ns]" in content
+            assert "device0[W]" in content
+            assert "device1[W]" in content
+
+    def test_track_until_forced_exit_uses_instance_freq_write(self, output_file):
+        """Test Tracker passes its instance freq_write to base class method."""
+        reader = MockReader(read_return_value=[10, 20])
+        tracker = Tracker(reader, dt_read=0.01, freq_write=7, output=output_file)
+
+        # Mock the base class method to verify correct parameter passing
+        with patch.object(BaseTracker, "track_until_forced_exit") as mock_base:
+            tracker.track_until_forced_exit()
+
+        # Verify base method was called with instance's freq_write
+        mock_base.assert_called_once_with(7)
+
+    def test_track_until_forced_exit_final_operations_file_output(self, output_file):
+        """Test final operations create actual file output."""
+        reader = MockReader(read_return_value=[10, 20])
+        tracker = Tracker(
+            reader, dt_read=0.01, freq_write=100, output=output_file
+        )  # High freq to avoid periodic writes
+
+        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+            tracker.track_until_forced_exit()
+
+        # File should exist and have both header and some data
+        assert os.path.exists(output_file)
+        with open(output_file, "r") as f:
+            content = f.read()
+            assert "# timestamp" in content  # Header
+            # Should have at least one data line from final operations
+
 
 class TestTrackerArray:
     """Test cases for TrackerArray class."""
@@ -496,6 +619,43 @@ class TestTrackerArray:
         # Check that files were created
         for output in outputs:
             assert os.path.exists(output)
+
+    def test_track_until_forced_exit_writes_headers_for_all_trackers(self, temp_dir):
+        """Test TrackerArray writes headers for all its child trackers."""
+        readers = [MockReader(), MockReader()]
+        outputs = [os.path.join(temp_dir, f"array_test_{i}.log") for i in range(2)]
+        tracker_array = TrackerArray(
+            readers, dt_read=0.01, freq_write=5, outputs=outputs
+        )  # type: ignore
+
+        with patch.object(
+            tracker_array, "_read_and_sleep", side_effect=KeyboardInterrupt()
+        ):
+            tracker_array.track_until_forced_exit()
+
+        # Both output files should exist with headers
+        for output in outputs:
+            assert os.path.exists(output)
+            with open(output, "r") as f:
+                content = f.read()
+                assert content.startswith("# timestamp")
+                assert "device0[W]" in content
+                assert "device1[W]" in content
+
+    def test_track_until_forced_exit_uses_instance_freq_write(self, temp_dir):
+        """Test TrackerArray passes its instance freq_write to base class method."""
+        readers = [MockReader(), MockReader()]
+        outputs = [os.path.join(temp_dir, f"freq_test_{i}.log") for i in range(2)]
+        tracker_array = TrackerArray(
+            readers, dt_read=0.01, freq_write=9, outputs=outputs
+        )  # type: ignore
+
+        # Mock the base class method to verify correct parameter passing
+        with patch.object(BaseTracker, "track_until_forced_exit") as mock_base:
+            tracker_array.track_until_forced_exit()
+
+        # Verify base method was called with instance's freq_write
+        mock_base.assert_called_once_with(9)
 
 
 class TestIntegration:
