@@ -10,6 +10,7 @@ def _():
     import matplotlib.pyplot as plt
     import re
     import marimo as mo
+
     return align_and_concat_df, file_to_df, mo, plt, re
 
 
@@ -54,29 +55,28 @@ def _(df, mo):
 
 @app.cell
 def _(array_ui, df, plt):
-    _columns = array_ui[0].value
+    columns = array_ui[0].value
     _logy = array_ui[1].value
 
-    if _columns:
-        df[_columns].plot(style="-")
+    if columns:
+        df[columns].plot(style="-")
         plt.xlabel("time (s)")
-        plt.legend()
-        plt.show()
         if _logy:
             plt.yscale("log")
-
-        for _col in _columns:
-            print(f"{_col}:")
-            print(f"  Avg    = {df[_col].mean()}")
-            print(f"  Std    = {df[_col].std()}")
-            print(f"  Median = {df[_col].median()}")
-            print(f"  Min    = {df[_col].min()}")
-            print(f"  Max    = {df[_col].max()}")
-    return
+        plt.legend()
+        plt.show()
+    return (columns,)
 
 
 @app.cell
-def _():
+def _(columns, df):
+    for _col in columns:
+        print(f"{_col}:")
+        print(f"  Avg    = {df[_col].mean()}")
+        print(f"  Std    = {df[_col].std()}")
+        print(f"  Median = {df[_col].median()}")
+        print(f"  Min    = {df[_col].min()}")
+        print(f"  Max    = {df[_col].max()}")
     return
 
 
