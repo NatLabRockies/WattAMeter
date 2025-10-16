@@ -1,7 +1,7 @@
 import marimo
 
 __generated_with = "0.16.2"
-app = marimo.App(width="medium", auto_download=["html"])
+app = marimo.App(width="medium", auto_download=["ipynb"])
 
 
 @app.cell
@@ -10,7 +10,6 @@ def _():
     import matplotlib.pyplot as plt
     import re
     import marimo as mo
-
     return align_and_concat_df, file_to_df, mo, plt, re
 
 
@@ -62,6 +61,7 @@ def _(array_ui, df, plt):
         df[_columns].plot(style="-")
         plt.xlabel("time (s)")
         plt.legend()
+        plt.show()
         if _logy:
             plt.yscale("log")
 
@@ -72,8 +72,11 @@ def _(array_ui, df, plt):
             print(f"  Median = {df[_col].median()}")
             print(f"  Min    = {df[_col].min()}")
             print(f"  Max    = {df[_col].max()}")
+    return
 
-    plt.gca()
+
+@app.cell
+def _():
     return
 
 
