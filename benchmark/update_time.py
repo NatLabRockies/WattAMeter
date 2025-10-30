@@ -22,10 +22,10 @@ def _benchmark_metric(metric_name, get_metric_func, unit):
     """
     Helper function to benchmark a specific NVML metric.
 
-    Args:
-        metric_name: Name of the metric being benchmarked
-        get_metric_func: Function that returns the metric value
-        unit: Unit of the metric (e.g., "mW", "mJ")
+    :param metric_name: Name of the metric being benchmarked
+    :param get_metric_func: Function that returns the metric value
+    :param unit: Unit of the metric (e.g., "mW", "mJ")
+    :raises RuntimeError: If the metric cannot be read or does not update
     """
     try:
         # Test initial reading

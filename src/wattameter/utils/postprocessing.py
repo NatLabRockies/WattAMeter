@@ -33,7 +33,9 @@ def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=
         _fields = _line.split()
         _numeric_fields = [float("NAN")] * _n_fields
         _numeric_fields[0] = datetime.strptime(_fields[0], timestamp_fmt)
-        _numeric_fields[1 : len(_fields)] = [float(val) for val in _fields[1:]]
+        _numeric_fields[1 : len(_fields)] = [
+            pd.to_numeric(val, errors="raise") for val in _fields[1:]
+        ]
         _data.append(_numeric_fields)
 
     # Create dataframe

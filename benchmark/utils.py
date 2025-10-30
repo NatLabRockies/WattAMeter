@@ -62,8 +62,8 @@ def estimate_dt(
     """
     # Value and time counters
     v1 = f()
-    t1 = time.perf_counter_ns()
     logger.debug(f"Initial value: {v1}")
+    t1 = time.perf_counter_ns()
 
     # Estimate the time interval
     res = [0.0] * n_trials
@@ -79,9 +79,11 @@ def estimate_dt(
         sanity_check = 0
         while sanity_check < ntmax and v1 == v0:
             time.sleep(sleep_dt)
+
             v1 = f()
             logger.debug(f"Polled value: {v1}")
             t1 = time.perf_counter_ns()
+
             sanity_check += 1
 
         if sanity_check == ntmax:
