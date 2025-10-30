@@ -4,6 +4,23 @@ This directory contains benchmark scripts for measuring and analyzing the perfor
 
 ## Files
 
+### [overhead.py](overhead.py)
+
+A benchmarking script that measures the overhead introduced by WattAMeter when tracking power. It evaluates both static overhead (initialization and termination times) and dynamic overhead (per-measurement time) with or without stress conditions on the system.
+
+**Usage:**
+
+```bash
+python overhead.py [--stress_test {none,gpu_burn,cpu_stress}]
+```
+
+The script benchmarks:
+- **Static Overhead**: Time taken to initialize and terminate WattAMeter tracking
+- **Dynamic Overhead**: Time taken for each power measurement under different system loads:
+  - Idle system
+  - Stressed GPUs (using `gpu_burn`)
+  - Stressed CPUs (using a CPU stress function)
+
 ### [update_time.py](update_time.py)
 
 A benchmarking script that measures the frequency of updates for various NVML power and energy metrics. This script helps determine how often power readings are updated by the hardware.

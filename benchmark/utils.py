@@ -121,7 +121,7 @@ def get_gpu_burn_dir():
 
 
 def compile_gpu_burn():
-    """Compiles the gpu_burn benchmark."""
+    """Compiles the gpu_burn benchmark and returns the path to the executable."""
     import os
     import subprocess
 
@@ -136,6 +136,13 @@ def compile_gpu_burn():
     gpu_burn_dir = get_gpu_burn_dir()
     logger.info(f"Compiling gpu_burn in {gpu_burn_dir} benchmark...")
     try:
+        # Get NVIDIA compute capability
+        nvidia_cap = subprocess.check_output(
+            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+            cwd=gpu_burn_dir,
+            text=True,  # Decodes output as text
+        ).strip()
+
         subprocess.run(
             ["make", "-j4", "clean"],
             cwd=gpu_burn_dir,
@@ -144,7 +151,7 @@ def compile_gpu_burn():
             stderr=subprocess.PIPE,
         )
         subprocess.run(
-            ["make", "-j4", "CUDAPATH=" + cuda_home],
+            ["make", "-j4", "CUDAPATH=" + cuda_home, "COMPUTE=" + nvidia_cap],
             cwd=gpu_burn_dir,
             check=True,
             stdout=subprocess.PIPE,
