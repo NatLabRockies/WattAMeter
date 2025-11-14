@@ -21,19 +21,6 @@ main() {
     FREQ_WRITE=3600
     LOG_LEVEL="warning"
 
-    # Find the WattAMeter CLI tool
-    if ! command -v wattameter 2>&1 >/dev/null; then
-        SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-        if [ -f "${SCRIPTPATH}/../cli/main.py" ]; then
-            WATTAMETER="python ${SCRIPTPATH}/../cli/main.py"
-        else
-            echo "WattAMeter CLI not found. Please ensure it is installed and available in the path."
-            exit 1
-        fi
-    else
-        WATTAMETER=$(command -v wattameter)
-    fi
-
     # Usage function to display help
     usage() {
         echo "Usage: $0 [-i run_id] [-t dt_read] [-f freq_write] [-l log_level]"
@@ -60,7 +47,7 @@ main() {
     echo "Logging execution on ${NODE} to ${log_file}"
 
     # Start the power series tracking and log the output
-    ${WATTAMETER} \
+    wattameter \
         --suffix "${RUN_ID}-${NODE}" \
         --id "${RUN_ID}" \
         --dt-read "${DT_READ}" \
