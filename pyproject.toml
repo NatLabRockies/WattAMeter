@@ -1,6 +1,6 @@
 [project]
 name = "wattameter"
-version = "0.7.1"
+version = "0.7.2"
 description = "Python package for monitoring and recording power usage, energy consumption, and performance metrics from hardware components such as GPUs and CPUs"
 authors = [
     {name = "Weslley da Silva Pereira", email = "wdasilv@nrel.gov"},
