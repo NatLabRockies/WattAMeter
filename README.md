@@ -67,28 +67,22 @@ wattameter --suffix test --id 0 --dt-read 0.1 --freq-write 600 --log-level info
 
 ### Command-line interface with SLURM
 
-For asynchronous usage with SLURM, we recommend using [wattameter.sh](src/wattameter/utils/wattameter.sh). Follow the example [examples/slurm.sh](examples/slurm.sh), i.e.,
+For usage within SLURM jobs, we recommend using our utility functions `start_wattameter` and `stop_wattameter` in [slurm.sh](src/wattameter/utils/slurm.sh). Follow the example [examples/slurm.sh](examples/slurm.sh), i.e.,
 
 ```bash
-#SBATCH --signal=USR1@0 # Send USR1 signal at the end of the job to stop wattameter
-
-# Load Python environment with wattameter installed...
-
-# Get the path of the wattameter script
+# In a Python environment with wattameter installed,
+# load wattameter slurm utilities
 WATTAPATH=$(python -c 'import wattameter; import os; print(os.path.dirname(wattameter.__file__))')
-WATTASCRIPT="${WATTAPATH}/utils/wattameter.sh"
-WATTAWAIT="${WATTAPATH}/utils/wattawait.sh"
+source "${WATTAPATH}/utils/slurm.sh"
 
 # Run wattameter on all nodes
-srun --overlap --wait=0 --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTAWAIT}" $SLURM_JOB_ID &
-WAIT_PID=$!
-srun --overlap --wait=0 --output=slurm-$SLURM_JOB_ID-wattameter.txt --nodes=$SLURM_JOB_NUM_NODES --ntasks-per-node=1 "${WATTASCRIPT}" -i $SLURM_JOB_ID & # Use other options here as needed
-wait $WAIT_PID
+start_wattameter
 
-# Run your script here...
+# Input your job commands here
+# ...
 
-# Cancel the job to stop wattameter
-scancel $SLURM_JOB_ID
+# Stop wattameter on all nodes
+stop_wattameter
 ```
 
 All options are the same as the regular command-line interface. The script will automatically handle the output file naming based on the provided SLURM_JOB_ID and node information.

@@ -15,7 +15,7 @@ import argparse
 
 def main():
     # Register the signals to handle forced exit
-    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGUSR1, signal.SIGHUP):
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
         signal.signal(sig, handle_signal)
 
     # Parse command line arguments
@@ -82,6 +82,10 @@ def main():
         tracker0.track_until_forced_exit()
     except ForcedExit:
         logging.info("Forced exit detected. Stopping tracker...")
+
+        # Ignore further signals during cleanup
+        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            signal.signal(sig, signal.SIG_IGN)
     finally:
         tracker0.write()
         tracker1.stop(freq_write=args.freq_write)

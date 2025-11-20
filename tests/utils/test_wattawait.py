@@ -31,10 +31,12 @@ async def test_wattawait_waits_for_file_creation(temp_dir):
     assert not log_file_path.exists()
 
     # Start wattawait.sh in the background
+    # New syntax: wattawait.sh [-q] [-f filepath] ID
     proc = await asyncio.create_subprocess_exec(
         script_path,
-        "42",  # Arbitrary ID to pass to the script
+        "-f",
         str(log_file_path),
+        "42",  # Arbitrary ID to pass to the script
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
@@ -80,10 +82,12 @@ async def test_wattawait_waits_for_file_update(temp_dir):
     await asyncio.sleep(2)
 
     # Start wattawait.sh in the background
+    # New syntax: wattawait.sh [-q] [-f filepath] ID
     proc = await asyncio.create_subprocess_exec(
         script_path,
-        "42",  # Arbitrary ID to pass to the script
+        "-f",
         str(log_file_path),
+        "42",  # Arbitrary ID to pass to the script
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

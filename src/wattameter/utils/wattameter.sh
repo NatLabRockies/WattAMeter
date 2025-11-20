@@ -5,76 +5,78 @@
 # This script is used to run the WattAMeter CLI tool for power tracking.
 # It captures the output and PID of the process, allowing for graceful termination on timeout.
 
-get_log_file_name() {
-    NODE=$(hostname)
-    if [ -z "${RUN_ID}" ]; then
-        echo "wattameter-${NODE}.txt"
-    else
-        echo "wattameter-${RUN_ID}-${NODE}.txt"
-    fi
+# Usage function to display help
+usage() {
+    echo "Usage: $0 [-i|--index run_id] [-s|--suffix suffix] [-q|--quiet] [wattameter-options]"
+    echo "-i, --id    run_id  : Specify a run identifier for this WattAMeter instance"
+    echo "-s, --suffix suffix : Specify a custom suffix for log file naming"
+    echo "-q, --quiet         : Quiet mode; suppress startup messages"
+    echo "-h, --help          : Display this help message"
+    echo "wattameter-options  : Additional options to pass to the wattameter command"
+    echo ""
+    echo "Note: Default suffix is hostname."
+    echo "      If --id is provided, default suffix becomes run_id-hostname."
+    exit 0
 }
 
 main() {
-    # Default values
-    RUN_ID=""
-    DT_READ=1
-    FREQ_WRITE=3600
-    LOG_LEVEL="warning"
+    # Get the hostname of the current node
+    local NODE=$(hostname)
 
-    # Usage function to display help
-    usage() {
-        echo "Usage: $0 [-i run_id] [-t dt_read] [-f freq_write] [-l log_level]"
-        exit 1
-    }
-
-    # Parse command line options
-    while getopts ":i:t:f:l:" opt; do
-        case $opt in
-            i) RUN_ID="$OPTARG" ;;
-            t) DT_READ="$OPTARG" ;;
-            f) FREQ_WRITE="$OPTARG" ;;
-            l) LOG_LEVEL="$OPTARG" ;;
-            \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
-            :) echo "Option -$OPTARG requires an argument." >&2; usage ;;
+    # Parse arguments manually
+    local RUN_ID=""
+    local SUFFIX=${NODE}
+    local CUSTOM_SUFFIX=false
+    local QUIET=false
+    local EXTRA_ARGS=()
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -i|--id) RUN_ID="$2"; shift 2 ;;
+            -s|--suffix) SUFFIX="$2"; CUSTOM_SUFFIX=true; shift 2 ;;
+            -q|--quiet) QUIET=true; shift ;;
+            -h|--help) usage ;;
+            *) EXTRA_ARGS+=("$1"); shift ;;
         esac
     done
+    set -- "${EXTRA_ARGS[@]}"  # Restore positional parameters
 
-    # Get the hostname of the current node
-    NODE=$(hostname)
+    # Determine suffix based on flags
+    if [[ "$CUSTOM_SUFFIX" = false && -n "${RUN_ID}" ]]; then
+        SUFFIX="${RUN_ID}-${NODE}"
+    fi
 
-    # Use the log identifier name if provided
-    log_file=$(get_log_file_name)
-    echo "Logging execution on ${NODE} to ${log_file}"
+    # Set log file name
+    local log_file="wattameter-${SUFFIX}.txt"
+    if [[ "${QUIET}" = false ]]; then
+        echo "Logging execution on ${NODE} to ${log_file}"
+    fi
+
+    # Build wattameter command arguments
+    local WATTAMETER_ARGS="--suffix ${SUFFIX}"
+    if [ -n "${RUN_ID}" ]; then
+        WATTAMETER_ARGS="${WATTAMETER_ARGS} --id ${RUN_ID}"
+    fi
 
     # Start the power series tracking and log the output
-    wattameter \
-        --suffix "${RUN_ID}-${NODE}" \
-        --id "${RUN_ID}" \
-        --dt-read "${DT_READ}" \
-        --freq-write "${FREQ_WRITE}" \
-        --log-level "${LOG_LEVEL}" > "${log_file}" 2>&1 &
-    WATTAMETER_PID=$!
+    wattameter ${WATTAMETER_ARGS} "$@" > "${log_file}" 2>&1 &
+    local WATTAMETER_PID=$!
 
     # Gracefully terminates the tracking process on exit.
-    SIGNAL=""
+    local SIGNAL=""
     on_exit() {
-        echo "WattAMeter interrupted on ${NODE} by signal ${SIGNAL}. Terminating..."
-        if [ -n "$EXITING" ]; then
-            return
-        fi
-        EXITING=1
-        kill -TERM "$WATTAMETER_PID" 2>/dev/null
+        local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+        echo "${TIMESTAMP}: WattAMeter interrupted on ${NODE} by signal ${SIGNAL}. Terminating..."
+
+        # Interrupt the WattAMeter process
+        kill -INT "$WATTAMETER_PID" 2>/dev/null
         wait "$WATTAMETER_PID" 2>/dev/null
-        while kill -0 "$WATTAMETER_PID" 2>/dev/null; do
-            sleep 1
-        done
-        echo "WattAMeter has been terminated on node ${NODE}."
+
+        local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
+        echo "${TIMESTAMP}: WattAMeter has been terminated on node ${NODE}."
     }
     trap 'SIGNAL=INT; on_exit' INT
     trap 'SIGNAL=TERM; on_exit' TERM
     trap 'SIGNAL=HUP; on_exit' HUP
-    trap 'SIGNAL=USR1; on_exit' USR1
-    trap 'echo "WattAMeter exiting on ${NODE}..."' EXIT
 
     # Wait for the WattAMeter process to finish
     wait "$WATTAMETER_PID"

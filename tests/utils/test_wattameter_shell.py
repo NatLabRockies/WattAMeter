@@ -31,18 +31,12 @@ def test_wattameter_sh_execution_and_termination(temp_dir):
 
     run_id = "pytest_shell_test"
 
-    # Determine the log file name by sourcing the script and calling the function
-    command = f"source {script_path}; RUN_ID='{run_id}'; get_log_file_name"
-    process = subprocess.run(
-        command,
-        shell=True,
-        capture_output=True,
-        text=True,
-        check=True,
-        executable="/bin/bash",
-        cwd=temp_dir,
-    )
-    log_file_name = process.stdout.strip()
+    # With the new script, when -i is provided, the log file will be:
+    # wattameter-{run_id}-{hostname}.txt
+    import socket
+
+    hostname = socket.gethostname()
+    log_file_name = f"wattameter-{run_id}-{hostname}.txt"
     log_file_path = temp_dir / log_file_name
 
     # Start the script as a background process
@@ -87,4 +81,3 @@ def test_wattameter_sh_execution_and_termination(temp_dir):
     stdout_str = stdout.decode()
     assert "WattAMeter interrupted" in stdout_str
     assert "WattAMeter has been terminated" in stdout_str
-    assert "WattAMeter exiting" in stdout_str
