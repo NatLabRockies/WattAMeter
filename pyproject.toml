@@ -1,6 +1,10 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
 [project]
 name = "wattameter"
-version = "0.7.2"
+dynamic = ["version"]
 description = "Python package for monitoring and recording power usage, energy consumption, and performance metrics from hardware components such as GPUs and CPUs"
 authors = [
     {name = "Weslley da Silva Pereira", email = "wdasilv@nrel.gov"},
@@ -72,6 +76,10 @@ includes = ["src/wattameter/utils/*.sh"]
 
 [tool.pdm.scripts]
 devwattameter = { call = "wattameter.cli.main:main" }
+
+[tool.pdm.version]
+source = "scm"
+tag_filter = "v[0-9]*"
 
 [tool.pytest.ini_options]
 markers = [
