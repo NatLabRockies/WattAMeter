@@ -70,6 +70,9 @@ main() {
         # Interrupt the WattAMeter process
         kill -INT "$WATTAMETER_PID" 2>/dev/null
         wait "$WATTAMETER_PID" 2>/dev/null
+        while kill -0 "$WATTAMETER_PID" 2>/dev/null; do
+            sleep 0.1
+        done
 
         local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
         echo "${TIMESTAMP}: WattAMeter has been terminated on node ${NODE}."
