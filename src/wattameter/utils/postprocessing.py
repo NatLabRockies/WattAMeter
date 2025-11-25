@@ -6,7 +6,7 @@ import pandas as pd
 from collections import deque
 
 
-def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=2):
+def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=1):
     """Convert an output file from Wattameter Tracker to a pandas DataFrame.
 
     :param f: Open file object to read from.
