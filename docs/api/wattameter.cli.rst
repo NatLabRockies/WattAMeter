@@ -19,11 +19,3 @@ wattameter.cli.utils module
    :members:
    :show-inheritance:
    :undoc-members:
-
-Module contents
----------------
-
-.. automodule:: wattameter.cli
-   :members:
-   :show-inheritance:
-   :undoc-members:

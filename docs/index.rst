@@ -3,6 +3,6 @@ WattAMeter Documentation
 
 .. toctree::
    :maxdepth: 2
-   :caption: API
+   :caption: API Reference
 
    api/modules

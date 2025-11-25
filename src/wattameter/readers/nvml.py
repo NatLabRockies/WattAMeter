@@ -33,10 +33,6 @@ class DataThroughput(Quantity):
 class NVMLReader(BaseReader):
     """Reader for NVIDIA Management Library (NVML) to monitor GPU
 
-    .. attribute:: UNITS
-
-        Dictionary of measurement units for physical quantities.
-
     .. attribute:: devices
 
         List of NVML device handles for available GPUs.
@@ -48,7 +44,7 @@ class NVMLReader(BaseReader):
         Temperature: Celsius(),
         Power: Watt("m"),
         DataThroughput: Byte("Ki"),
-    }
+    }  #: Dictionary of measurement units for physical quantities.
 
     def __init__(self, quantities=(Power,)) -> None:
         super().__init__(quantities)

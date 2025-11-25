@@ -21,11 +21,3 @@ wattameter.tracker module
    :members:
    :show-inheritance:
    :undoc-members:
-
-Module contents
----------------
-
-.. automodule:: wattameter
-   :members:
-   :show-inheritance:
-   :undoc-members:

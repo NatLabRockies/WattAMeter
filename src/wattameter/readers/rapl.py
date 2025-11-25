@@ -60,10 +60,6 @@ class RAPLDevice(BaseReader):
 
     :param rapl_device_path: Path to the RAPL device directory.
 
-    .. attribute:: UNITS
-
-        Dictionary of measurement units for physical quantities.
-
     .. attribute:: path
 
         Path to the RAPL device directory, typically under /sys/class/powercap/intel-rapl.

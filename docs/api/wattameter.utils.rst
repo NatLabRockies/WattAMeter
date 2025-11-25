@@ -11,11 +11,3 @@ wattameter.utils.postprocessing module
    :members:
    :show-inheritance:
    :undoc-members:
-
-Module contents
----------------
-
-.. automodule:: wattameter.utils
-   :members:
-   :show-inheritance:
-   :undoc-members:

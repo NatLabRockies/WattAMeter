@@ -35,11 +35,3 @@ wattameter.readers.utils module
    :members:
    :show-inheritance:
    :undoc-members:
-
-Module contents
----------------
-
-.. automodule:: wattameter.readers
-   :members:
-   :show-inheritance:
-   :undoc-members:
