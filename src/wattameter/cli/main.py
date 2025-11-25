@@ -3,83 +3,95 @@
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 
 from ..tracker import TrackerArray, Tracker
-from ..readers import NVMLReader, RAPLReader
-from ..readers import Power, Temperature, DataThroughput, Utilization
+from ..readers import NVMLReader, RAPLReader, Power
 from .utils import powerlog_filename, ForcedExit, handle_signal, default_cli_arguments
 
 import signal
 import time
 import logging
 import argparse
+from datetime import datetime
 
 
-def main():
+def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
     # Register the signals to handle forced exit
     for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
         signal.signal(sig, handle_signal)
 
     # Parse command line arguments
-    parser = argparse.ArgumentParser(description="Track power over time.")
+    parser = argparse.ArgumentParser(description="WattAMeter CLI")
     default_cli_arguments(parser)
     args = parser.parse_args()
 
     # Set up logging
     logging.basicConfig(level=args.log_level.upper())
 
-    # Initialize readers and outputs
+    # Initialize base output filename
     base_output_filename = powerlog_filename(args.suffix)
-    readers = [NVMLReader((Power, Temperature)), RAPLReader()]
-    outputs = [f"nvml_{base_output_filename}", f"rapl_{base_output_filename}"]
+    all_outputs = [base_output_filename]
 
-    # Filter out readers with no tags and their corresponding outputs
-    filtered_data = [
-        (reader, output)
-        for reader, output in zip(readers, outputs)
-        if len(reader.tags) > 0
-    ]
-    readers = [reader for reader, output in filtered_data]
-    outputs = [output for reader, output in filtered_data]
+    # Use default tracker configuration if user provides none
+    tracker_specs = (
+        args.tracker if args.tracker else [(0.1, [NVMLReader((Power,)), RAPLReader()])]
+    )
 
-    if not readers:
+    # Create trackers based on specifications
+    trackers = []
+    for idx, (dt_read, r_list) in enumerate(tracker_specs):
+        # Filter out readers with no tags
+        readers = [r for r in r_list if len(r.tags) > 0]
+        if not readers:
+            logging.warning(
+                f"Tracker specification {idx} has no valid readers. Skipping."
+            )
+            continue
+
+        # Generate unique output filenames for each reader
+        output_tags = [
+            f"{reader.__class__.__name__.lower()[0:4]}_{str(dt_read).replace('.', '')}"
+            for reader in readers
+        ]
+        for i, tag in enumerate(output_tags):
+            # Count occurrences using substring match
+            count = sum(1 for existing_tag in all_outputs if tag in existing_tag)
+            if count > 0:
+                output_tags[i] = f"{tag}_{count}"
+        outputs = [f"{tag}_{base_output_filename}" for tag in output_tags]
+        all_outputs.extend(outputs)
+
+        if len(readers) == 1:
+            tracker = Tracker(
+                reader=readers[0],
+                dt_read=dt_read,
+                freq_write=args.freq_write,
+                output=outputs[0],
+            )
+        else:
+            tracker = TrackerArray(
+                readers,
+                dt_read=dt_read,
+                freq_write=args.freq_write,
+                outputs=outputs,
+            )
+        trackers.append(tracker)
+
+    if not trackers:
         logging.error("No valid readers available. Exiting.")
         return
 
-    # Initialize the trackers
-    tracker0 = TrackerArray(
-        readers, dt_read=args.dt_read, freq_write=args.freq_write, outputs=outputs
-    )
-    tracker1 = Tracker(
-        reader=NVMLReader((Utilization,)),
-        dt_read=1.0,
-        freq_write=args.freq_write,
-        output=f"nvml_util_data_{base_output_filename}",
-    )
-
-    # Record the start time
+    # Signal wattameter is starting
     t0 = time.time_ns()
-
-    # Signal that the tracker is starting
-    with open(base_output_filename, "a") as f:
-        timestamp = tracker0.trackers[0].format_timestamp(t0)
-        f.write(f"# {timestamp} - Data for run {args.id}\n")
-        f.write(f"# {timestamp} - Tracking started\n")
-
-    # Write initial headers to all output files
-    for i in range(len(outputs)):
-        timestamp = tracker0.trackers[i].format_timestamp(t0)
-        with open(outputs[i], "a") as f:
-            f.write(f"# {timestamp} - Power data for run {args.id}\n")
-            f.write(f"# {timestamp} - Tracking started\n")
-    timestamp = tracker1.format_timestamp(t0)
-    with open(tracker1.output, "a") as f:
-        f.write(f"# {timestamp} - Utilization data for run {args.id}\n")
-        f.write(f"# {timestamp} - Tracking started\n")
+    timestamp0 = datetime.fromtimestamp(t0 / 1e9).strftime(timestamp_fmt)
+    for file in all_outputs:
+        with open(file, "a") as f:
+            f.write(f"# {timestamp0} - WattAMeter run {args.id}\n")
 
     # Repeat until interrupted
     try:
-        logging.info("Tracking power...")
-        tracker1.start(freq_write=args.freq_write)
-        tracker0.track_until_forced_exit()
+        logging.info("Tracking with WattAMeter...")
+        for t in trackers[:-1]:
+            t.start(freq_write=args.freq_write)
+        trackers[-1].track_until_forced_exit()
     except ForcedExit:
         logging.info("Forced exit detected. Stopping tracker...")
 
@@ -87,8 +99,9 @@ def main():
         for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
             signal.signal(sig, signal.SIG_IGN)
     finally:
-        tracker0.write()
-        tracker1.stop(freq_write=args.freq_write)
+        for t in trackers[:-1]:
+            t.stop(freq_write=args.freq_write)
+        trackers[-1].write()
         t1 = time.time_ns()
         elapsed_s = (t1 - t0) * 1e-9
         logging.info(f"Tracker stopped. Elapsed time: {elapsed_s:.2f} seconds.")

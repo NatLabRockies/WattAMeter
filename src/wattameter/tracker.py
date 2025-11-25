@@ -86,7 +86,7 @@ class BaseTracker(AbstractContextManager):
         if freq_write > 0:
             self.write_header()  # Write header at the beginning
         if self._async_thread is None:
-            # Define the async task to update the power series
+            # Define the async task to update the time series
             self._stop_event = threading.Event()
             self._async_thread = threading.Thread(
                 target=self._update_series,
@@ -274,16 +274,12 @@ class Tracker(BaseTracker):
     def flush_data(self):
         """Flush all collected data from the tracker.
 
-        Aditionally, if the reader provides energy data but not power data,
-        compute the power data from the energy data.
-
         :return: A tuple containing three lists:
 
             - time_series: List of timestamps (in nanoseconds).
             - reading_time: List of time taken for each reading (in nanoseconds).
             - data: 2D array of the collected data. Each row corresponds to a reading,
-              and each column corresponds to a quantity read by the reader. If power data
-              is computed, it is appended as the last column.
+              and each column corresponds to a quantity read by the reader.
         """
         with self._lock:
             # Copy data to lists and clear the deques

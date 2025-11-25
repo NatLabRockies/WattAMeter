@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 #
-# This script is used to run the WattAMeter CLI tool for power tracking.
+# This script is used to run the WattAMeter CLI tool.
 # It captures the output and PID of the process, allowing for graceful termination on timeout.
 
 # Usage function to display help
@@ -57,7 +57,7 @@ main() {
         WATTAMETER_ARGS="${WATTAMETER_ARGS} --id ${RUN_ID}"
     fi
 
-    # Start the power series tracking and log the output
+    # Start the tracking and log the output
     wattameter ${WATTAMETER_ARGS} "$@" > "${log_file}" 2>&1 &
     local WATTAMETER_PID=$!
 

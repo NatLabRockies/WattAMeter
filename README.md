@@ -53,17 +53,17 @@ with Tracker(
 ### Command-line interface
 
 ```sh
-wattameter --suffix test --id 0 --dt-read 0.1 --freq-write 600 --log-level info
+wattameter --tracker 0.1,nvml-power,rapl --tracker 1.0,nvml-util --suffix test --id 0 --freq-write 600 --log-level info
 ```
 
-| Option       | Short | Default  | Description                                              |
-| ------------ | ----- | -------- | -------------------------------------------------------- |
-| --suffix     | -s    | None     | Suffix for output files                                  |
-| --id         | -i    | None     | Identifier for the experiment                            |
-| --dt-read    | -t    | 1        | Time interval (seconds) between readings                 |
-| --freq-write | -f    | 3600     | Frequency (# reads) for writing data to file             |
-| --log-level  | -l    | warning  | Logging level: debug, info, warning, error, critical     |
-| --help       | -h    |          | Show the help message and exit                           |
+| Option       | Short | Default             | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------ | ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --tracker    |       | 0.1,nvml-power,rapl | Tracker specification: `dt_read,metric1,metric2,...` where `dt_read` is the time interval in seconds between readings. Available metrics: `rapl` (CPU energy), `nvml-energy` (GPU energy), `nvml-power` (GPU power), `nvml-temp` (GPU temperature), `nvml-util` (GPU utilization), `nvml-nvlink` (GPU NVLink throughput). Can be specified multiple times to create multiple trackers with different configurations. |
+| --suffix     | -s    | None                | Suffix for output files                                                                                                                                                                                                                                                                                                                                                                                              |
+| --id         | -i    | UUID                | Identifier for the experiment                                                                                                                                                                                                                                                                                                                                                                                        |
+| --freq-write | -f    | 3600                | Frequency (# reads) for writing data to file                                                                                                                                                                                                                                                                                                                                                                         |
+| --log-level  | -l    | warning             | Logging level: debug, info, warning, error, critical                                                                                                                                                                                                                                                                                                                                                                 |
+| --help       | -h    |                     | Show the help message and exit                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Command-line interface with SLURM
 
@@ -90,6 +90,10 @@ All options are the same as the regular command-line interface. The script will 
 ## Contributing
 
 Contributions are welcome! Please open issues or submit pull requests.
+
+## Documentation
+
+The API documentation is available at [https://nrel.github.io/WattAMeter/](https://nrel.github.io/WattAMeter/).
 
 ## License
 
