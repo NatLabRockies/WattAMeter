@@ -15,9 +15,9 @@ import os
 import sys
 from unittest import mock
 
-from wattameter.cli.main import main
-from wattameter.utils.postprocessing import file_to_df
-from utils import compile_gpu_burn, get_gpu_burn_dir, stress_cpu
+from ..cli.main import main
+from ..utils.postprocessing import file_to_df
+from .utils import compile_gpu_burn, stress_cpu
 
 
 def benchmark_static_overhead():
@@ -68,13 +68,16 @@ def benchmark_static_overhead():
     return static_overhead
 
 
-def benchmark_dynamic_overhead(stress_test=None):
+def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
     """Call main() and let it run for a short time to measure dynamic overhead
 
     - Use a frequency of 10 Hz for writing data to disk
     - Use a temporary directory to avoid writing files to the current directory
     - Let it run for 10 seconds, then send a SIGINT to terminate
     - Mock the cli arguments to set dt_read to 0.1 seconds
+
+    :param cpu_stress_test: If True, stress the CPU during the benchmark
+    :param gpu_burn_dir: If not None, path to the gpu_burn benchmark
     """
 
     print()
@@ -105,13 +108,13 @@ def benchmark_dynamic_overhead(stress_test=None):
             print("Running for 60 seconds", end="")
 
             # Stress GPUs if gpu_burn is available
-            if stress_test == "gpu_burn":
+            if gpu_burn_dir is not None:
                 try:
-                    gpu_burn_path = compile_gpu_burn()
+                    gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
                     print("\n🔥 Starting gpu_burn to stress GPUs...")
                     gpu_burn_process = subprocess.Popen(
                         [gpu_burn_path, "3600"],
-                        cwd=get_gpu_burn_dir(),
+                        cwd=gpu_burn_dir,
                         stdout=subprocess.DEVNULL,
                         stderr=subprocess.DEVNULL,
                     )
@@ -121,7 +124,9 @@ def benchmark_dynamic_overhead(stress_test=None):
                     print(
                         f"\n⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs."
                     )
-            elif stress_test == "cpu_stress":
+
+            # Stress CPUs if requested
+            if cpu_stress_test:
                 try:
                     print("\n🔥 Starting stressing CPUs...")
                     cpu_stress_process = multiprocessing.Process(target=stress_cpu)
@@ -198,7 +203,7 @@ def benchmark_dynamic_overhead(stress_test=None):
             os.chdir(original_cwd)
 
 
-if __name__ == "__main__":
+def run_benchmark():
     import argparse
 
     logging.basicConfig(level=logging.INFO)
@@ -209,15 +214,21 @@ if __name__ == "__main__":
         description="Benchmark the overhead of using WattAMeter"
     )
     parser.add_argument(
-        "--stress-test",
-        choices=[None, "gpu_burn", "cpu_stress"],
+        "--cpu-stress-test",
+        type=bool,
+        default=False,
+        help="If True, stress the CPU during the dynamic overhead benchmark",
+    )
+    parser.add_argument(
+        "--gpu-burn-dir",
+        type=str,
         default=None,
-        help="Type of stress test to run during the dynamic overhead benchmark",
+        help="If provided, path to the gpu_burn benchmark to stress GPUs during the dynamic overhead benchmark",
     )
     args = parser.parse_args()
 
     benchmark_static_overhead()
-    benchmark_dynamic_overhead(stress_test=args.stress_test)
+    benchmark_dynamic_overhead(args.stress_test, args.gpu_burn_dir)
 
     print()
     print("=" * 60)
@@ -228,3 +239,7 @@ if __name__ == "__main__":
     print("  - Hardware specifications")
     print("  - Available power monitoring interfaces")
     print("  - Background processes")
+
+
+if __name__ == "__main__":
+    run_benchmark()  # Call the benchmark runner

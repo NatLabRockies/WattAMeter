@@ -4,7 +4,7 @@
 """
 Frequency of Update Benchmark Script for WattAMeter
 
-This script measures the frequency of updates for the CodeCarbonTracker.
+This script measures the frequency of updates for different metrics.
 Since update frequency measurements are machine-dependent, this script is provided
 as an example rather than as a test.
 
@@ -12,7 +12,7 @@ Usage:
     python update_time.py
 """
 
-from utils import estimate_dt, compile_gpu_burn, get_gpu_burn_dir, stress_cpu
+from .utils import estimate_dt, compile_gpu_burn, stress_cpu
 import numpy as np
 import logging
 import time
@@ -70,7 +70,7 @@ def _benchmark_metric(metric_name, get_metric_func, unit):
         )
 
 
-def benchmark_pynvml_update_time():
+def benchmark_pynvml_update_time(gpu_burn_dir=None):
     """Benchmarks the update time of pynvml nvmlDeviceGetPowerUsage function using estimate_dt()."""
     print("\n" + "=" * 60)
     print("PYNVML POWER USAGE UPDATE TIME BENCHMARK")
@@ -102,21 +102,22 @@ def benchmark_pynvml_update_time():
             return
 
         # Stress GPUs if gpu_burn is available
-        try:
-            import subprocess
+        if gpu_burn_dir is not None:
+            try:
+                import subprocess
 
-            gpu_burn_path = compile_gpu_burn()
-            print("🔥 Starting gpu_burn to stress GPUs...")
-            gpu_burn_process = subprocess.Popen(
-                [gpu_burn_path, "3600"],
-                cwd=get_gpu_burn_dir(),
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            time.sleep(10)  # Give it some time to start
-            print("✅ gpu_burn started successfully")
-        except Exception as e:
-            print(f"⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs.")
+                gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
+                print("🔥 Starting gpu_burn to stress GPUs...")
+                gpu_burn_process = subprocess.Popen(
+                    [gpu_burn_path, "3600"],
+                    cwd=gpu_burn_dir,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                time.sleep(10)  # Give it some time to start
+                print("✅ gpu_burn started successfully")
+            except Exception as e:
+                print(f"⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs.")
 
         # Benchmark each GPU
         for gpu_id in range(device_count):
@@ -263,14 +264,27 @@ def benchmark_rapl_update_time():
         print("✅ CPU stress process terminated")
 
 
-if __name__ == "__main__":
+def run_benchmark():
+    import argparse
+
     logging.basicConfig(level=logging.INFO)
 
     print("WattAMeter Frequency of Update Benchmark")
     print("This script measures the frequency of update in different devices.")
     print("Results are machine-dependent and should be used for reference only.\n")
 
-    benchmark_pynvml_update_time()
+    parser = argparse.ArgumentParser(
+        description="Benchmark the frequency of update of various WattAMeter components"
+    )
+    parser.add_argument(
+        "--gpu-burn-dir",
+        type=str,
+        default=None,
+        help="If provided, path to the gpu_burn benchmark to stress GPUs during the NVML update time benchmark",
+    )
+    args = parser.parse_args()
+
+    benchmark_pynvml_update_time(gpu_burn_dir=args.gpu_burn_dir)
     benchmark_rapl_update_time()
 
     print("\n" + "=" * 60)
@@ -281,3 +295,7 @@ if __name__ == "__main__":
     print("- System load")
     print("- Available power monitoring interfaces")
     print("- Background processes")
+
+
+if __name__ == "__main__":
+    run_benchmark()  # Call the benchmark runner

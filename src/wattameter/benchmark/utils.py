@@ -104,6 +104,8 @@ def stress_cpu(n: int = 9999):
     """Function to stress the CPU by performing large matrix multiplications.
 
     https://www.reddit.com/r/overclocking/comments/1ckvr0w/comment/l2psl0j/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
+
+    :param n: Number of matrix multiplications to perform.
     """
     import numpy as np
 
@@ -113,52 +115,46 @@ def stress_cpu(n: int = 9999):
         np.linalg.norm(np.dot(m1, m2))
 
 
-def get_gpu_burn_dir():
-    """Returns the path to the gpu_burn benchmark directory."""
-    import os
+def compile_gpu_burn(gpu_burn_dir):
+    """Compiles the gpu_burn benchmark and returns the path to the executable.
 
-    return os.path.join(os.path.dirname(__file__), "gpu-burn")
-
-
-def compile_gpu_burn():
-    """Compiles the gpu_burn benchmark and returns the path to the executable."""
+    :param gpu_burn_dir: Path to the gpu_burn benchmark directory.
+    :return: Path to the compiled gpu_burn executable.
+    """
     import os
     import subprocess
 
     # Check CUDA_HOME
     cuda_home = os.environ.get("CUDA_HOME") or os.environ.get("CUDA_PATH")
-    if not cuda_home:
-        logger.warning(
-            "CUDA_HOME or CUDA_PATH environment variable not set. Skipping gpu_burn compilation."
-        )
-        return ""
+    if not cuda_home or cuda_home == "":
+        logger.warning("CUDA_HOME or CUDA_PATH environment variable not set.")
+        cuda_home = ""
+    else:
+        cuda_home = "CUDAPATH=" + cuda_home
 
-    gpu_burn_dir = get_gpu_burn_dir()
+    # Get NVIDIA compute capability
+    nvidia_cap = subprocess.check_output(
+        ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
+        cwd=gpu_burn_dir,
+        text=True,  # Decodes output as text
+    ).strip()
+
+    # Compile gpu_burn
     logger.info(f"Compiling gpu_burn in {gpu_burn_dir} benchmark...")
-    try:
-        # Get NVIDIA compute capability
-        nvidia_cap = subprocess.check_output(
-            ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
-            cwd=gpu_burn_dir,
-            text=True,  # Decodes output as text
-        ).strip()
+    subprocess.run(
+        ["make", "-j4", "clean"],
+        cwd=gpu_burn_dir,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    subprocess.run(
+        ["make", "-j4", cuda_home, "COMPUTE=" + nvidia_cap],
+        cwd=gpu_burn_dir,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
-        subprocess.run(
-            ["make", "-j4", "clean"],
-            cwd=gpu_burn_dir,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        subprocess.run(
-            ["make", "-j4", "CUDAPATH=" + cuda_home, "COMPUTE=" + nvidia_cap],
-            cwd=gpu_burn_dir,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        logger.info("gpu_burn compiled successfully.")
-    except subprocess.CalledProcessError as e:
-        logger.error(f"Failed to compile gpu_burn: {e.stderr.decode()}")
-
+    logger.info("gpu_burn compiled successfully.")
     return os.path.join(gpu_burn_dir, "gpu_burn")

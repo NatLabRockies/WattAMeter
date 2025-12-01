@@ -13,3 +13,7 @@ An SBATCH script for running `wattameter` jobs on a SLURM-managed cluster. This 
 ```bash
 sbatch slurm.sh
 ```
+
+### [sleep.ipynb](sleep.ipynb)
+
+A Jupyter notebook that measures the error between requested sleep times and actual sleep durations. This helps understand the precision of sleep functions in Python.

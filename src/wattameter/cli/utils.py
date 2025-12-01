@@ -109,17 +109,6 @@ def print_powerlog_filename(id=None):
     print(powerlog_filename(id))
 
 
-def emissions_filename(suffix=None):
-    """Generate an emissions filename based on the ID."""
-    suffix = f"_{suffix}" if suffix is not None else _suffix()
-    return f"wattameter_emmisions{suffix}.csv"
-
-
-def print_emissions_filename(id=None):
-    """Print the emissions filename based on the ID."""
-    print(emissions_filename(id))
-
-
 def default_cli_arguments(parser: argparse.ArgumentParser):
     """Add common command line arguments to the parser."""
     parser.add_argument(

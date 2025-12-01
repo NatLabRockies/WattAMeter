@@ -11,10 +11,17 @@ A benchmarking script that measures the overhead introduced by WattAMeter when t
 **Usage:**
 
 ```bash
-python overhead.py [--stress_test {none,gpu_burn,cpu_stress}]
+python overhead.py [--cpu_stress_test CPU_STRESS_TEST] [--gpu_burn_dir GPU_BURN_DIR]
+```
+
+or, if WattAMeter is installed as a package:
+
+```bash
+wattameter_benchmark_overhead [--cpu_stress_test CPU_STRESS_TEST] [--gpu_burn_dir GPU_BURN_DIR]
 ```
 
 The script benchmarks:
+
 - **Static Overhead**: Time taken to initialize and terminate WattAMeter tracking
 - **Dynamic Overhead**: Time taken for each power measurement under different system loads:
   - Idle system
@@ -23,12 +30,18 @@ The script benchmarks:
 
 ### [update_time.py](update_time.py)
 
-A benchmarking script that measures the frequency of updates for various NVML power and energy metrics. This script helps determine how often power readings are updated by the hardware.
+A benchmarking script that measures the frequency of updates for various power and energy metrics. This script helps determine how often power readings are updated by the hardware.
 
 **Usage:**
 
 ```bash
-python update_time.py
+python update_time.py [--gpu_burn_dir GPU_BURN_DIR]
+```
+
+or, if WattAMeter is installed as a package:
+
+```bash
+wattameter_benchmark_dt [--gpu_burn_dir GPU_BURN_DIR]
 ```
 
 The script benchmarks:
@@ -39,34 +52,6 @@ The script benchmarks:
 - **Temperature**: Update frequency of `nvmlDeviceGetTemperature`
 
 Results include estimated update intervals and frequencies for each available GPU.
-
-### [main.py](main.py)
-
-Main benchmark runner that can execute multiple benchmark scripts.
-
-### [utils.py](utils.py)
-
-Utility functions shared across benchmark scripts.
-
-### [sleep.ipynb](sleep.ipynb)
-
-A Jupyter notebook that measures the error between requested sleep times and actual sleep durations. This helps understand the precision of sleep functions in Python.
-
-## Running Benchmarks
-
-Run any of the benchmark scripts directly:
-
-```bash
-cd benchmark
-python overhead.py
-python update_time.py
-```
-
-Or use the main runner:
-
-```bash
-python main.py
-```
 
 ## Notes
 
