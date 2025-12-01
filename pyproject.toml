@@ -11,7 +11,6 @@ authors = [
 ]
 dependencies = [
     "nvidia-ml-py",
-    "pandas",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -60,6 +59,9 @@ docs = [
     "sphinx",
     "sphinx-autodoc-typehints",
     "sphinx-rtd-theme>=3.0.2",
+]
+postprocessing = [
+    "pandas",
 ]
 [dependency-groups]
 example = [

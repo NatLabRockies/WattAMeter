@@ -7,13 +7,15 @@ This module tests the postprocessing utility functions:
 """
 
 import pytest
-import pandas as pd
 from datetime import datetime
 from io import StringIO
 import tempfile
 import os
 import sys
 import importlib.util
+
+# Skip this test module if pandas is not available
+pd = pytest.importorskip("pandas")
 
 # Add the src directory to the path so we can import our module
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))

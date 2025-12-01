@@ -21,6 +21,16 @@ You can install **wattameter** via pip:
 pip install wattameter
 ```
 
+## Optional extras
+
+Some features (notably the post-processing utilities that use `pandas`) are optional and not required for the core runtime. To enable post-processing functionality, install the optional extra:
+
+```bash
+pip install '.[postprocessing]'
+# or just
+pip install pandas
+```
+
 ## Usage
 
 ### As a Python module

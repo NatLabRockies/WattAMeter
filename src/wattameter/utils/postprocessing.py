@@ -2,8 +2,19 @@
 # SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
 
 from datetime import datetime
-import pandas as pd
 from collections import deque
+
+
+def _get_pandas():
+    try:
+        import pandas as pd
+    except Exception as exc:  # pragma: no cover - error path
+        raise ImportError(
+            "WattAMeter optional dependency 'pandas' is required for postprocessing. "
+            "Install it with `pip install wattameter[postprocessing]` or `pip install pandas`. "
+            f"Original error: {exc}"
+        )
+    return pd
 
 
 def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=1):
@@ -15,6 +26,8 @@ def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=
         file.
     :param skip_lines: Number of lines to skip at the beginning of the file.
     """
+
+    pd = _get_pandas()
 
     # Skip header lines
     for _ in range(skip_lines):
@@ -58,6 +71,8 @@ def align_and_concat_df(_list_df, dt=None, start_at_0=False):
         use time stamps that start at a common start time among the dataframes.
     :return: A single pandas DataFrame with aligned time index and combined data.
     """
+
+    pd = _get_pandas()
 
     # Compute average dt
     if dt is None:

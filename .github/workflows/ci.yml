@@ -32,6 +32,7 @@ jobs:
           pdm config python.use_venv false
       - name: Install dependencies
         run: |
+          pdm install -G postprocessing
           pdm install -G test
           pdm install -G example
       - name: Run tests
