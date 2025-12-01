@@ -1,5 +1,8 @@
-WattAMeter Documentation
-========================
+.. image:: _static/wattameter-logo.png
+   :alt: WattAMeter Logo
+   :width: 400px
+
+|
 
 .. toctree::
    :maxdepth: 2

@@ -10,6 +10,7 @@ Subpackages
    wattameter.cli
    wattameter.readers
    wattameter.utils
+   wattameter.benchmark
 
 Submodules
 ----------

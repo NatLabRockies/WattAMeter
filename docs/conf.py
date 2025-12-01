@@ -51,3 +51,13 @@ typehints_defaults = "braces-after"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
+
+# Copy logo from root to _static
+logo_src = os.path.abspath(os.path.join("..", "wattameter_logo.png"))
+logo_dst = os.path.abspath(os.path.join(html_static_path[0], "wattameter-logo.png"))
+if os.path.exists(logo_src) and not os.path.exists(logo_dst):
+    import shutil
+
+    os.makedirs(os.path.dirname(logo_dst), exist_ok=True)
+    shutil.copyfile(logo_src, logo_dst)

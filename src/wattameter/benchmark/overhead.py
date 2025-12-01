@@ -15,8 +15,8 @@ import os
 import sys
 from unittest import mock
 
-from ..cli.main import main
-from ..utils.postprocessing import file_to_df
+from ..cli import main
+from ..utils import file_to_df
 from .utils import compile_gpu_burn, stress_cpu
 
 
