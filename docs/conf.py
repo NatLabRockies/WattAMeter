@@ -52,6 +52,13 @@ typehints_defaults = "braces-after"
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_context = {
+    "display_github": True,
+    "github_user": "NREL",
+    "github_repo": "WattAMeter",
+    "github_version": "main",
+    "conf_py_path": "/docs/",
+}
 
 # Copy logo from root to _static
 logo_src = os.path.abspath(os.path.join("..", "wattameter_logo.png"))

@@ -56,14 +56,8 @@ wattameter_benchmark_dt = "wattameter.benchmark.update_time:run_benchmark"
 wattameter_benchmark_overhead = "wattameter.benchmark.overhead:run_benchmark"
 
 [project.optional-dependencies]
-docs = [
-    "sphinx",
-    "sphinx-autodoc-typehints",
-    "sphinx-rtd-theme>=3.0.2",
-]
-postprocessing = [
-    "pandas",
-]
+postprocessing = ["pandas"]
+
 [dependency-groups]
 example = [
     "jupyter",
@@ -76,6 +70,11 @@ example = [
 test = [
     "pytest",
     "pytest-asyncio",
+]
+docs = [
+    "sphinx",
+    "sphinx-autodoc-typehints",
+    "sphinx-rtd-theme>=3.0.2",
 ]
 
 [tool.pdm]

@@ -15,7 +15,7 @@ import os
 import sys
 from unittest import mock
 
-from ..cli import main
+from ..cli.main import main
 from ..utils import file_to_df
 from .utils import compile_gpu_burn, stress_cpu
 
@@ -148,12 +148,18 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
                 print(".", end="")
                 sys.stdout.flush()  # Ensures each dot is printed immediately
                 time.sleep(1)  # Pause for 1 seconds between dots
+                if not main_process.is_alive():
+                    break
             print(" Done!")
 
-            print("Terminating process...")
             # Send SIGINT to terminate the child process
-            if main_process.pid:
-                os.kill(main_process.pid, signal.SIGINT)
+            print("Terminating process...")
+            if main_process.is_alive() and main_process.pid:
+                try:
+                    os.kill(main_process.pid, signal.SIGINT)
+                except OSError:
+                    # process may have exited between checks
+                    pass
 
             # Wait for the main process to finish
             main_process.join()
@@ -228,7 +234,7 @@ def run_benchmark():
     args = parser.parse_args()
 
     benchmark_static_overhead()
-    benchmark_dynamic_overhead(args.stress_test, args.gpu_burn_dir)
+    benchmark_dynamic_overhead(args.cpu_stress_test, args.gpu_burn_dir)
 
     print()
     print("=" * 60)

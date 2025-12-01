@@ -26,7 +26,7 @@ pip install wattameter
 Some features (notably the post-processing utilities that use `pandas`) are optional and not required for the core runtime. To enable post-processing functionality, install the optional extra:
 
 ```bash
-pip install '.[postprocessing]'
+pip install wattameter[postprocessing]
 # or just
 pip install pandas
 ```

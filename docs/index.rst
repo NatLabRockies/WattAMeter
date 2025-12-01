@@ -16,4 +16,4 @@ Optional Extras
 
 Some utilities in WattAMeter (for example, the postprocessing helpers) require `pandas`. These are provided as an optional extra named ``postprocessing``. Install with::
 
-   pip install '.[postprocessing]'
+   pip install wattameter[postprocessing]

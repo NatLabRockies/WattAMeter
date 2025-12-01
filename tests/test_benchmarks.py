@@ -80,6 +80,9 @@ def test_benchmark_dynamic_overhead_fast(monkeypatch):
         def join(self):
             return None
 
+        def is_alive(self):
+            return True
+
     monkeypatch.setattr("multiprocessing.Process", lambda *a, **k: DummyProcess())
 
     # Patch time.sleep to no-op to avoid long waits

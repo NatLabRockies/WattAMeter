@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.x"
       - name: Cache pip packages
         uses: actions/cache@v4
         with:
@@ -32,11 +32,11 @@ jobs:
           pdm config python.use_venv false
       - name: Install dependencies
         run: |
-          pdm install -G postprocessing
           pdm install -G test
           pdm install -G example
       - name: Run tests
         run: pdm run pytest
-      - name: Run benchmark
-        working-directory: benchmark
-        run: pdm run python main.py
+      - name: Run benchmarks
+        run: |
+          pdm run wattameter_benchmark_dt
+          pdm run wattameter_benchmark_overhead
