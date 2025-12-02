@@ -1,9 +1,6 @@
 wattameter.benchmark package
 ============================
 
-Submodules
-----------
-
 wattameter.benchmark.overhead module
 ------------------------------------
 

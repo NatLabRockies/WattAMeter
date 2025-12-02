@@ -1,9 +1,6 @@
 wattameter.readers package
 ==========================
 
-Submodules
-----------
-
 wattameter.readers.base module
 ------------------------------
 

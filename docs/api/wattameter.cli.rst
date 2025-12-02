@@ -1,9 +1,6 @@
 wattameter.cli package
 ======================
 
-Submodules
-----------
-
 wattameter.cli.main module
 --------------------------
 

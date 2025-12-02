@@ -71,11 +71,6 @@ test = [
     "pytest",
     "pytest-asyncio",
 ]
-docs = [
-    "sphinx",
-    "sphinx-autodoc-typehints",
-    "sphinx-rtd-theme>=3.0.2",
-]
 
 [tool.pdm]
 distribution = true

@@ -27,6 +27,7 @@ extensions = [
     "sphinx.ext.autosummary",  # This is for automatic summary tables
     "sphinx_autodoc_typehints",  # Including typehints automatically in the docs
     # "sphinx.ext.mathjax",  # This is for LaTeX
+    "myst_parser",  # This is for markdown support
 ]
 
 # General config
@@ -47,6 +48,10 @@ typehints_use_signature = True
 typehints_use_signature_return = True
 typehints_defaults = "braces-after"
 
+# myst_parser
+myst_enable_extensions = ["colon_fence", "deflist"]
+myst_heading_anchors = 3
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -62,9 +67,31 @@ html_context = {
 
 # Copy logo from root to _static
 logo_src = os.path.abspath(os.path.join("..", "wattameter_logo.png"))
-logo_dst = os.path.abspath(os.path.join(html_static_path[0], "wattameter-logo.png"))
+logo_dst = os.path.abspath(os.path.join(html_static_path[0], "wattameter_logo.png"))
 if os.path.exists(logo_src) and not os.path.exists(logo_dst):
     import shutil
 
     os.makedirs(os.path.dirname(logo_dst), exist_ok=True)
     shutil.copyfile(logo_src, logo_dst)
+
+# Copy markdown structured README from root to docs
+readme_src = os.path.abspath(os.path.join("..", "README.md"))
+readme_dst = os.path.abspath(os.path.join(".", "README.md"))
+license_src = os.path.abspath(os.path.join("..", "LICENSE"))
+license_dst = os.path.abspath(os.path.join(".", "LICENSE"))
+if os.path.exists(readme_src) and os.path.exists(license_src):
+    from pathlib import Path
+    import shutil
+
+    shutil.copyfile(readme_src, readme_dst)
+    shutil.copyfile(license_src, license_dst)
+
+    text = Path(readme_src).read_text()
+    for old, new in {
+        "](src/": "](../src/",
+        "](examples/": "](../examples/",
+        "](wattameter_logo": "](_static/wattameter_logo",
+    }.items():
+        text = text.replace(old, new)
+
+    Path(readme_dst).write_text(text)

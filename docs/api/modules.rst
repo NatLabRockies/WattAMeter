@@ -1,6 +1,3 @@
-wattameter
-==========
-
 .. toctree::
    :maxdepth: 4
 

@@ -1,19 +1,14 @@
-.. image:: _static/wattameter-logo.png
+.. image:: _static/wattameter_logo.png
    :alt: WattAMeter Logo
    :width: 400px
 
 |
 
+Welcome to WattAMeter's Documentation
+=====================================
+
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
 
+   README.md
    api/modules
-
-
-Optional Extras
----------------
-
-Some utilities in WattAMeter (for example, the postprocessing helpers) require `pandas`. These are provided as an optional extra named ``postprocessing``. Install with::
-
-   pip install wattameter[postprocessing]

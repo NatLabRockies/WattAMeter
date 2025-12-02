@@ -1,4 +1,4 @@
-wattameter package
+WattAMeter package
 ==================
 
 Subpackages
@@ -11,9 +11,6 @@ Subpackages
    wattameter.readers
    wattameter.utils
    wattameter.benchmark
-
-Submodules
-----------
 
 wattameter.tracker module
 -------------------------
