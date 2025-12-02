@@ -28,6 +28,7 @@ extensions = [
     "sphinx_autodoc_typehints",  # Including typehints automatically in the docs
     # "sphinx.ext.mathjax",  # This is for LaTeX
     "myst_parser",  # This is for markdown support
+    "sphinx_multiversion",  # This is for multiple version support
 ]
 
 # General config
@@ -51,6 +52,11 @@ typehints_defaults = "braces-after"
 # myst_parser
 myst_enable_extensions = ["colon_fence", "deflist"]
 myst_heading_anchors = 3
+
+# sphinx_multiversion
+smv_latest_version = "main"
+smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
+smv_rename_latest_version = "dev"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
