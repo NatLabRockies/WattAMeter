@@ -50,7 +50,7 @@
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wattameter.readers package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#module-wattameter.readers.base">wattameter.readers.base module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-wattameter.readers.nvml">wattameter.readers.nvml module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wattameter-readers-rapl-module">wattameter.readers.rapl module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-wattameter.readers.rapl">wattameter.readers.rapl module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-wattameter.readers.utils">wattameter.readers.utils module</a></li>
 </ul>
 </li>
@@ -58,7 +58,7 @@
 <li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.html#wattameter-tracker-module">wattameter.tracker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.html#module-wattameter.tracker">wattameter.tracker module</a></li>
 </ul>
 </li>
 </ul>
@@ -347,8 +347,215 @@ could be power.</p>
 </dd></dl>
 
 </section>
-<section id="wattameter-readers-rapl-module">
-<h2>wattameter.readers.rapl module<a class="headerlink" href="#wattameter-readers-rapl-module" title="Link to this heading"></a></h2>
+<section id="module-wattameter.readers.rapl">
+<span id="wattameter-readers-rapl-module"></span><h2>wattameter.readers.rapl module<a class="headerlink" href="#module-wattameter.readers.rapl" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wattameter.readers.rapl.</span></span><span class="sig-name descname"><span class="pre">RAPLDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rapl_device_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseReader</span></code></a></p>
+<p>Reader for RAPL (Running Average Power Limit) devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rapl_device_path</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span>) – Path to the RAPL device directory.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.path">
+<span class="sig-name descname"><span class="pre">path</span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.path" title="Link to this definition"></a></dt>
+<dd><p>Path to the RAPL device directory, typically under /sys/class/powercap/intel-rapl.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the RAPL device, read from the ‘name’ file.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.max_energy_range">
+<span class="sig-name descname"><span class="pre">max_energy_range</span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.max_energy_range" title="Link to this definition"></a></dt>
+<dd><p>Maximum energy range, read from the ‘max_energy_range_uj’ file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.compute_derived">
+<span class="sig-name descname"><span class="pre">compute_derived</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#wattameter.readers.utils.Second" title="wattameter.readers.utils.Second"><span class="pre">Second</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'s'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.compute_derived" title="Link to this definition"></a></dt>
+<dd><p>Compute the derived quantities from the time series and data series.</p>
+<p>The data series is expected to be a sequence generated by successive
+calls to the <a class="reference internal" href="#wattameter.readers.rapl.RAPLDevice.read" title="wattameter.readers.rapl.RAPLDevice.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> – One-dimensional array of time readings.</p></li>
+<li><p><strong>data_series</strong> – One- or Two-dimensional array of data readings.
+The first dimension is expected to be the time dimension.</p></li>
+<li><p><strong>time_unit</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#wattameter.readers.utils.Second" title="wattameter.readers.utils.Second"><code class="xref py py-class docutils literal notranslate"><span class="pre">Second</span></code></a></span>) – Unit of the time readings. Defaults to seconds. (default: <code class="docutils literal notranslate"><span class="pre">'s'</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.derived_quantities">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derived_quantities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#wattameter.readers.utils.Quantity" title="wattameter.readers.utils.Quantity"><span class="pre">Quantity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.derived_quantities" title="Link to this definition"></a></dt>
+<dd><p>Return a list of quantities derived from the reading streams.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.derived_tags">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derived_tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.derived_tags" title="Link to this definition"></a></dt>
+<dd><p>Return a list of tags with quentities derived from the reading streams.</p>
+<p>For example, if one of the quantities is energy, the derived quantity
+could be power.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.get_unit">
+<span class="sig-name descname"><span class="pre">get_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#wattameter.readers.utils.Quantity" title="wattameter.readers.utils.Quantity"><span class="pre">Quantity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#wattameter.readers.utils.Unit" title="wattameter.readers.utils.Unit"><span class="pre">Unit</span></a></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.get_unit" title="Link to this definition"></a></dt>
+<dd><p>Get the unit for a given quantity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#wattameter.readers.utils.Unit" title="wattameter.readers.utils.Unit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unit</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.read" title="Link to this definition"></a></dt>
+<dd><p>Read the quantities of interest.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.read_energy">
+<span class="sig-name descname"><span class="pre">read_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.read_energy" title="Link to this definition"></a></dt>
+<dd><p>Read the energy counter for the i-th device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLDevice.tags">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLDevice.tags" title="Link to this definition"></a></dt>
+<dd><p>Return a list of tags for each reading stream.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wattameter.readers.rapl.</span></span><span class="sig-name descname"><span class="pre">RAPLReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rapl_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/sys/class/powercap/intel-rapl/subsystem'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseReader</span></code></a></p>
+<p>Reader for RAPL devices in the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rapl_dir</strong> – Directory where RAPL devices are located, typically /sys/class/powercap/intel-rapl/subsystem. (default: <code class="docutils literal notranslate"><span class="pre">'/sys/class/powercap/intel-rapl/subsystem'</span></code>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.rapl_dir">
+<span class="sig-name descname"><span class="pre">rapl_dir</span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.rapl_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory where RAPL devices are located.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.devices">
+<span class="sig-name descname"><span class="pre">devices</span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.devices" title="Link to this definition"></a></dt>
+<dd><p>List of RAPLDevice instances for available RAPL devices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.compute_derived">
+<span class="sig-name descname"><span class="pre">compute_derived</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_series</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_unit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#wattameter.readers.utils.Second" title="wattameter.readers.utils.Second"><span class="pre">Second</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'s'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.compute_derived" title="Link to this definition"></a></dt>
+<dd><p>Compute the derived quantities from the time series and data series.</p>
+<p>The data series is expected to be a sequence generated by successive
+calls to the <a class="reference internal" href="#wattameter.readers.rapl.RAPLReader.read" title="wattameter.readers.rapl.RAPLReader.read"><code class="xref py py-meth docutils literal notranslate"><span class="pre">read()</span></code></a> method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></span>) – One-dimensional array of time readings.</p></li>
+<li><p><strong>data_series</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Iterable</span></code></span>) – One- or Two-dimensional array of data readings.
+The first dimension is expected to be the time dimension.</p></li>
+<li><p><strong>time_unit</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#wattameter.readers.utils.Second" title="wattameter.readers.utils.Second"><code class="xref py py-class docutils literal notranslate"><span class="pre">Second</span></code></a></span>) – Unit of the time readings. Defaults to seconds. (default: <code class="docutils literal notranslate"><span class="pre">'s'</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.derived_quantities">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derived_quantities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#wattameter.readers.utils.Quantity" title="wattameter.readers.utils.Quantity"><span class="pre">Quantity</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.derived_quantities" title="Link to this definition"></a></dt>
+<dd><p>Return a list of quantities derived from the reading streams.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.derived_tags">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">derived_tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.derived_tags" title="Link to this definition"></a></dt>
+<dd><p>Return a list of tags with quentities derived from the reading streams.</p>
+<p>For example, if one of the quantities is energy, the derived quantity
+could be power.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.get_unit">
+<span class="sig-name descname"><span class="pre">get_unit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#wattameter.readers.utils.Quantity" title="wattameter.readers.utils.Quantity"><span class="pre">Quantity</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#wattameter.readers.utils.Unit" title="wattameter.readers.utils.Unit"><span class="pre">Unit</span></a></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.get_unit" title="Link to this definition"></a></dt>
+<dd><p>Get the unit for a given quantity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#wattameter.readers.utils.Unit" title="wattameter.readers.utils.Unit"><code class="xref py py-class docutils literal notranslate"><span class="pre">Unit</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.read" title="Link to this definition"></a></dt>
+<dd><p>Read the current energy counter for all RAPL devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.read_energy">
+<span class="sig-name descname"><span class="pre">read_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.read_energy" title="Link to this definition"></a></dt>
+<dd><p>Read the current energy counter for all RAPL devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code>]</span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.read_energy_on_device">
+<span class="sig-name descname"><span class="pre">read_energy_on_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.read_energy_on_device" title="Link to this definition"></a></dt>
+<dd><p>Read the energy counter of the i-th device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.readers.rapl.RAPLReader.tags">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#wattameter.readers.rapl.RAPLReader.tags" title="Link to this definition"></a></dt>
+<dd><p>Return a list of tags for each reading stream.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-wattameter.readers.utils">
 <span id="wattameter-readers-utils-module"></span><h2>wattameter.readers.utils module<a class="headerlink" href="#module-wattameter.readers.utils" title="Link to this heading"></a></h2>

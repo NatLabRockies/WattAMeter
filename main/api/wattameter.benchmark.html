@@ -49,14 +49,14 @@
 <li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html">wattameter.readers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wattameter.utils.html">wattameter.utils package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wattameter.benchmark package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#wattameter-benchmark-overhead-module">wattameter.benchmark.overhead module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wattameter-benchmark-update-time-module">wattameter.benchmark.update_time module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wattameter-benchmark-utils-module">wattameter.benchmark.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-wattameter.benchmark.overhead">wattameter.benchmark.overhead module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-wattameter.benchmark.update_time">wattameter.benchmark.update_time module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-wattameter.benchmark.utils">wattameter.benchmark.utils module</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.html#wattameter-tracker-module">wattameter.tracker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.html#module-wattameter.tracker">wattameter.tracker module</a></li>
 </ul>
 </li>
 </ul>
@@ -89,14 +89,140 @@
              
   <section id="wattameter-benchmark-package">
 <h1>wattameter.benchmark package<a class="headerlink" href="#wattameter-benchmark-package" title="Link to this heading"></a></h1>
-<section id="wattameter-benchmark-overhead-module">
-<h2>wattameter.benchmark.overhead module<a class="headerlink" href="#wattameter-benchmark-overhead-module" title="Link to this heading"></a></h2>
+<section id="module-wattameter.benchmark.overhead">
+<span id="wattameter-benchmark-overhead-module"></span><h2>wattameter.benchmark.overhead module<a class="headerlink" href="#module-wattameter.benchmark.overhead" title="Link to this heading"></a></h2>
+<p>Overhead of using WattAMeter</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.overhead.benchmark_dynamic_overhead">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.overhead.</span></span><span class="sig-name descname"><span class="pre">benchmark_dynamic_overhead</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpu_stress_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gpu_burn_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.overhead.benchmark_dynamic_overhead" title="Link to this definition"></a></dt>
+<dd><p>Call main() and let it run for a short time to measure dynamic overhead</p>
+<ul class="simple">
+<li><p>Use a frequency of 10 Hz for writing data to disk</p></li>
+<li><p>Use a temporary directory to avoid writing files to the current directory</p></li>
+<li><p>Let it run for 10 seconds, then send a SIGINT to terminate</p></li>
+<li><p>Mock the cli arguments to set dt_read to 0.1 seconds</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cpu_stress_test</strong> – If True, stress the CPU during the benchmark (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+<li><p><strong>gpu_burn_dir</strong> – If not None, path to the gpu_burn benchmark (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.overhead.benchmark_static_overhead">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.overhead.</span></span><span class="sig-name descname"><span class="pre">benchmark_static_overhead</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.overhead.benchmark_static_overhead" title="Link to this definition"></a></dt>
+<dd><p>Call main() and exit as soon as BaseTracker::track_until_forced_exit is reached</p>
+<ul class="simple">
+<li><p>Use mock to replace BaseTracker::track_until_forced_exit with a function that just returns</p></li>
+<li><p>Use a temporary directory to avoid writing files to the current directory</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>static overhead in seconds</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.overhead.run_benchmark">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.overhead.</span></span><span class="sig-name descname"><span class="pre">run_benchmark</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.overhead.run_benchmark" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
-<section id="wattameter-benchmark-update-time-module">
-<h2>wattameter.benchmark.update_time module<a class="headerlink" href="#wattameter-benchmark-update-time-module" title="Link to this heading"></a></h2>
+<section id="module-wattameter.benchmark.update_time">
+<span id="wattameter-benchmark-update-time-module"></span><h2>wattameter.benchmark.update_time module<a class="headerlink" href="#module-wattameter.benchmark.update_time" title="Link to this heading"></a></h2>
+<p>Frequency of Update Benchmark Script for WattAMeter</p>
+<p>This script measures the frequency of updates for different metrics.
+Since update frequency measurements are machine-dependent, this script is provided
+as an example rather than as a test.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>python update_time.py</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.update_time.benchmark_pynvml_update_time">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.update_time.</span></span><span class="sig-name descname"><span class="pre">benchmark_pynvml_update_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gpu_burn_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.update_time.benchmark_pynvml_update_time" title="Link to this definition"></a></dt>
+<dd><p>Benchmarks the update time of pynvml nvmlDeviceGetPowerUsage function using estimate_dt().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.update_time.benchmark_rapl_update_time">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.update_time.</span></span><span class="sig-name descname"><span class="pre">benchmark_rapl_update_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.update_time.benchmark_rapl_update_time" title="Link to this definition"></a></dt>
+<dd><p>Benchmarks the update time of the RAPL files using estimate_dt().</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.update_time.run_benchmark">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.update_time.</span></span><span class="sig-name descname"><span class="pre">run_benchmark</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.update_time.run_benchmark" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 </section>
-<section id="wattameter-benchmark-utils-module">
-<h2>wattameter.benchmark.utils module<a class="headerlink" href="#wattameter-benchmark-utils-module" title="Link to this heading"></a></h2>
+<section id="module-wattameter.benchmark.utils">
+<span id="wattameter-benchmark-utils-module"></span><h2>wattameter.benchmark.utils module<a class="headerlink" href="#module-wattameter.benchmark.utils" title="Link to this heading"></a></h2>
+<p>Utility functions for the benchmarks</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.compile_gpu_burn">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">compile_gpu_burn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gpu_burn_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.compile_gpu_burn" title="Link to this definition"></a></dt>
+<dd><p>Compiles the gpu_burn benchmark and returns the path to the executable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gpu_burn_dir</strong> – Path to the gpu_burn benchmark directory.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the compiled gpu_burn executable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.estimate_dt">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">estimate_dt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_trials</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleep_dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ntmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#wattameter.benchmark.utils.estimate_dt" title="Link to this definition"></a></dt>
+<dd><p>Estimates the average time interval between changes in the output of a given function.</p>
+<p>The function assumes that the value retrieved by <cite>f</cite> changes periodically
+and uses this change to estimate the time interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>f</strong> – A function that retrieves the current value to monitor for changes.</p></li>
+<li><p><strong>n_trials</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The number of trials to average the time interval over (default is 10). (default: <code class="docutils literal notranslate"><span class="pre">10</span></code>)</p></li>
+<li><p><strong>sleep_dt</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – The sleep duration between checks for value updates in seconds (default is 0.0001). (default: <code class="docutils literal notranslate"><span class="pre">0.0001</span></code>)</p></li>
+<li><p><strong>ntmax</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The maximum number of sleep iterations to wait for a value update (default is 1000). (default: <code class="docutils literal notranslate"><span class="pre">1000</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The estimated average time interval in seconds.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>RuntimeError</strong> – If the value does not change within the maximum wait time.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.print_system_info">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">print_system_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.print_system_info" title="Link to this definition"></a></dt>
+<dd><p>Print basic system information that might affect overhead.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.stress_cpu">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">stress_cpu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">9999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.stress_cpu" title="Link to this definition"></a></dt>
+<dd><p>Function to stress the CPU by performing large matrix multiplications.</p>
+<p><a class="reference external" href="https://www.reddit.com/r/overclocking/comments/1ckvr0w/comment/l2psl0j/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button">https://www.reddit.com/r/overclocking/comments/1ckvr0w/comment/l2psl0j/?utm_source=share&amp;utm_medium=web3x&amp;utm_name=web3xcss&amp;utm_term=1&amp;utm_content=share_button</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Number of matrix multiplications to perform. (default: <code class="docutils literal notranslate"><span class="pre">9999</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 

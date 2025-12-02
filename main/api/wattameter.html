@@ -52,7 +52,43 @@
 <li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#wattameter-tracker-module">wattameter.tracker module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-wattameter.tracker">wattameter.tracker module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#wattameter.tracker.BaseTracker"><code class="docutils literal notranslate"><span class="pre">BaseTracker</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.read"><code class="docutils literal notranslate"><span class="pre">BaseTracker.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.start"><code class="docutils literal notranslate"><span class="pre">BaseTracker.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.stop"><code class="docutils literal notranslate"><span class="pre">BaseTracker.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.track_until_forced_exit"><code class="docutils literal notranslate"><span class="pre">BaseTracker.track_until_forced_exit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.write"><code class="docutils literal notranslate"><span class="pre">BaseTracker.write()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.BaseTracker.write_header"><code class="docutils literal notranslate"><span class="pre">BaseTracker.write_header()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#wattameter.tracker.Tracker"><code class="docutils literal notranslate"><span class="pre">Tracker</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.reader"><code class="docutils literal notranslate"><span class="pre">Tracker.reader</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.time_series"><code class="docutils literal notranslate"><span class="pre">Tracker.time_series</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.reading_time"><code class="docutils literal notranslate"><span class="pre">Tracker.reading_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.data"><code class="docutils literal notranslate"><span class="pre">Tracker.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.freq_write"><code class="docutils literal notranslate"><span class="pre">Tracker.freq_write</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.flush_data"><code class="docutils literal notranslate"><span class="pre">Tracker.flush_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.format_timestamp"><code class="docutils literal notranslate"><span class="pre">Tracker.format_timestamp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.output"><code class="docutils literal notranslate"><span class="pre">Tracker.output</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.read"><code class="docutils literal notranslate"><span class="pre">Tracker.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.track_until_forced_exit"><code class="docutils literal notranslate"><span class="pre">Tracker.track_until_forced_exit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.write"><code class="docutils literal notranslate"><span class="pre">Tracker.write()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.write_data"><code class="docutils literal notranslate"><span class="pre">Tracker.write_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.write_header"><code class="docutils literal notranslate"><span class="pre">Tracker.write_header()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#wattameter.tracker.TrackerArray"><code class="docutils literal notranslate"><span class="pre">TrackerArray</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.trackers"><code class="docutils literal notranslate"><span class="pre">TrackerArray.trackers</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.freq_write"><code class="docutils literal notranslate"><span class="pre">TrackerArray.freq_write</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.read"><code class="docutils literal notranslate"><span class="pre">TrackerArray.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.track_until_forced_exit"><code class="docutils literal notranslate"><span class="pre">TrackerArray.track_until_forced_exit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.write"><code class="docutils literal notranslate"><span class="pre">TrackerArray.write()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.write_header"><code class="docutils literal notranslate"><span class="pre">TrackerArray.write_header()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -89,8 +125,19 @@
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="wattameter.cli.html">wattameter.cli package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#wattameter-cli-main-module">wattameter.cli.main module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#wattameter-cli-utils-module">wattameter.cli.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#module-wattameter.cli.main">wattameter.cli.main module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.main.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#module-wattameter.cli.utils">wattameter.cli.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.ForcedExit"><code class="docutils literal notranslate"><span class="pre">ForcedExit</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.default_cli_arguments"><code class="docutils literal notranslate"><span class="pre">default_cli_arguments()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.handle_signal"><code class="docutils literal notranslate"><span class="pre">handle_signal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.parse_tracker_spec"><code class="docutils literal notranslate"><span class="pre">parse_tracker_spec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.powerlog_filename"><code class="docutils literal notranslate"><span class="pre">powerlog_filename()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html#wattameter.cli.utils.print_powerlog_filename"><code class="docutils literal notranslate"><span class="pre">print_powerlog_filename()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wattameter.readers.html">wattameter.readers package</a><ul>
@@ -131,7 +178,35 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#wattameter-readers-rapl-module">wattameter.readers.rapl module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#module-wattameter.readers.rapl">wattameter.readers.rapl module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice"><code class="docutils literal notranslate"><span class="pre">RAPLDevice</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.path"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.name"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.max_energy_range"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.max_energy_range</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.compute_derived"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.compute_derived()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.derived_quantities"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.derived_quantities</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.derived_tags"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.derived_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.get_unit"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.get_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.read"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.read_energy"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.read_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLDevice.tags"><code class="docutils literal notranslate"><span class="pre">RAPLDevice.tags</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader"><code class="docutils literal notranslate"><span class="pre">RAPLReader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.rapl_dir"><code class="docutils literal notranslate"><span class="pre">RAPLReader.rapl_dir</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.devices"><code class="docutils literal notranslate"><span class="pre">RAPLReader.devices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.compute_derived"><code class="docutils literal notranslate"><span class="pre">RAPLReader.compute_derived()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.derived_quantities"><code class="docutils literal notranslate"><span class="pre">RAPLReader.derived_quantities</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.derived_tags"><code class="docutils literal notranslate"><span class="pre">RAPLReader.derived_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.get_unit"><code class="docutils literal notranslate"><span class="pre">RAPLReader.get_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.read"><code class="docutils literal notranslate"><span class="pre">RAPLReader.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.read_energy"><code class="docutils literal notranslate"><span class="pre">RAPLReader.read_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.read_energy_on_device"><code class="docutils literal notranslate"><span class="pre">RAPLReader.read_energy_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.rapl.RAPLReader.tags"><code class="docutils literal notranslate"><span class="pre">RAPLReader.tags</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#module-wattameter.readers.utils">wattameter.readers.utils module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Byte"><code class="docutils literal notranslate"><span class="pre">Byte</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Byte.symbol"><code class="docutils literal notranslate"><span class="pre">Byte.symbol()</span></code></a></li>
@@ -210,23 +285,369 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wattameter.utils.html">wattameter.utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-postprocessing-module">wattameter.utils.postprocessing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#module-wattameter.utils.postprocessing">wattameter.utils.postprocessing module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.utils.html#wattameter.utils.postprocessing.align_and_concat_df"><code class="docutils literal notranslate"><span class="pre">align_and_concat_df()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.utils.html#wattameter.utils.postprocessing.file_to_df"><code class="docutils literal notranslate"><span class="pre">file_to_df()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-wattameter-module">wattameter.utils.wattameter module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-wattawait-module">wattameter.utils.wattawait module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-slurm-module">wattameter.utils.slurm module</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-overhead-module">wattameter.benchmark.overhead module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-update-time-module">wattameter.benchmark.update_time module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-utils-module">wattameter.benchmark.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#module-wattameter.benchmark.overhead">wattameter.benchmark.overhead module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.overhead.benchmark_dynamic_overhead"><code class="docutils literal notranslate"><span class="pre">benchmark_dynamic_overhead()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.overhead.benchmark_static_overhead"><code class="docutils literal notranslate"><span class="pre">benchmark_static_overhead()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.overhead.run_benchmark"><code class="docutils literal notranslate"><span class="pre">run_benchmark()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#module-wattameter.benchmark.update_time">wattameter.benchmark.update_time module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.update_time.benchmark_pynvml_update_time"><code class="docutils literal notranslate"><span class="pre">benchmark_pynvml_update_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.update_time.benchmark_rapl_update_time"><code class="docutils literal notranslate"><span class="pre">benchmark_rapl_update_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.update_time.run_benchmark"><code class="docutils literal notranslate"><span class="pre">run_benchmark()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#module-wattameter.benchmark.utils">wattameter.benchmark.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.utils.compile_gpu_burn"><code class="docutils literal notranslate"><span class="pre">compile_gpu_burn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.utils.estimate_dt"><code class="docutils literal notranslate"><span class="pre">estimate_dt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.utils.print_system_info"><code class="docutils literal notranslate"><span class="pre">print_system_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html#wattameter.benchmark.utils.stress_cpu"><code class="docutils literal notranslate"><span class="pre">stress_cpu()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
 </section>
-<section id="wattameter-tracker-module">
-<h2>wattameter.tracker module<a class="headerlink" href="#wattameter-tracker-module" title="Link to this heading"></a></h2>
+<section id="module-wattameter.tracker">
+<span id="wattameter-tracker-module"></span><h2>wattameter.tracker module<a class="headerlink" href="#module-wattameter.tracker" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wattameter.tracker.</span></span><span class="sig-name descname"><span class="pre">BaseTracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dt_read</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.BaseTracker" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></p>
+<p>Base class for trackers that read data at a specified frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dt_read</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time interval (in seconds) between consecutive readings. (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.read">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#wattameter.tracker.BaseTracker.read" title="Link to this definition"></a></dt>
+<dd><p>Read data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Time taken for the reading (in seconds).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.BaseTracker.start" title="Link to this definition"></a></dt>
+<dd><p>Start asynchronous task <code class="xref py py-meth docutils literal notranslate"><span class="pre">_update_series()</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq_write</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written. (default: <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.BaseTracker.stop" title="Link to this definition"></a></dt>
+<dd><p>Stop async task <code class="xref py py-meth docutils literal notranslate"><span class="pre">_update_series()</span></code> and reads data one last time.</p>
+<p>On exit, perform a final read and write of the collected data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq_write</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written. (default: <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.track_until_forced_exit">
+<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.BaseTracker.track_until_forced_exit" title="Link to this definition"></a></dt>
+<dd><p>Track data as the main task of the program until a forced exit.</p>
+<p>On exit, perform a final read and write of the collected data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the preferred way to track data of programs that are being
+executed in the machine. This method will block the main thread
+until a forced exit is detected (e.g., SIGINT or SIGTERM).</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq_write</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written. (default: <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.write">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.BaseTracker.write" title="Link to this definition"></a></dt>
+<dd><p>Write data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.BaseTracker.write_header">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.BaseTracker.write_header" title="Link to this definition"></a></dt>
+<dd><p>Write header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wattameter.tracker.</span></span><span class="sig-name descname"><span class="pre">Tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reader</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><span class="pre">BaseReader</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_read</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.Tracker" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wattameter.tracker.BaseTracker" title="wattameter.tracker.BaseTracker"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTracker</span></code></a></p>
+<p>Generic tracker that reads data from a BaseReader at a specified frequency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reader</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseReader</span></code></a></span>) – An instance of BaseReader to read data from.</p></li>
+<li><p><strong>dt_read</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time interval (in seconds) between consecutive readings. (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p></li>
+<li><p><strong>freq_write</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written. (default: <code class="docutils literal notranslate"><span class="pre">3600</span></code>)</p></li>
+<li><p><strong>output</strong> – Optional output stream to write the collected data. If not provided,
+the output stream is as defined in <a class="reference internal" href="#wattameter.tracker.Tracker.output" title="wattameter.tracker.Tracker.output"><code class="xref py py-meth docutils literal notranslate"><span class="pre">output()</span></code></a>. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.reader">
+<span class="sig-name descname"><span class="pre">reader</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.reader" title="Link to this definition"></a></dt>
+<dd><p>An instance of BaseReader that provides the data to be tracked.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.time_series">
+<span class="sig-name descname"><span class="pre">time_series</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.time_series" title="Link to this definition"></a></dt>
+<dd><p>A deque that stores the timestamps of the readings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.reading_time">
+<span class="sig-name descname"><span class="pre">reading_time</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.reading_time" title="Link to this definition"></a></dt>
+<dd><p>A deque that stores the time taken for each reading (in nanoseconds).
+This information can be useful for adjusting the reading frequency.
+Usually, the time taken for reading should be much smaller than
+<code class="xref py py-attr docutils literal notranslate"><span class="pre">dt_read</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.data" title="Link to this definition"></a></dt>
+<dd><p>A deque that stores the data read from the reader.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.freq_write">
+<span class="sig-name descname"><span class="pre">freq_write</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.freq_write" title="Link to this definition"></a></dt>
+<dd><p>Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.flush_data">
+<span class="sig-name descname"><span class="pre">flush_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.flush_data" title="Link to this definition"></a></dt>
+<dd><p>Flush all collected data from the tracker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>A tuple containing three lists:</p>
+<ul class="simple">
+<li><p>time_series: List of timestamps (in nanoseconds).</p></li>
+<li><p>reading_time: List of time taken for each reading (in nanoseconds).</p></li>
+<li><p>data: 2D array of the collected data. Each row corresponds to a reading,
+and each column corresponds to a quantity read by the reader.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.format_timestamp">
+<span class="sig-name descname"><span class="pre">format_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timestamp_ns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#wattameter.tracker.Tracker.format_timestamp" title="Link to this definition"></a></dt>
+<dd><p>Format a timestamp in nanoseconds to a human-readable string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timestamp_ns</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Timestamp in nanoseconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.output">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output</span></span><a class="headerlink" href="#wattameter.tracker.Tracker.output" title="Link to this definition"></a></dt>
+<dd><p>Output file to write the collected data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#wattameter.tracker.Tracker.read" title="Link to this definition"></a></dt>
+<dd><p>Read data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Time taken for the reading (in seconds).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.track_until_forced_exit">
+<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.track_until_forced_exit" title="Link to this definition"></a></dt>
+<dd><p>Track data as the main task of the program until a forced exit.</p>
+<p>On exit, perform a final read and write of the collected data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the preferred way to track data of programs that are being
+executed in the machine. This method will block the main thread
+until a forced exit is detected (e.g., SIGINT or SIGTERM).</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq_write</strong> – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.write" title="Link to this definition"></a></dt>
+<dd><p>Write data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.write_data">
+<span class="sig-name descname"><span class="pre">write_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reading_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.write_data" title="Link to this definition"></a></dt>
+<dd><p>Write the collected data to the output stream.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> – Array of timestamps (in nanoseconds).</p></li>
+<li><p><strong>reading_time</strong> – Array of time taken for each reading (in nanoseconds).</p></li>
+<li><p><strong>data</strong> – 2D array of the collected data. Each row corresponds to a reading,
+and each column corresponds to a quantity read by the reader.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.write_header">
+<span class="sig-name descname"><span class="pre">write_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.write_header" title="Link to this definition"></a></dt>
+<dd><p>Write the header to the output stream.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wattameter.tracker.</span></span><span class="sig-name descname"><span class="pre">TrackerArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">readers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><span class="pre">BaseReader</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt_read</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3600</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#wattameter.tracker.BaseTracker" title="wattameter.tracker.BaseTracker"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseTracker</span></code></a></p>
+<p>Tracker that manages multiple <a class="reference internal" href="#wattameter.tracker.Tracker" title="wattameter.tracker.Tracker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tracker</span></code></a> instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>readers</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader" title="wattameter.readers.base.BaseReader"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseReader</span></code></a>]</span>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseReader</span></code> instances to read data from.</p></li>
+<li><p><strong>dt_read</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time interval (in seconds) between consecutive readings. (default: <code class="docutils literal notranslate"><span class="pre">1.0</span></code>)</p></li>
+<li><p><strong>freq_write</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written. (default: <code class="docutils literal notranslate"><span class="pre">3600</span></code>)</p></li>
+<li><p><strong>outputs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></span>) – List of output streams for each tracker. If not provided,
+the output streams are as defined in each tracker’s <code class="xref py py-meth docutils literal notranslate"><span class="pre">output()</span></code>. (default: <code class="docutils literal notranslate"><span class="pre">[]</span></code>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.trackers">
+<span class="sig-name descname"><span class="pre">trackers</span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray.trackers" title="Link to this definition"></a></dt>
+<dd><p>List of <a class="reference internal" href="#wattameter.tracker.Tracker" title="wattameter.tracker.Tracker"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tracker</span></code></a> instances managed by this tracker.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.freq_write">
+<span class="sig-name descname"><span class="pre">freq_write</span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray.freq_write" title="Link to this definition"></a></dt>
+<dd><p>Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray.read" title="Link to this definition"></a></dt>
+<dd><p>Read data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Time taken for the reading (in seconds).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.track_until_forced_exit">
+<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.TrackerArray.track_until_forced_exit" title="Link to this definition"></a></dt>
+<dd><p>Track data as the main task of the program until a forced exit.</p>
+<p>On exit, perform a final read and write of the collected data.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is the preferred way to track data of programs that are being
+executed in the machine. This method will block the main thread
+until a forced exit is detected (e.g., SIGINT or SIGTERM).</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>freq_write</strong> – Frequency (in number of reads) to write the collected data.
+If set to 0, data is never written.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.TrackerArray.write" title="Link to this definition"></a></dt>
+<dd><p>Write data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.write_header">
+<span class="sig-name descname"><span class="pre">write_header</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray.write_header" title="Link to this definition"></a></dt>
+<dd><p>Write header.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
