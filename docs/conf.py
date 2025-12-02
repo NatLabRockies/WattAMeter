@@ -56,7 +56,6 @@ myst_heading_anchors = 3
 # sphinx_multiversion
 smv_latest_version = "main"
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
-smv_rename_latest_version = "dev"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output

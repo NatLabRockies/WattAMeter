@@ -13,7 +13,7 @@ Usage:
 """
 
 from .utils import estimate_dt, compile_gpu_burn, stress_cpu
-import numpy as np
+import statistics
 import logging
 import time
 
@@ -42,10 +42,10 @@ def _benchmark_metric(metric_name, get_metric_func, unit):
         )
         t1 = time.perf_counter()
 
-        freq = 1.0 / np.asarray(estimated_dt)
-        min_freq = np.min(freq)
-        max_freq = np.max(freq)
-        median_freq = np.median(freq)
+        freq = [1.0 / dt for dt in estimated_dt]
+        min_freq = min(freq)
+        max_freq = max(freq)
+        median_freq = statistics.median(freq)
         mean_freq = len(estimated_dt) / (t1 - t0)
 
         print(f"   📈 Mean update frequency: {mean_freq:.6f} Hz")

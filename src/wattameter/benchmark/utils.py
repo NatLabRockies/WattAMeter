@@ -107,12 +107,16 @@ def stress_cpu(n: int = 9999):
 
     :param n: Number of matrix multiplications to perform.
     """
-    import numpy as np
+    try:
+        import numpy as np
 
-    m1 = np.random.randn(8192, 8192)
-    m2 = np.random.randn(8192, 8192)
-    for i in range(n):
-        np.linalg.norm(np.dot(m1, m2))
+        m1 = np.random.randn(8192, 8192)
+        m2 = np.random.randn(8192, 8192)
+        for i in range(n):
+            np.linalg.norm(np.dot(m1, m2))
+    except ImportError:
+        logger.warning("numpy not available. Skipping CPU stress test.")
+        return
 
 
 def compile_gpu_burn(gpu_burn_dir):
