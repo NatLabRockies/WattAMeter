@@ -1,3 +1,6 @@
+WattAMeter modules
+==================
+
 .. toctree::
    :maxdepth: 4
 
