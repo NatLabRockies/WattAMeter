@@ -1,0 +1,397 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wattameter.utils package &mdash; WattAmeter 1.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fd7cadf9"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wattameter.benchmark package" href="wattameter.benchmark.html" />
+    <link rel="prev" title="wattameter.readers package" href="wattameter.readers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            WattAmeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">WattAMeter</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="wattameter.html">WattAMeter package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="wattameter.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html">wattameter.cli package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html">wattameter.readers package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wattameter.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter-utils-postprocessing-module">wattameter.utils.postprocessing module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter-utils-wattameter-module">wattameter.utils.wattameter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter-utils-wattawait-module">wattameter.utils.wattawait module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter-utils-slurm-module">wattameter.utils.slurm module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.html#wattameter-tracker-module">wattameter.tracker module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">WattAmeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">&lt;no title&gt;</a></li>
+          <li class="breadcrumb-item"><a href="wattameter.html">WattAMeter package</a></li>
+      <li class="breadcrumb-item active">wattameter.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/NREL/WattAMeter/blob/main/docs/api/wattameter.utils.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wattameter-utils-package">
+<h1>wattameter.utils package<a class="headerlink" href="#wattameter-utils-package" title="Link to this heading"></a></h1>
+<section id="wattameter-utils-postprocessing-module">
+<h2>wattameter.utils.postprocessing module<a class="headerlink" href="#wattameter-utils-postprocessing-module" title="Link to this heading"></a></h2>
+</section>
+<section id="wattameter-utils-wattameter-module">
+<h2>wattameter.utils.wattameter module<a class="headerlink" href="#wattameter-utils-wattameter-module" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+<span class="c1"># SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC</span>
+<span class="c1">#</span>
+<span class="c1"># This script is used to run the WattAMeter CLI tool.</span>
+<span class="c1"># It captures the output and PID of the process, allowing for graceful termination on timeout.</span>
+
+<span class="c1"># Usage function to display help</span>
+usage<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Usage: </span><span class="nv">$0</span><span class="s2"> [-i|--index run_id] [-s|--suffix suffix] [-q|--quiet] [wattameter-options]&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;-i, --id    run_id  : Specify a run identifier for this WattAMeter instance&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;-s, --suffix suffix : Specify a custom suffix for log file naming&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;-q, --quiet         : Quiet mode; suppress startup messages&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;-h, --help          : Display this help message&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;wattameter-options  : Additional options to pass to the wattameter command&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Note: Default suffix is hostname.&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;      If --id is provided, default suffix becomes run_id-hostname.&quot;</span>
+<span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+<span class="o">}</span>
+
+main<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="c1"># Get the hostname of the current node</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">NODE</span><span class="o">=</span><span class="k">$(</span>hostname<span class="k">)</span>
+
+<span class="w">    </span><span class="c1"># Parse arguments manually</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">RUN_ID</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">SUFFIX</span><span class="o">=</span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">CUSTOM_SUFFIX</span><span class="o">=</span><span class="nb">false</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">QUIET</span><span class="o">=</span><span class="nb">false</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">EXTRA_ARGS</span><span class="o">=()</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="nv">$#</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span><span class="w"> </span><span class="k">in</span>
+<span class="w">            </span>-i<span class="p">|</span>--id<span class="o">)</span><span class="w"> </span><span class="nv">RUN_ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$2</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="nb">shift</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">            </span>-s<span class="p">|</span>--suffix<span class="o">)</span><span class="w"> </span><span class="nv">SUFFIX</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$2</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="nv">CUSTOM_SUFFIX</span><span class="o">=</span>true<span class="p">;</span><span class="w"> </span><span class="nb">shift</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">            </span>-q<span class="p">|</span>--quiet<span class="o">)</span><span class="w"> </span><span class="nv">QUIET</span><span class="o">=</span>true<span class="p">;</span><span class="w"> </span><span class="nb">shift</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">            </span>-h<span class="p">|</span>--help<span class="o">)</span><span class="w"> </span>usage<span class="w"> </span><span class="p">;;</span>
+<span class="w">            </span>*<span class="o">)</span><span class="w"> </span><span class="nv">EXTRA_ARGS</span><span class="o">+=(</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span><span class="o">)</span><span class="p">;</span><span class="w"> </span><span class="nb">shift</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">        </span><span class="k">esac</span>
+<span class="w">    </span><span class="k">done</span>
+<span class="w">    </span><span class="nb">set</span><span class="w"> </span>--<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">EXTRA_ARGS</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w">  </span><span class="c1"># Restore positional parameters</span>
+
+<span class="w">    </span><span class="c1"># Determine suffix based on flags</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$CUSTOM_SUFFIX</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">RUN_ID</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nv">SUFFIX</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">RUN_ID</span><span class="si">}</span><span class="s2">-</span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Set log file name</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">log_file</span><span class="o">=</span><span class="s2">&quot;wattameter-</span><span class="si">${</span><span class="nv">SUFFIX</span><span class="si">}</span><span class="s2">.txt&quot;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">QUIET</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Logging execution on </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2"> to </span><span class="si">${</span><span class="nv">log_file</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Build wattameter command arguments</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WATTAMETER_ARGS</span><span class="o">=</span><span class="s2">&quot;--suffix </span><span class="si">${</span><span class="nv">SUFFIX</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">RUN_ID</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nv">WATTAMETER_ARGS</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTAMETER_ARGS</span><span class="si">}</span><span class="s2"> --id </span><span class="si">${</span><span class="nv">RUN_ID</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Start the tracking and log the output</span>
+<span class="w">    </span>wattameter<span class="w"> </span><span class="si">${</span><span class="nv">WATTAMETER_ARGS</span><span class="si">}</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">log_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WATTAMETER_PID</span><span class="o">=</span><span class="nv">$!</span>
+
+<span class="w">    </span><span class="c1"># Gracefully terminates the tracking process on exit.</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">SIGNAL</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="w">    </span>on_exit<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">TIMESTAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>+<span class="s2">&quot;%Y-%m-%d %H:%M:%S&quot;</span><span class="k">)</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TIMESTAMP</span><span class="si">}</span><span class="s2">: WattAMeter interrupted on </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2"> by signal </span><span class="si">${</span><span class="nv">SIGNAL</span><span class="si">}</span><span class="s2">. Terminating...&quot;</span>
+
+<span class="w">        </span><span class="c1"># Interrupt the WattAMeter process</span>
+<span class="w">        </span><span class="nb">kill</span><span class="w"> </span>-INT<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_PID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null
+<span class="w">        </span><span class="nb">wait</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_PID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="nb">kill</span><span class="w"> </span>-0<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_PID</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">            </span>sleep<span class="w"> </span><span class="m">0</span>.1
+<span class="w">        </span><span class="k">done</span>
+
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">TIMESTAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>+<span class="s2">&quot;%Y-%m-%d %H:%M:%S&quot;</span><span class="k">)</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TIMESTAMP</span><span class="si">}</span><span class="s2">: WattAMeter has been terminated on node </span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2">.&quot;</span>
+<span class="w">    </span><span class="o">}</span>
+<span class="w">    </span><span class="nb">trap</span><span class="w"> </span><span class="s1">&#39;SIGNAL=INT; on_exit&#39;</span><span class="w"> </span>INT
+<span class="w">    </span><span class="nb">trap</span><span class="w"> </span><span class="s1">&#39;SIGNAL=TERM; on_exit&#39;</span><span class="w"> </span>TERM
+<span class="w">    </span><span class="nb">trap</span><span class="w"> </span><span class="s1">&#39;SIGNAL=HUP; on_exit&#39;</span><span class="w"> </span>HUP
+
+<span class="w">    </span><span class="c1"># Wait for the WattAMeter process to finish</span>
+<span class="w">    </span><span class="nb">wait</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_PID</span><span class="s2">&quot;</span>
+<span class="o">}</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BASH_SOURCE</span><span class="p">[0]</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">0</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span>main<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span>
+<span class="k">fi</span>
+</pre></div>
+</div>
+</section>
+<section id="wattameter-utils-wattawait-module">
+<h2>wattameter.utils.wattawait module<a class="headerlink" href="#wattameter-utils-wattawait-module" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+<span class="c1"># SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC</span>
+<span class="c1">#</span>
+<span class="c1"># This script is used to wait until &quot;run ID&quot; can be read from the file path.</span>
+<span class="c1"># If no file path is given, it will use the wattameter_powerlog_filename</span>
+<span class="c1"># utility to get the file path for the current node.</span>
+
+<span class="c1"># Usage function to display help</span>
+usage<span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Usage: </span><span class="nv">$0</span><span class="s2"> [-q] [-f filepath] ID&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  -q          Quiet mode (suppress output)&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  -f filepath Optional file path to monitor&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;  ID          Run ID to wait for&quot;</span>
+<span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">0</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="o">}</span>
+
+<span class="c1"># Parse options</span>
+<span class="nv">QUIET</span><span class="o">=</span><span class="nb">false</span>
+<span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<span class="k">while</span><span class="w"> </span><span class="nb">getopts</span><span class="w"> </span><span class="s2">&quot;qf:h&quot;</span><span class="w"> </span>opt<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$opt</span><span class="s2">&quot;</span><span class="w"> </span><span class="k">in</span>
+<span class="w">        </span>q<span class="o">)</span><span class="w"> </span><span class="nv">QUIET</span><span class="o">=</span><span class="nb">true</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">        </span>f<span class="o">)</span><span class="w"> </span><span class="nv">FILEPATH</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$OPTARG</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">        </span>h<span class="o">)</span><span class="w"> </span>usage<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">        </span>*<span class="o">)</span><span class="w"> </span>usage<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="p">;;</span>
+<span class="w">    </span><span class="k">esac</span>
+<span class="k">done</span>
+<span class="nb">shift</span><span class="w"> </span><span class="k">$((</span><span class="nv">OPTIND</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="k">))</span>
+
+<span class="c1"># Get the ID from the remaining arguments</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="nv">$#</span><span class="w"> </span>-ge<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nv">ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$1</span><span class="s2">&quot;</span>
+<span class="k">else</span>
+<span class="w">    </span>usage
+<span class="k">fi</span>
+
+<span class="c1"># If no filepath was provided via -f flag, generate it</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$FILEPATH</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="c1"># Get the WattAMeter powerlog file path for the current node</span>
+<span class="w">    </span><span class="nv">NODE</span><span class="o">=</span><span class="k">$(</span>hostname<span class="k">)</span>
+<span class="w">    </span><span class="nv">FILEPATH</span><span class="o">=</span><span class="k">$(</span>wattameter_powerlog_filename<span class="w"> </span>--suffix<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">ID</span><span class="si">}</span><span class="s2">-</span><span class="si">${</span><span class="nv">NODE</span><span class="si">}</span><span class="s2">&quot;</span><span class="k">)</span>
+<span class="k">fi</span>
+
+<span class="c1"># Wait until ID can be read from the file</span>
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$QUIET</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for </span><span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span><span class="s2"> to be ready for run ID </span><span class="si">${</span><span class="nv">ID</span><span class="si">}</span><span class="s2">...&quot;</span>
+<span class="k">fi</span>
+<span class="k">until</span><span class="w"> </span>grep<span class="w"> </span>-qs<span class="w"> </span><span class="s2">&quot;run </span><span class="nv">$ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span>sleep<span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="c1"># Wait for 1 second before checking again</span>
+<span class="k">done</span>
+
+<span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$QUIET</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">FILEPATH</span><span class="si">}</span><span class="s2"> is ready for run ID </span><span class="si">${</span><span class="nv">ID</span><span class="si">}</span><span class="s2">.&quot;</span>
+<span class="k">fi</span>
+<span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+</section>
+<section id="wattameter-utils-slurm-module">
+<h2>wattameter.utils.slurm module<a class="headerlink" href="#wattameter-utils-slurm-module" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1"># SPDX-License-Identifier: BSD-3-Clause</span>
+<span class="c1"># SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC</span>
+<span class="c1">#</span>
+<span class="c1"># This script contains utility functions for SLURM job management.</span>
+
+start_wattameter<span class="w"> </span><span class="o">()</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="c1"># Error out if not running inside a SLURM job</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: start_wattameter must be run inside a SLURM job allocation.&quot;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Set default value for SLURM_JOB_NUM_NODES if not defined</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_NUM_NODES</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">SLURM_JOB_NUM_NODES</span><span class="o">=</span><span class="m">1</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Initialize global variables for wattameter steps</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_N_STARTED_STEPS</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nv">WATTAMETER_N_STARTED_STEPS</span><span class="o">=</span><span class="m">0</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_SLURM_STEP_IDS</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nv">WATTAMETER_SLURM_STEP_IDS</span><span class="o">=()</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Use a suffix to differentiate multiple wattameter runs</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$WATTAMETER_N_STARTED_STEPS</span><span class="s2">&quot;</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">-</span><span class="nv">$WATTAMETER_N_STARTED_STEPS</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="w">    </span><span class="nv">WATTAMETER_N_STARTED_STEPS</span><span class="o">=</span><span class="k">$((</span><span class="nv">WATTAMETER_N_STARTED_STEPS</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="k">))</span>
+
+<span class="w">    </span><span class="c1"># Get the path of the wattameter script</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WATTAPATH</span><span class="o">=</span><span class="k">$(</span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import wattameter; import os; print(os.path.dirname(wattameter.__file__))&#39;</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WATTASCRIPT</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTAPATH</span><span class="si">}</span><span class="s2">/utils/wattameter.sh&quot;</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WATTAWAIT</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTAPATH</span><span class="si">}</span><span class="s2">/utils/wattawait.sh&quot;</span>
+
+<span class="w">    </span><span class="c1"># Create sentinel to track wattameter start</span>
+<span class="w">    </span>srun<span class="w"> </span>--overlap<span class="w"> </span>--wait<span class="o">=</span><span class="m">0</span><span class="w"> </span>--nodes<span class="o">=</span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_NUM_NODES</span><span class="s2">&quot;</span><span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTAWAIT</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">WAIT_PID</span><span class="o">=</span><span class="nv">$!</span>
+
+<span class="w">    </span><span class="c1"># Run wattameter on all nodes</span>
+<span class="w">    </span>srun<span class="w"> </span>--overlap<span class="w"> </span>--wait<span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--output<span class="o">=</span><span class="s2">&quot;slurm-</span><span class="nv">$ID</span><span class="s2">-wattameter.txt&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span>--nodes<span class="o">=</span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_NUM_NODES</span><span class="s2">&quot;</span><span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">        </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTASCRIPT</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>-i<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$@</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">&amp;</span>
+
+<span class="w">    </span><span class="c1"># Wait for wattameter to start</span>
+<span class="w">    </span><span class="nb">wait</span><span class="w"> </span><span class="nv">$WAIT_PID</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null
+
+<span class="w">    </span><span class="c1"># Get the step ID from the last wattameter srun command</span>
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">SANITY_CHECK</span><span class="o">=</span><span class="m">0</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span>true<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">STEP_ID</span><span class="o">=</span><span class="k">$(</span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span><span class="w"> </span>-h<span class="w"> </span>-s<span class="w"> </span>--format<span class="o">=</span><span class="s2">&quot;%i %.13j&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;wattameter.sh</span>$<span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>tail<span class="w"> </span>-1<span class="w"> </span><span class="p">|</span><span class="w"> </span>awk<span class="w"> </span><span class="s1">&#39;{print $1}&#39;</span><span class="k">)</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STEP_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">            </span><span class="k">break</span>
+<span class="w">        </span><span class="k">fi</span>
+<span class="w">        </span>sleep<span class="w"> </span><span class="m">0</span>.1
+<span class="w">        </span><span class="nv">SANITY_CHECK</span><span class="o">=</span><span class="k">$((</span><span class="nv">SANITY_CHECK</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="k">))</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="nv">$SANITY_CHECK</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">600</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">            </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: Unable to retrieve wattameter SLURM step ID.&quot;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+<span class="w">        </span><span class="k">fi</span>
+<span class="w">    </span><span class="k">done</span>
+<span class="w">    </span><span class="nv">WATTAMETER_SLURM_STEP_IDS</span><span class="o">+=(</span><span class="s2">&quot;</span><span class="nv">$STEP_ID</span><span class="s2">&quot;</span><span class="o">)</span>
+
+<span class="w">    </span><span class="nb">local</span><span class="w"> </span><span class="nv">TIMESTAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>+<span class="s2">&quot;%Y-%m-%d %H:%M:%S&quot;</span><span class="k">)</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TIMESTAMP</span><span class="si">}</span><span class="s2">: Started WattAmeter job step </span><span class="nv">$STEP_ID</span><span class="s2">&quot;</span>
+<span class="o">}</span>
+
+stop_wattameter<span class="w"> </span><span class="o">()</span><span class="w"> </span><span class="o">{</span><span class="w">    </span>
+<span class="w">    </span><span class="c1"># Error out if not running inside a SLURM job</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-z<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Error: stop_wattameter must be run inside a SLURM job allocation.&quot;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="m">1</span>
+<span class="w">    </span><span class="k">fi</span>
+
+<span class="w">    </span><span class="c1"># Cancel the last started wattameter step</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="si">${#</span><span class="nv">WATTAMETER_SLURM_STEP_IDS</span><span class="p">[@]</span><span class="si">}</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">        </span><span class="c1"># Pop last wattameter STEP ID</span>
+<span class="w">        </span><span class="nb">local</span><span class="w"> </span><span class="nv">STEP_ID</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">WATTAMETER_SLURM_STEP_IDS</span><span class="p">[-1]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="nb">unset</span><span class="w"> </span><span class="s1">&#39;WATTAMETER_SLURM_STEP_IDS[-1]&#39;</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="c1"># Stop ID using scancel</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$STEP_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">            </span>scancel<span class="w"> </span>--signal<span class="o">=</span>INT<span class="w"> </span><span class="nv">$STEP_ID</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null
+
+<span class="w">            </span><span class="c1"># Wait for the step to terminate</span>
+<span class="w">            </span><span class="nb">local</span><span class="w"> </span><span class="nv">SANITY_CHECK</span><span class="o">=</span><span class="m">0</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span>squeue<span class="w"> </span>-j<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span><span class="w"> </span>-h<span class="w"> </span>-s<span class="w"> </span>--format<span class="w"> </span><span class="s2">&quot;%i&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-q<span class="w"> </span><span class="s2">&quot;^</span><span class="nv">$STEP_ID</span>$<span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">                </span>sleep<span class="w"> </span><span class="m">0</span>.1
+<span class="w">                </span><span class="nv">SANITY_CHECK</span><span class="o">=</span><span class="k">$((</span><span class="nv">SANITY_CHECK</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="k">))</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="nv">$SANITY_CHECK</span><span class="w"> </span>-gt<span class="w"> </span><span class="m">600</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">                    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Warning: WattAMeter step </span><span class="nv">$STEP_ID</span><span class="s2"> did not terminate in a timely manner.&quot;</span>
+<span class="w">                    </span><span class="k">break</span>
+<span class="w">                </span><span class="k">fi</span>
+<span class="w">            </span><span class="k">done</span>
+
+<span class="w">            </span><span class="nb">local</span><span class="w"> </span><span class="nv">TIMESTAMP</span><span class="o">=</span><span class="k">$(</span>date<span class="w"> </span>+<span class="s2">&quot;%Y-%m-%d %H:%M:%S&quot;</span><span class="k">)</span>
+<span class="w">            </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">TIMESTAMP</span><span class="si">}</span><span class="s2">: Stopped WattAmeter job step </span><span class="nv">$STEP_ID</span><span class="s2">&quot;</span>
+<span class="w">        </span><span class="k">fi</span>
+<span class="w">    </span><span class="k">fi</span>
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wattameter.readers.html" class="btn btn-neutral float-left" title="wattameter.readers package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wattameter.benchmark.html" class="btn btn-neutral float-right" title="wattameter.benchmark package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Alliance for Sustainable Energy, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

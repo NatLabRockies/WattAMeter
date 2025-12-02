@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WattAMeter package &mdash; WattAmeter 1.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fd7cadf9"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wattameter.cli package" href="wattameter.cli.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            WattAmeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">WattAMeter</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">WattAMeter package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.cli.html">wattameter.cli package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html">wattameter.readers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.utils.html">wattameter.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#wattameter-tracker-module">wattameter.tracker module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">WattAmeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">&lt;no title&gt;</a></li>
+      <li class="breadcrumb-item active">WattAMeter package</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/NREL/WattAMeter/blob/main/docs/api/wattameter.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wattameter-package">
+<h1>WattAMeter package<a class="headerlink" href="#wattameter-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="wattameter.cli.html">wattameter.cli package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#wattameter-cli-main-module">wattameter.cli.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.cli.html#wattameter-cli-utils-module">wattameter.cli.utils module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wattameter.readers.html">wattameter.readers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#module-wattameter.readers.base">wattameter.readers.base module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader"><code class="docutils literal notranslate"><span class="pre">BaseReader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.compute_derived"><code class="docutils literal notranslate"><span class="pre">BaseReader.compute_derived()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.derived_quantities"><code class="docutils literal notranslate"><span class="pre">BaseReader.derived_quantities</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.derived_tags"><code class="docutils literal notranslate"><span class="pre">BaseReader.derived_tags</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.get_unit"><code class="docutils literal notranslate"><span class="pre">BaseReader.get_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.read"><code class="docutils literal notranslate"><span class="pre">BaseReader.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.base.BaseReader.tags"><code class="docutils literal notranslate"><span class="pre">BaseReader.tags</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#module-wattameter.readers.nvml">wattameter.readers.nvml module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.DataThroughput"><code class="docutils literal notranslate"><span class="pre">DataThroughput</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.DataThroughput.units"><code class="docutils literal notranslate"><span class="pre">DataThroughput.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader"><code class="docutils literal notranslate"><span class="pre">NVMLReader</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.devices"><code class="docutils literal notranslate"><span class="pre">NVMLReader.devices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.UNITS"><code class="docutils literal notranslate"><span class="pre">NVMLReader.UNITS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.get_unit"><code class="docutils literal notranslate"><span class="pre">NVMLReader.get_unit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_energy"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_energy_on_device"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_energy_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_nvlink_throughput"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_nvlink_throughput()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_nvlink_throughput_on_device"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_nvlink_throughput_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_power"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_power()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_power_on_device"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_power_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_temperature"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_temperature()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_temperature_on_device"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_temperature_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_utilization"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_utilization()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.read_utilization_on_device"><code class="docutils literal notranslate"><span class="pre">NVMLReader.read_utilization_on_device()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.nvml.NVMLReader.tags"><code class="docutils literal notranslate"><span class="pre">NVMLReader.tags</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#wattameter-readers-rapl-module">wattameter.readers.rapl module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.readers.html#module-wattameter.readers.utils">wattameter.readers.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Byte"><code class="docutils literal notranslate"><span class="pre">Byte</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Byte.symbol"><code class="docutils literal notranslate"><span class="pre">Byte.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Byte.to_si"><code class="docutils literal notranslate"><span class="pre">Byte.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Celsius"><code class="docutils literal notranslate"><span class="pre">Celsius</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Celsius.symbol"><code class="docutils literal notranslate"><span class="pre">Celsius.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Celsius.to_si"><code class="docutils literal notranslate"><span class="pre">Celsius.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Energy"><code class="docutils literal notranslate"><span class="pre">Energy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Energy.units"><code class="docutils literal notranslate"><span class="pre">Energy.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Joule"><code class="docutils literal notranslate"><span class="pre">Joule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Joule.symbol"><code class="docutils literal notranslate"><span class="pre">Joule.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Joule.to_si"><code class="docutils literal notranslate"><span class="pre">Joule.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Power"><code class="docutils literal notranslate"><span class="pre">Power</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Power.units"><code class="docutils literal notranslate"><span class="pre">Power.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Quantity"><code class="docutils literal notranslate"><span class="pre">Quantity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Quantity.units"><code class="docutils literal notranslate"><span class="pre">Quantity.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix"><code class="docutils literal notranslate"><span class="pre">SIPrefix</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.GIBI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.GIBI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.GIGA"><code class="docutils literal notranslate"><span class="pre">SIPrefix.GIGA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.KIBI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.KIBI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.KILO"><code class="docutils literal notranslate"><span class="pre">SIPrefix.KILO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.MEGA"><code class="docutils literal notranslate"><span class="pre">SIPrefix.MEGA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.MIBI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.MIBI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.MICRO"><code class="docutils literal notranslate"><span class="pre">SIPrefix.MICRO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.MILLI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.MILLI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.NANO"><code class="docutils literal notranslate"><span class="pre">SIPrefix.NANO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.NONE"><code class="docutils literal notranslate"><span class="pre">SIPrefix.NONE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.PEBI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.PEBI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.TEBI"><code class="docutils literal notranslate"><span class="pre">SIPrefix.TEBI</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.TERA"><code class="docutils literal notranslate"><span class="pre">SIPrefix.TERA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.SIPrefix.from_string"><code class="docutils literal notranslate"><span class="pre">SIPrefix.from_string()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Second"><code class="docutils literal notranslate"><span class="pre">Second</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Second.symbol"><code class="docutils literal notranslate"><span class="pre">Second.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Second.to_si"><code class="docutils literal notranslate"><span class="pre">Second.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Temperature"><code class="docutils literal notranslate"><span class="pre">Temperature</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Temperature.units"><code class="docutils literal notranslate"><span class="pre">Temperature.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Unit"><code class="docutils literal notranslate"><span class="pre">Unit</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Unit.symbol"><code class="docutils literal notranslate"><span class="pre">Unit.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Unit.to_si"><code class="docutils literal notranslate"><span class="pre">Unit.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Utilization"><code class="docutils literal notranslate"><span class="pre">Utilization</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Utilization.units"><code class="docutils literal notranslate"><span class="pre">Utilization.units()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Watt"><code class="docutils literal notranslate"><span class="pre">Watt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Watt.symbol"><code class="docutils literal notranslate"><span class="pre">Watt.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.Watt.to_si"><code class="docutils literal notranslate"><span class="pre">Watt.to_si()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.WattHour"><code class="docutils literal notranslate"><span class="pre">WattHour</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.WattHour.symbol"><code class="docutils literal notranslate"><span class="pre">WattHour.symbol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="wattameter.readers.html#wattameter.readers.utils.WattHour.to_si"><code class="docutils literal notranslate"><span class="pre">WattHour.to_si()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wattameter.utils.html">wattameter.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-postprocessing-module">wattameter.utils.postprocessing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-wattameter-module">wattameter.utils.wattameter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-wattawait-module">wattameter.utils.wattawait module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.utils.html#wattameter-utils-slurm-module">wattameter.utils.slurm module</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wattameter.benchmark.html">wattameter.benchmark package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-overhead-module">wattameter.benchmark.overhead module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-update-time-module">wattameter.benchmark.update_time module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wattameter.benchmark.html#wattameter-benchmark-utils-module">wattameter.benchmark.utils module</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="wattameter-tracker-module">
+<h2>wattameter.tracker module<a class="headerlink" href="#wattameter-tracker-module" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wattameter.cli.html" class="btn btn-neutral float-right" title="wattameter.cli package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Alliance for Sustainable Energy, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
