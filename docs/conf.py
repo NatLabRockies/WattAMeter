@@ -8,8 +8,39 @@
 
 import os
 import sys
+import re
 
 sys.path.insert(0, os.path.abspath(".."))
+
+
+def setup(app):
+    app.connect("html-page-context", add_version_context)
+
+
+def add_version_context(app, pagename, templatename, context, doctree):
+    if "versions" not in context:
+        return
+
+    versions = context["versions"]
+    tags = []
+    branches = []
+
+    for version in versions:
+        item = {
+            "name": version.name,
+            "url": version.url,
+        }
+
+        if re.match(smv_tag_whitelist, version.name):
+            tags.append(item)
+        else:
+            branches.append(item)
+
+    context["versions"] = {
+        "tags": sorted(tags, key=lambda x: x["name"], reverse=True),
+        "branches": branches,
+    }
+
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -56,6 +87,7 @@ myst_heading_anchors = 3
 # sphinx_multiversion
 smv_latest_version = "main"
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
