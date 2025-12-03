@@ -85,6 +85,7 @@ myst_enable_extensions = ["colon_fence", "deflist"]
 myst_heading_anchors = 3
 
 # sphinx_multiversion
+smv_branch_whitelist = r"^main$"
 smv_latest_version = "main"
 smv_tag_whitelist = r"^v\d+\.\d+\.\d+$"
 
