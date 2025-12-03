@@ -7,24 +7,49 @@ Utility functions for the benchmarks
 
 import time
 import logging
+import platform
+import os
+import subprocess
+import re
+import sys
+import pynvml
+
 
 logger = logging.getLogger(__name__)
 
 
+def get_cpu_info():
+    """Get basic CPU information.
+
+    Source - https://stackoverflow.com/a/13078519
+    Posted by dbn, modified by community. See post 'Timeline' for change history
+    Retrieved 2025-12-03, License - CC BY-SA 4.0
+    """
+
+    if platform.system() == "Windows":
+        return platform.processor()
+    elif platform.system() == "Darwin":
+        os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
+        command = "sysctl -n machdep.cpu.brand_string"
+        return subprocess.check_output(command, shell=True).decode().strip()
+    elif platform.system() == "Linux":
+        command = "cat /proc/cpuinfo"
+        all_info = subprocess.check_output(command, shell=True).decode().strip()
+        for line in all_info.split("\n"):
+            if "model name" in line:
+                return re.sub(".*model name.*:", "", line, 1)
+    return ""
+
+
 def print_system_info():
     """Print basic system information that might affect overhead."""
-    import platform
-    import cpuinfo
-    import sys
-    import pynvml
-
     print("=" * 60)
     print("SYSTEM INFORMATION")
     print("=" * 60)
     print(f"Platform: {platform.platform()}")
     print(f"Python version: {sys.version}")
     print(f"Architecture: {platform.architecture()}")
-    print(f"Processor: {cpuinfo.get_cpu_info()['brand_raw']}")
+    print(f"Processor: {get_cpu_info()}")
 
     try:
         pynvml.nvmlInit()
@@ -125,8 +150,6 @@ def compile_gpu_burn(gpu_burn_dir):
     :param gpu_burn_dir: Path to the gpu_burn benchmark directory.
     :return: Path to the compiled gpu_burn executable.
     """
-    import os
-    import subprocess
 
     # Check CUDA_HOME
     cuda_home = os.environ.get("CUDA_HOME") or os.environ.get("CUDA_PATH")

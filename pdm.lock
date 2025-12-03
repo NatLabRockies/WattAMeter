@@ -5,7 +5,7 @@
 groups = ["default", "example", "test"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:4ed27e02393adbe1922b87fc13a5c920cedde210ed04fc5de026068e4543acc8"
+content_hash = "sha256:eb4c5c16192211be9aa2b7434ee88a82d6a182c877dd38b2a5249024f3b010de"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1032,7 +1032,7 @@ dependencies = [
     "comm; python_full_version >= \"3.10\"",
     "debugpy; python_full_version >= \"3.10\"",
     "ipython==8.37.0; python_full_version == \"3.10.*\"",
-    "ipython==9.7.0; python_full_version >= \"3.11\"",
+    "ipython==9.8.0; python_full_version >= \"3.11\"",
     "jupyter-client; python_full_version >= \"3.10\"",
     "jupyter-core==5.9.1; python_full_version >= \"3.10\"",
     "matplotlib-inline; python_full_version >= \"3.10\"",
@@ -1094,7 +1094,7 @@ files = [
 
 [[package]]
 name = "ipython"
-version = "9.7.0"
+version = "9.8.0"
 summary = ""
 dependencies = [
     "colorama; python_full_version >= \"3.11\" and sys_platform == \"win32\"",
@@ -1110,8 +1110,8 @@ dependencies = [
     "typing-extensions; python_full_version == \"3.11.*\"",
 ]
 files = [
-    {file = "ipython-9.7.0-py3-none-any.whl", hash = "sha256:bce8ac85eb9521adc94e1845b4c03d88365fd6ac2f4908ec4ed1eb1b0a065f9f"},
-    {file = "ipython-9.7.0.tar.gz", hash = "sha256:5f6de88c905a566c6a9d6c400a8fed54a638e1f7543d17aae2551133216b1e4e"},
+    {file = "ipython-9.8.0-py3-none-any.whl", hash = "sha256:ebe6d1d58d7d988fbf23ff8ff6d8e1622cfdb194daf4b7b73b792c4ec3b85385"},
+    {file = "ipython-9.8.0.tar.gz", hash = "sha256:8e4ce129a627eb9dd221c41b1d2cdaed4ef7c9da8c17c63f6f578fe231141f83"},
 ]
 
 [[package]]
@@ -1134,7 +1134,7 @@ dependencies = [
     "comm",
     "ipython==8.18.1; python_full_version < \"3.10\"",
     "ipython==8.37.0; python_full_version == \"3.10.*\"",
-    "ipython==9.7.0; python_full_version >= \"3.11\"",
+    "ipython==9.8.0; python_full_version >= \"3.11\"",
     "jupyterlab-widgets",
     "traitlets",
     "widgetsnbextension",
@@ -1305,7 +1305,7 @@ dependencies = [
     "ipykernel==7.1.0; python_full_version >= \"3.10\"",
     "ipython==8.18.1; python_full_version < \"3.10\"",
     "ipython==8.37.0; python_full_version == \"3.10.*\"",
-    "ipython==9.7.0; python_full_version >= \"3.11\"",
+    "ipython==9.8.0; python_full_version >= \"3.11\"",
     "jupyter-client",
     "jupyter-core==5.8.1; python_full_version < \"3.10\"",
     "jupyter-core==5.9.1; python_full_version >= \"3.10\"",
@@ -3022,15 +3022,6 @@ summary = ""
 files = [
     {file = "pure_eval-0.2.3-py3-none-any.whl", hash = "sha256:1db8e35b67b3d218d818ae653e27f06c3aa420901fa7b081ca98cbedc874e0d0"},
     {file = "pure_eval-0.2.3.tar.gz", hash = "sha256:5f4e983f40564c576c7c8635ae88db5956bb2229d7e9237d03b3c0b0190eaf42"},
-]
-
-[[package]]
-name = "py-cpuinfo"
-version = "9.0.0"
-summary = ""
-files = [
-    {file = "py-cpuinfo-9.0.0.tar.gz", hash = "sha256:3cdbbf3fac90dc6f118bfd64384f309edeadd902d7c8fb17f02ffa1fc3f49690"},
-    {file = "py_cpuinfo-9.0.0-py3-none-any.whl", hash = "sha256:859625bc251f64e21f077d099d4162689c762b5d6a4c3c97553d56241c9674d5"},
 ]
 
 [[package]]

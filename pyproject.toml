@@ -63,9 +63,9 @@ example = [
     "jupyter",
     "ipykernel",
     "matplotlib",
-    "py-cpuinfo",
     "pandas",
     "marimo",
+    "numpy",
 ]
 test = [
     "pytest",
