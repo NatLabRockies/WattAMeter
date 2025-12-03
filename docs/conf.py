@@ -131,4 +131,11 @@ if os.path.exists(readme_src) and os.path.exists(license_src):
     }.items():
         text = text.replace(old, new)
 
+    # Insert title in the 5th line of the README
+    lines = text.splitlines()
+    if len(lines) >= 5 and not lines[0].startswith("# "):
+        lines.insert(6, "")
+        lines.insert(6, "# WattAMeter")
+        text = "\n".join(lines)
+
     Path(readme_dst).write_text(text)

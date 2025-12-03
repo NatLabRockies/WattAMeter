@@ -1,5 +1,5 @@
-WattAMeter package
-==================
+API Documentation
+=================
 
 Subpackages
 -----------
