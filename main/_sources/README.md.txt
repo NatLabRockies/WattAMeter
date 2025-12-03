@@ -2,9 +2,9 @@
 
 ![wattameter_logo](_static/wattameter_logo.png)
 
-# WattAMeter
-
 **wattameter** is a Python package for monitoring and recording power usage over time, among other metrics. It enables time series data collection on hardware components such as CPUs and GPUs.
+
+# WattAMeter
 
 ## Current Features
 

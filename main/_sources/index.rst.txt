@@ -11,4 +11,4 @@ Welcome to WattAMeter's Documentation
    :maxdepth: 2
 
    README.md
-   api/modules
+   api/wattameter
