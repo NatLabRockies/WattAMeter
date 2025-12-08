@@ -113,4 +113,4 @@ See the [LICENSE](LICENSE) file for details.
 
 ---
 
-_NREL Software Record number: SWR-25-101_
+_NLR Software Record number: SWR-25-101_
