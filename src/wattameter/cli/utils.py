@@ -152,3 +152,42 @@ def default_cli_arguments(parser: argparse.ArgumentParser):
         default="warning",
         help="Set the logging level (default: warning).",
     )
+    
+    # MQTT configuration options
+    parser.add_argument(
+        "--mqtt-broker",
+        type=str,
+        default=None,
+        help="MQTT broker hostname or IP address. If not provided, MQTT publishing is disabled.",
+    )
+    parser.add_argument(
+        "--mqtt-port",
+        type=int,
+        default=1883,
+        help="MQTT broker port (default: 1883).",
+    )
+    parser.add_argument(
+        "--mqtt-username",
+        type=str,
+        default=None,
+        help="MQTT broker username for authentication (optional).",
+    )
+    parser.add_argument(
+        "--mqtt-password",
+        type=str,
+        default=None,
+        help="MQTT broker password for authentication (optional).",
+    )
+    parser.add_argument(
+        "--mqtt-topic-prefix",
+        type=str,
+        default="wattameter",
+        help="MQTT topic prefix for all published messages (default: wattameter).",
+    )
+    parser.add_argument(
+        "--mqtt-qos",
+        type=int,
+        choices=[0, 1, 2],
+        default=1,
+        help="MQTT Quality of Service level: 0 (at most once), 1 (at least once), 2 (exactly once). Default: 1.",
+    )
