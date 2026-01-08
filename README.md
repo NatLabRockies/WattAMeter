@@ -9,7 +9,7 @@
 - Track power usage for CPU (using RAPL) and GPU (using nvidia-ml-py)
 - Track GPU utilization and temperature
 - Periodically log time series data to file
-- **Real-time MQTT publishing for integration with monitoring systems**
+- Real-time MQTT publishing for integration with monitoring systems
 - Customizable logging and output options
 - Command-line interface for easy usage
 - Integration with SLURM for HPC environments
