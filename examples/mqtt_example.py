@@ -20,16 +20,16 @@ Usage:
 
 import os
 import time
-from wattameter import Tracker
-from wattameter.readers import NVMLReader, Power
+from wattameter import Tracker, TrackerArray
+from wattameter.readers import RAPLReader, NVMLReader, Power
 
 # Configure MQTT connection
 # Option 1: Use environment variables (recommended for security)
 mqtt_config = {
     "broker_host": os.getenv("MQTT_BROKER", "localhost"),
     "broker_port": int(os.getenv("MQTT_PORT", "1883")),
-    "username": os.getenv("MQTT_USERNAME"),
-    "password": os.getenv("MQTT_PASSWORD"),
+    # "username": os.getenv("MQTT_USERNAME"),
+    # "password": os.getenv("MQTT_PASSWORD"),
     "topic_prefix": os.getenv("MQTT_TOPIC_PREFIX", "wattameter"),
     "qos": int(os.getenv("MQTT_QOS", "1")),
 }
@@ -42,12 +42,6 @@ mqtt_config = {
 #     "password": "mypassword",
 #     "topic_prefix": "hpc/wattameter",
 #     "qos": 1,
-# }
-
-# Option 3: No authentication (for testing with local broker only)
-# mqtt_config = {
-#     "broker_host": "localhost",
-#     "broker_port": 1883,
 # }
 
 
@@ -67,15 +61,22 @@ def main():
         # Create tracker with MQTT publishing enabled
         # This will:
         # 1. Read GPU power every 0.1 seconds
-        # 2. Write to local file every 600 readings (60 seconds)
+        # 2. Write to local file every 20 reads (2 seconds)
         # 3. Publish each batch to MQTT when writing to file
         tracker = Tracker(
             reader=NVMLReader((Power,)),
             dt_read=0.1,  # Read power every 0.1 seconds
-            freq_write=600,  # Write/publish every 600 reads (60 seconds)
+            freq_write=20,  # Write/publish every 20 reads (2 seconds)
             output="power_mqtt_example.log",
             mqtt_config=mqtt_config,
         )
+        # readers = [NVMLReader((Power,)), RAPLReader()]
+        # tracker = TrackerArray(
+        #     readers=readers,
+        #     dt_read=0.1,
+        #     freq_write=600,
+        #     mqtt_config=mqtt_config,
+        # )
         
         print("Starting power tracking...")
         print("Data will be published to MQTT topic:")
@@ -88,7 +89,7 @@ def main():
         with tracker:
             # Simulate some work
             # In a real scenario, this would be your actual computation
-            duration = 300  # Run for 5 minutes
+            duration = 10  # Run for 10 seconds
             
             print(f"Tracking power for {duration} seconds...")
             for i in range(duration):
@@ -136,12 +137,13 @@ def test_mqtt_subscriber():
     
     def on_message(client, userdata, msg):
         try:
-            data = json.loads(msg.payload)
-            timestamp = data.get("timestamp_iso", "unknown")
-            power = data.get("power[W]", "N/A")
-            reading_time = data.get("reading_time_ns", 0) / 1e6  # Convert to ms
+            # data = json.loads(msg.payload)
+            # timestamp = data.get("timestamp[iso]", "unknown")
+            # power = data.get("gpu-0[mW]", "N/A")
+            # reading_time = data.get("reading-time[ns]", 0) / 1e6  # Convert to ms
             
-            print(f"[{timestamp}] Power: {power} W (reading took {reading_time:.2f} ms)")
+            # print(f"[{timestamp}] GPU 0 Power: {power} mW (reading took {reading_time:.2f} ms)")
+            print(msg.payload)
             
         except json.JSONDecodeError as e:
             print(f"Error decoding JSON: {e}")

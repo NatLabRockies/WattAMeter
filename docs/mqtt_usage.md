@@ -122,12 +122,10 @@ Each message is a JSON object containing:
 
 ```json
 {
-  "timestamp_ns": 1703347200000000000,
-  "timestamp_iso": "2023-12-23T12:00:00.000000",
-  "reading_time_ns": 1234567,
-  "power[W]": 250.5,
-  "energy[J]": 1500.25,
-  "temperature[C]": 65.0,
+  "timestamp[ns]": 1703347200000000000,
+  "timestamp[iso]": "2023-12-23T12:00:00.000000",
+  "reading-time[ns]": 1234567,
+  "gpu-0[mW]": 300000.5,
   "metadata": {
     "experiment_id": "job-12345"
   }
@@ -135,10 +133,10 @@ Each message is a JSON object containing:
 ```
 
 Fields:
-- `timestamp_ns`: Measurement timestamp in nanoseconds (Unix epoch)
-- `timestamp_iso`: Human-readable ISO 8601 timestamp
-- `reading_time_ns`: Time taken to perform the measurement in nanoseconds
-- Dynamic fields for each measured quantity (e.g., `power[W]`, `energy[J]`)
+- `timestamp[ns]`: Measurement timestamp in nanoseconds (Unix epoch)
+- `timestamp[iso]`: Human-readable ISO 8601 timestamp
+- `reading-time[ns]`: Time taken to perform the measurement in nanoseconds
+- Dynamic fields for each measured quantity (e.g., `gpu-0[mW]`, `cpu-0[W]`)
 - `metadata`: Optional additional information (currently unused, available for future extensions)
 
 ## Use Cases
@@ -153,7 +151,7 @@ import json
 
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload)
-    print(f"Power: {data.get('power[W]', 'N/A')} W at {data['timestamp_iso']}")
+    print(f"GPU 0 Power: {data.get('gpu-0[mW]', 'N/A')} W at {data['timestamp[iso]']}")
 
 client = mqtt.Client()
 client.on_message = on_message
@@ -187,11 +185,11 @@ Set up alerts for abnormal power consumption:
 import paho.mqtt.client as mqtt
 import json
 
-POWER_THRESHOLD = 300  # Watts
+POWER_THRESHOLD = 900000  # mW
 
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload)
-    power = data.get('power[W]', 0)
+    power = data.get('gpu-0[mW]', 0)
     if power > POWER_THRESHOLD:
         send_alert(f"High power consumption: {power}W")
 
@@ -332,27 +330,6 @@ wattameter \
   --mqtt-topic-prefix "hpc/node01"
 ```
 
-### SLURM Integration
-
-```bash
-#!/bin/bash
-#SBATCH --job-name=power_tracking
-#SBATCH --nodes=1
-
-# Load WattAMeter environment
-source "${WATTAPATH}/utils/slurm.sh"
-
-# Start WattAMeter with MQTT on all nodes
-WATTAMETER_ARGS="--mqtt-broker mqtt.hpc.local --mqtt-topic-prefix hpc/job/${SLURM_JOB_ID}"
-start_wattameter
-
-# Your computation here
-./my_application
-
-# Stop WattAMeter
-stop_wattameter
-```
-
 ### Python API with MQTT
 
 ```python
@@ -412,14 +389,6 @@ metrics:
     value_path: "power[W]"
 ```
 
-### Node-RED
-
-Create flows to process MQTT data:
-1. MQTT input node subscribed to `wattameter/+/data`
-2. JSON parser node
-3. Function nodes for processing/filtering
-4. Output to dashboard, database, or alerts
-
 ## Advanced Topics
 
 ### Custom Metadata
@@ -464,22 +433,3 @@ Choose based on your requirements:
 - Real-time dashboards: QoS 0 or 1
 - Critical accounting: QoS 1 or 2
 - High-frequency logging: QoS 0
-
-## Support
-
-For issues or questions about MQTT publishing:
-
-1. Check logs with `--log-level debug`
-2. Verify MQTT broker is accessible
-3. Test with a simple MQTT client (mosquitto_sub)
-4. Open an issue on GitHub with relevant logs and configuration
-
-## Future Enhancements
-
-Planned features for MQTT publishing:
-- TLS/SSL support for encrypted connections
-- Configurable message batching
-- Custom metadata injection
-- Per-reader topic configuration
-- MQTT5 protocol support
-- Automatic reconnection with exponential backoff

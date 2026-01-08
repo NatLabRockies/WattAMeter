@@ -221,9 +221,9 @@ class MQTTPublisher:
         
         # Build the message payload
         payload = {
-            "timestamp_ns": timestamp_ns,
-            "timestamp_iso": datetime.fromtimestamp(timestamp_ns / 1e9).isoformat(),
-            "reading_time_ns": reading_time_ns,
+            "timestamp[ns]": timestamp_ns,
+            "timestamp[iso]": datetime.fromtimestamp(timestamp_ns / 1e9).isoformat(),
+            "reading-time[ns]": reading_time_ns,
         }
         
         # Add main measurements
