@@ -129,7 +129,8 @@ Contributions are welcome! Please open issues or submit pull requests.
 
 ## Documentation
 
-The API documentation is available at [https://nrel.github.io/WattAMeter/](https://nrel.github.io/WattAMeter/).
+The API documentation is available at [https://NatLabRockies.github.io/WattAMeter/](https://NatLabRockies.github.io/WattAMeter/).
+For specific documentation of the NLR module, visit [https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/](https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/).
 
 ## License
 
