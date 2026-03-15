@@ -262,7 +262,7 @@ class MQTTPublisher:
             "timestamp[iso]": datetime.fromtimestamp(timestamp_ns / 1e9).isoformat(),
             "reading-time[ns]": reading_time_ns,
             "node": self.node_name,
-            "run_id": self.run_id,
+            "run-id": self.run_id,
         }
         
         # Add main measurements
