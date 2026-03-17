@@ -152,7 +152,14 @@ def default_cli_arguments(parser: argparse.ArgumentParser):
         default="warning",
         help="Set the logging level (default: warning).",
     )
-    
+    parser.add_argument(
+        "--output-dir",
+        "-o",
+        type=str,
+        default=".",
+        help="Directory to save output files (default: current directory).",
+    )
+
     # MQTT configuration options
     parser.add_argument(
         "--mqtt-broker",

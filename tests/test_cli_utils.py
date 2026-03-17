@@ -270,6 +270,8 @@ class TestDefaultCliArguments:
                 "1000",
                 "--log-level",
                 "debug",
+                "--output-dir",
+                "logs",
             ]
         )
 
@@ -283,6 +285,7 @@ class TestDefaultCliArguments:
         assert args.id == "experiment-123"
         assert args.freq_write == 1000
         assert args.log_level == "debug"
+        assert args.output_dir == "logs"
 
     def test_invalid_tracker_spec_raises_error(self):
         """Test that invalid tracker spec raises appropriate error."""

@@ -37,19 +37,60 @@ start_wattameter () {
     local WATTASCRIPT="${WATTAPATH}/utils/wattameter.sh"
     local WATTAWAIT="${WATTAPATH}/utils/wattawait.sh"
 
+    # Get output directory from arguments if provided, otherwise use current directory
+    local OUTPUT_DIR="."
+    local EXTRA_ARGS=()
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -o|--output-dir)
+                if [[ $# -lt 2 || "$2" == -* ]]; then
+                    echo "Error: $1 requires a value."
+                    return 1
+                fi
+                OUTPUT_DIR="$2"
+                shift 2
+                ;;
+            --output-dir=*)
+                OUTPUT_DIR="${1#--output-dir=}"
+                shift
+                ;;
+            -h|--help) 
+                echo "Usage: start_wattameter [-o|--output-dir output_dir] [wattameter-options]"
+                echo "-o, --output-dir output_dir : Specify a directory to save output files if different from CWD"
+                echo "wattameter-options  : Additional options to pass to the wattameter command"
+                return 0
+                ;;
+            --)
+                shift
+                EXTRA_ARGS+=("$@")
+                break
+                ;;
+            *) EXTRA_ARGS+=("$1"); shift ;;
+        esac
+    done
+    set -- "${EXTRA_ARGS[@]}"  # Restore positional parameters
+
+    # Create output directory if it doesn't exist
+    mkdir -p -- "$OUTPUT_DIR" || {
+        echo "Error: failed to create output directory '$OUTPUT_DIR'."
+        return 1
+    }
+
     # Create sentinel to track wattameter start
-    srun --overlap --wait=0 --nodes="$SLURM_JOB_NUM_NODES" --ntasks-per-node=1 \
+    srun --overlap --wait=0 --chdir="$OUTPUT_DIR" \
+        --nodes="$SLURM_JOB_NUM_NODES" --ntasks-per-node=1 \
         "${WATTAWAIT}" -q "$ID" &
     local WAIT_PID=$!
 
     # Run wattameter on all nodes
     srun --overlap --wait=0 \
+        --chdir="$OUTPUT_DIR" \
         --output="slurm-$ID-wattameter.txt" \
         --nodes="$SLURM_JOB_NUM_NODES" --ntasks-per-node=1 \
         "${WATTASCRIPT}" -i "$ID" "$@" 2>/dev/null &
 
     # Wait for wattameter to start
-    wait $WAIT_PID 2>/dev/null
+    wait "$WAIT_PID" 2>/dev/null
 
     # Get the step ID from the last wattameter srun command
     local SANITY_CHECK=0
@@ -86,7 +127,7 @@ stop_wattameter () {
         
         # Stop ID using scancel
         if [ -n "$STEP_ID" ]; then
-            scancel --signal=INT $STEP_ID 2>/dev/null
+            scancel --signal=INT "$STEP_ID" 2>/dev/null
 
             # Wait for the step to terminate
             local SANITY_CHECK=0
