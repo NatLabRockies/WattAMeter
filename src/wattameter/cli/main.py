@@ -45,7 +45,7 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
 
     # Initialize base output filename
     base_output_filename = powerlog_filename(args.suffix)
-    all_outputs = [base_output_filename]
+    all_outputs = [f"{args.output_dir}/{base_output_filename}"]
 
     # Use default tracker configuration if user provides none
     tracker_specs = (
@@ -73,7 +73,9 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
             count = sum(1 for existing_tag in all_outputs if tag in existing_tag)
             if count > 0:
                 output_tags[i] = f"{tag}_{count}"
-        outputs = [f"{tag}_{base_output_filename}" for tag in output_tags]
+        outputs = [
+            f"{args.output_dir}/{tag}_{base_output_filename}" for tag in output_tags
+        ]
         all_outputs.extend(outputs)
 
         if len(readers) == 1:

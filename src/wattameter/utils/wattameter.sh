@@ -7,7 +7,7 @@
 
 # Usage function to display help
 usage() {
-    echo "Usage: $0 [-i|--index run_id] [-s|--suffix suffix] [-q|--quiet] [wattameter-options]"
+    echo "Usage: $0 [-i|--id run_id] [-s|--suffix suffix] [-q|--quiet] [wattameter-options]"
     echo "-i, --id    run_id  : Specify a run identifier for this WattAMeter instance"
     echo "-s, --suffix suffix : Specify a custom suffix for log file naming"
     echo "-q, --quiet         : Quiet mode; suppress startup messages"
@@ -31,10 +31,39 @@ main() {
     local EXTRA_ARGS=()
     while [[ $# -gt 0 ]]; do
         case "$1" in
-            -i|--id) RUN_ID="$2"; shift 2 ;;
-            -s|--suffix) SUFFIX="$2"; CUSTOM_SUFFIX=true; shift 2 ;;
+            -i|--id)
+                if [[ $# -lt 2 || "$2" == -* ]]; then
+                    echo "Error: $1 requires a value."
+                    return 1
+                fi
+                RUN_ID="$2"
+                shift 2
+                ;;
+            --id=*)
+                RUN_ID="${1#--id=}"
+                shift
+                ;;
+            -s|--suffix)
+                if [[ $# -lt 2 || "$2" == -* ]]; then
+                    echo "Error: $1 requires a value."
+                    return 1
+                fi
+                SUFFIX="$2"
+                CUSTOM_SUFFIX=true
+                shift 2
+                ;;
+            --suffix=*)
+                SUFFIX="${1#--suffix=}"
+                CUSTOM_SUFFIX=true
+                shift
+                ;;
             -q|--quiet) QUIET=true; shift ;;
             -h|--help) usage ;;
+            --)
+                shift
+                EXTRA_ARGS+=("$@")
+                break
+                ;;
             *) EXTRA_ARGS+=("$1"); shift ;;
         esac
     done
@@ -52,13 +81,13 @@ main() {
     fi
 
     # Build wattameter command arguments
-    local WATTAMETER_ARGS="--suffix ${SUFFIX}"
+    local WATTAMETER_ARGS=(--suffix "${SUFFIX}")
     if [ -n "${RUN_ID}" ]; then
-        WATTAMETER_ARGS="${WATTAMETER_ARGS} --id ${RUN_ID}"
+        WATTAMETER_ARGS+=(--id "${RUN_ID}")
     fi
 
     # Start the tracking and log the output
-    wattameter ${WATTAMETER_ARGS} "$@" > "${log_file}" 2>&1 &
+    wattameter "${WATTAMETER_ARGS[@]}" "$@" > "${log_file}" 2>&1 &
     local WATTAMETER_PID=$!
 
     # Gracefully terminates the tracking process on exit.

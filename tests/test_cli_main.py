@@ -4,7 +4,7 @@
 import argparse
 from unittest.mock import patch, MagicMock, mock_open
 from wattameter.cli.main import main
-from wattameter.cli.utils import parse_tracker_spec
+from wattameter.cli.utils import parse_tracker_spec, ForcedExit
 from wattameter.readers import NVMLReader, RAPLReader
 
 
@@ -67,6 +67,44 @@ class TestCLIMain:
                             # (3 trackers: 1 from default + 2 from user-specified)
                             assert mock_tracker_cls.call_count >= 2
 
+    def test_output_dir_is_used_for_tracker_outputs_and_headers(self):
+        """Test that --output-dir is used in tracker outputs and header writes."""
+        test_args = [
+            "--tracker",
+            "0.1,rapl",
+            "--suffix",
+            "session",
+            "--id",
+            "run-123",
+            "--output-dir",
+            "logs",
+        ]
+
+        with patch("sys.argv", ["wattameter"] + test_args):
+            with patch("wattameter.cli.utils.RAPLReader") as mock_rapl:
+                mock_rapl_instance = MagicMock()
+                mock_rapl_instance.tags = ["package-0[mJ]"]
+                mock_rapl_instance.__class__.__name__ = "RAPLReader"
+                mock_rapl.return_value = mock_rapl_instance
+
+                with patch("wattameter.cli.main.Tracker") as mock_tracker_cls:
+                    with patch("wattameter.cli.main.TrackerArray"):
+                        mock_tracker = MagicMock()
+                        mock_tracker.track_until_forced_exit.side_effect = ForcedExit()
+                        mock_tracker_cls.return_value = mock_tracker
+
+                        mocked_open = mock_open()
+                        with patch("builtins.open", mocked_open):
+                            with patch("time.time_ns", return_value=1000000000):
+                                main()
+
+                        tracker_output = mock_tracker_cls.call_args.kwargs["output"]
+                        assert tracker_output == "logs/rapl_01_wattameter_session.log"
+
+                        opened_files = [call.args[0] for call in mocked_open.call_args_list]
+                        assert "logs/wattameter_session.log" in opened_files
+                        assert "logs/rapl_01_wattameter_session.log" in opened_files
+
     def test_output_filename_generation(self):
         """Test that output filenames are generated correctly for different readers."""
         # Test with NVML reader
@@ -81,7 +119,8 @@ class TestCLIMain:
 
     def test_duplicate_reader_naming(self):
         """Test that duplicate readers get unique output filenames."""
-        all_outputs = ["wattameter.log"]
+        output_dir = "./logs"
+        all_outputs = [f"{output_dir}/wattameter.log"]
         base_output_filename = "wattameter.log"
 
         # Simulate creating tags for multiple readers of the same type
@@ -95,7 +134,7 @@ class TestCLIMain:
             if count > 0:
                 tag = f"{tag}_{count}"
             output_tags.append(tag)
-            output = f"{tag}_{base_output_filename}"
+            output = f"{output_dir}/{tag}_{base_output_filename}"
             all_outputs.append(output)
 
         # Verify unique tags were created
@@ -300,18 +339,18 @@ class TestOutputFileNaming:
 
     def test_collision_handling(self):
         """Test that filename collisions are handled by appending counter."""
-        all_outputs = ["wattameter.log"]
+        all_outputs = ["./wattameter.log"]
         base_tag = "nvml_01"
 
         # First occurrence - no collision
         count = sum(1 for existing_tag in all_outputs if base_tag in existing_tag)
         tag1 = base_tag if count == 0 else f"{base_tag}_{count}"
-        all_outputs.append(f"{tag1}_wattameter.log")
+        all_outputs.append(f"./{tag1}_wattameter.log")
 
         # Second occurrence - collision detected
         count = sum(1 for existing_tag in all_outputs if base_tag in existing_tag)
         tag2 = base_tag if count == 0 else f"{base_tag}_{count}"
-        all_outputs.append(f"{tag2}_wattameter.log")
+        all_outputs.append(f"./{tag2}_wattameter.log")
 
         # Third occurrence - collision detected
         count = sum(1 for existing_tag in all_outputs if base_tag in existing_tag)
