@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
+# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
 import argparse
 from unittest.mock import patch, MagicMock, mock_open

@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
+# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 #
 # This script is used to wait until "run ID" can be read from the file path.
 # If no file path is given, it will use the wattameter_powerlog_filename

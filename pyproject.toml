@@ -7,7 +7,7 @@ name = "wattameter"
 dynamic = ["version"]
 description = "Python package for monitoring and recording power usage, energy consumption, and performance metrics from hardware components such as GPUs and CPUs"
 authors = [
-    {name = "Weslley da Silva Pereira", email = "wdasilv@nrel.gov"},
+    {name = "Weslley da Silva Pereira", email = "wdasilv@nlr.gov"},
     {name = "Struan Clark", email = "Struan.Clark@nlr.gov"},
 ]
 dependencies = [
@@ -45,10 +45,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/NREL/WattAMeter"
-Documentation = "https://github.com/NREL/WattAMeter#readme"
-"Bug Reports" = "https://github.com/NREL/WattAMeter/issues"
-Changelog = "https://github.com/NREL/WattAMeter/releases"
+Homepage = "https://github.com/NatLabRockies/WattAMeter"
+Documentation = "https://github.com/NatLabRockies/WattAMeter#readme"
+"Bug Reports" = "https://github.com/NatLabRockies/WattAMeter/issues"
+Changelog = "https://github.com/NatLabRockies/WattAMeter/releases"
 
 [project.scripts]
 wattameter = "wattameter.cli.main:main"

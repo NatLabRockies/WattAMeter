@@ -64,7 +64,7 @@ def add_version_context(app, pagename, templatename, context, doctree):
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "WattAmeter"
-copyright = "2025, Alliance for Sustainable Energy, LLC"
+copyright = "2025, Alliance for Energy Innovation, LLC"
 author = "Weslley S. Pereira"
 
 # -- General configuration ---------------------------------------------------
@@ -114,7 +114,7 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_context = {
     "display_github": True,
-    "github_user": "NREL",
+    "github_user": "NatLabRockies",
     "github_repo": "WattAMeter",
     "github_version": "main",
     "conf_py_path": "/docs/",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
+# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
 from ..tracker import TrackerArray, Tracker
 from ..readers import NVMLReader, RAPLReader, Power

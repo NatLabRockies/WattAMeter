@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Sustainable Energy, LLC
+# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 #
 # This script is used to run the WattAMeter CLI tool.
 # It captures the output and PID of the process, allowing for graceful termination on timeout.

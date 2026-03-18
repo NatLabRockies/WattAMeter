@@ -1,4 +1,4 @@
-[![CI](https://github.com/NREL/WattAMeter/actions/workflows/ci.yml/badge.svg)](https://github.com/NREL/WattAMeter/actions/workflows/ci.yml)
+[![CI](https://github.com/NatLabRockies/WattAMeter/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/WattAMeter/actions/workflows/ci.yml)
 
 ![wattameter_logo](wattameter_logo.png)
 
