@@ -17,10 +17,25 @@ def setup(app):
     app.connect("html-page-context", add_version_context)
 
 
+def _resolve_current_version(app, context):
+    current = context.get("current_version")
+    if isinstance(current, dict) and current.get("name"):
+        return current["name"]
+
+    return (
+        getattr(app.config, "smv_current_version", None)
+        or getattr(app.config, "release", None)
+        or getattr(app.config, "version", None)
+        or "local"
+    )
+
+
 def add_version_context(app, pagename, templatename, context, doctree):
+    current_version_name = _resolve_current_version(app, context)
+
     if "versions" not in context:
         context["versions"] = {"tags": [], "branches": []}
-        context.setdefault("current_version", {"name": release})
+        context.setdefault("current_version", {"name": current_version_name})
         return
 
     versions = context["versions"]
@@ -42,7 +57,7 @@ def add_version_context(app, pagename, templatename, context, doctree):
         "tags": sorted(tags, key=lambda x: x["name"], reverse=True),
         "branches": branches,
     }
-    context.setdefault("current_version", {"name": release})
+    context.setdefault("current_version", {"name": current_version_name})
 
 
 # -- Project information -----------------------------------------------------
