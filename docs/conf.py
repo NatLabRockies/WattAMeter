@@ -19,6 +19,8 @@ def setup(app):
 
 def add_version_context(app, pagename, templatename, context, doctree):
     if "versions" not in context:
+        context["versions"] = {"tags": [], "branches": []}
+        context.setdefault("current_version", {"name": release})
         return
 
     versions = context["versions"]
@@ -40,6 +42,7 @@ def add_version_context(app, pagename, templatename, context, doctree):
         "tags": sorted(tags, key=lambda x: x["name"], reverse=True),
         "branches": branches,
     }
+    context.setdefault("current_version", {"name": release})
 
 
 # -- Project information -----------------------------------------------------
@@ -125,6 +128,7 @@ if os.path.exists(readme_src) and os.path.exists(license_src):
 
     text = Path(readme_src).read_text()
     for old, new in {
+        "](docs/": "](./",
         "](src/": "](../src/",
         "](examples/": "](../examples/",
         "](wattameter_logo": "](_static/wattameter_logo",

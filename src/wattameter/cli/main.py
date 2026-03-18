@@ -25,6 +25,23 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
 
     # Set up logging
     logging.basicConfig(level=args.log_level.upper())
+    
+    # Build MQTT configuration if broker is specified
+    mqtt_config = None
+    if args.mqtt_broker:
+        mqtt_config = {
+            "broker_host": args.mqtt_broker,
+            "broker_port": args.mqtt_port,
+            "username": args.mqtt_username,
+            "password": args.mqtt_password,
+            "topic_prefix": args.mqtt_topic_prefix,
+            "qos": args.mqtt_qos,
+            "run_id": args.id,
+        }
+        logging.info(
+            f"MQTT publishing enabled to {args.mqtt_broker}:{args.mqtt_port} "
+            f"with topic prefix '{args.mqtt_topic_prefix}'"
+        )
 
     # Initialize base output filename
     base_output_filename = powerlog_filename(args.suffix)
@@ -65,6 +82,7 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
                 dt_read=dt_read,
                 freq_write=args.freq_write,
                 output=outputs[0],
+                mqtt_config=mqtt_config,
             )
         else:
             tracker = TrackerArray(
@@ -72,6 +90,7 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
                 dt_read=dt_read,
                 freq_write=args.freq_write,
                 outputs=outputs,
+                mqtt_config=mqtt_config,
             )
         trackers.append(tracker)
 

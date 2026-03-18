@@ -11,4 +11,5 @@ Welcome to WattAMeter's Documentation
    :maxdepth: 2
 
    README.md
+   mqtt_usage.md
    api/wattameter

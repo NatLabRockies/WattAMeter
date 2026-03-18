@@ -12,6 +12,15 @@ from collections import deque
 from datetime import datetime
 from abc import abstractmethod
 from itertools import zip_longest
+from typing import Optional
+
+# Import MQTT publisher if available
+try:
+    from .mqtt_publisher import MQTTPublisher
+    MQTT_AVAILABLE = True
+except ImportError:
+    MQTTPublisher = None  # type: ignore
+    MQTT_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +219,7 @@ class Tracker(BaseTracker):
         dt_read: float = 1.0,
         freq_write: int = 3600,
         output=None,
+        mqtt_config: Optional[dict] = None,
     ) -> None:
         super().__init__(dt_read)
 
@@ -228,6 +238,17 @@ class Tracker(BaseTracker):
         self.freq_write = freq_write
         self._timestamp_fmt = "%Y-%m-%d_%H:%M:%S.%f"
         self._output = output
+        
+        # MQTT publishing configuration
+        self.mqtt_config = mqtt_config
+        self.mqtt_publisher = None
+        if mqtt_config and MQTT_AVAILABLE:
+            self._setup_mqtt_publisher()
+        elif mqtt_config and not MQTT_AVAILABLE:
+            logger.warning(
+                "MQTT configuration provided but paho-mqtt is not installed. "
+                "Install with: pip install paho-mqtt"
+            )
 
     def read(self) -> float:
         # Read data from the reader and measure the time taken
@@ -251,6 +272,58 @@ class Tracker(BaseTracker):
         elapsed_s = (timestamp2 - timestamp0) / 1e9  # Convert to seconds
 
         return elapsed_s
+    
+    def _setup_mqtt_publisher(self):
+        """Initialize and connect the MQTT publisher.
+        
+        Creates an MQTT publisher instance using the provided configuration.
+        The configuration should be a dictionary with keys:
+        - broker_host: MQTT broker hostname (required)
+        - broker_port: MQTT broker port (default: 1883)
+        - username: Optional username for authentication
+        - password: Optional password for authentication
+        - topic_prefix: Optional topic prefix (default: "wattameter")
+        - qos: Quality of service level 0-2 (default: 1)
+        """
+        if not MQTT_AVAILABLE or MQTTPublisher is None or self.mqtt_config is None:
+            logger.warning("MQTT not available, skipping publisher setup")
+            return
+        
+        try:
+            # Extract configuration parameters
+            broker_host = self.mqtt_config.get("broker_host")
+            if not broker_host:
+                logger.error("MQTT broker_host is required in mqtt_config")
+                return
+            
+            broker_port = self.mqtt_config.get("broker_port", 1883)
+            username = self.mqtt_config.get("username")
+            password = self.mqtt_config.get("password")
+            topic_prefix = self.mqtt_config.get("topic_prefix", "wattameter")
+            qos = self.mqtt_config.get("qos", 1)
+            run_id = self.mqtt_config.get("run_id")
+            
+            # Create the publisher instance
+            self.mqtt_publisher = MQTTPublisher(
+                broker_host=broker_host,
+                broker_port=broker_port,
+                username=username,
+                password=password,
+                topic_prefix=topic_prefix,
+                qos=qos,
+                run_id=run_id,
+            )
+            
+            # Attempt to connect
+            if self.mqtt_publisher.connect():
+                logger.info("MQTT publisher initialized and connected")
+            else:
+                logger.error("Failed to connect MQTT publisher")
+                self.mqtt_publisher = None
+                
+        except Exception as e:
+            logger.error(f"Error setting up MQTT publisher: {e}")
+            self.mqtt_publisher = None
 
     def write(self):
         self.write_data(*self.flush_data())
@@ -334,11 +407,12 @@ class Tracker(BaseTracker):
             time_series, data, time_unit=Second("n")
         )
 
+        # Write to file
         buffer = ""
         for t, rtime, stream0, stream1 in zip_longest(
             time_series, reading_time, data, derived_data, fillvalue=[]
         ):
-            buffer += "  " + self.format_timestamp(t)
+            buffer += "  " + self.format_timestamp(t)  # type: ignore
             buffer += f" {rtime}"
             for v in stream0:
                 buffer += f" {v}"
@@ -348,6 +422,22 @@ class Tracker(BaseTracker):
 
         with open(self.output, "a", encoding="utf-8") as f:
             f.write(buffer)
+        
+        # Publish to MQTT if configured
+        if self.mqtt_publisher:
+            try:
+                reader_name = self.reader.__class__.__name__.lower()
+                self.mqtt_publisher.publish_batch(
+                    reader_name=reader_name,
+                    time_series=time_series,
+                    reading_times=reading_time,
+                    tags=self.reader.tags,
+                    data_series=data,
+                    derived_tags=self.reader.derived_tags if self.reader.derived_tags else None,
+                    derived_data_series=derived_data if derived_data else None,
+                )
+            except Exception as e:
+                logger.error(f"Error publishing to MQTT: {e}")
 
 
 class TrackerArray(BaseTracker):
@@ -376,6 +466,7 @@ class TrackerArray(BaseTracker):
         dt_read: float = 1.0,
         freq_write: int = 3600,
         outputs: list = [],
+        mqtt_config: Optional[dict] = None,
     ) -> None:
         super().__init__(dt_read)
 
@@ -387,7 +478,7 @@ class TrackerArray(BaseTracker):
             )
 
         self.trackers = [
-            Tracker(reader, output=o) for reader, o in zip(readers, outputs)
+            Tracker(reader, output=o, mqtt_config=mqtt_config) for reader, o in zip(readers, outputs)
         ]
 
         self.freq_write = freq_write

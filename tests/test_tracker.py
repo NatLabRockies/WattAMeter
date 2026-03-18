@@ -16,7 +16,7 @@ import tempfile
 import os
 import time
 import threading
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 import numpy as np
 from collections import deque
 
@@ -526,6 +526,54 @@ class TestTracker:
             content = f.read()
             assert "# timestamp" in content  # Header
             # Should have at least one data line from final operations
+
+    def test_mqtt_setup_passes_run_id_to_publisher(self, output_file):
+        """Test MQTT setup forwards run_id and keeps publisher when connected."""
+        reader = MockReader(read_return_value=[10, 20])
+        mqtt_instance = MagicMock()
+        mqtt_instance.connect.return_value = True
+
+        with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+            "wattameter.tracker.MQTTPublisher", return_value=mqtt_instance
+        ) as mock_publisher_cls:
+            tracker = Tracker(
+                reader,
+                dt_read=1.0,
+                output=output_file,
+                mqtt_config={"broker_host": "broker.local", "run_id": "run-123"},
+            )
+
+        assert tracker.mqtt_publisher is mqtt_instance
+        mock_publisher_cls.assert_called_once()
+        assert mock_publisher_cls.call_args.kwargs["run_id"] == "run-123"
+
+    def test_write_data_calls_mqtt_publish_batch(self, output_file):
+        """Test write_data publishes flushed samples to MQTT when configured."""
+        reader = MockReader(read_return_value=[10, 20])
+        mqtt_instance = MagicMock()
+        mqtt_instance.connect.return_value = True
+
+        with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+            "wattameter.tracker.MQTTPublisher", return_value=mqtt_instance
+        ):
+            tracker = Tracker(
+                reader,
+                dt_read=1.0,
+                output=output_file,
+                mqtt_config={"broker_host": "broker.local"},
+            )
+
+        time_series = np.array([1_000_000_000])
+        reading_time = np.array([1000])
+        data = np.array([[10.0, 20.0]])
+
+        tracker.write_data(time_series, reading_time, data)
+
+        mqtt_instance.publish_batch.assert_called_once()
+        kwargs = mqtt_instance.publish_batch.call_args.kwargs
+        assert kwargs["reader_name"] == "mockreader"
+        assert kwargs["tags"] == reader.tags
+        assert kwargs["time_series"][0] == 1_000_000_000
 
 
 class TestTrackerArray:

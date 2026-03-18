@@ -9,6 +9,7 @@
 - Track power usage for CPU (using RAPL) and GPU (using nvidia-ml-py)
 - Track GPU utilization and temperature
 - Periodically log time series data to file
+- Real-time MQTT publishing for integration with monitoring systems
 - Customizable logging and output options
 - Command-line interface for easy usage
 - Integration with SLURM for HPC environments
@@ -23,12 +24,17 @@ pip install wattameter
 
 ## Optional extras
 
-Some features (notably the post-processing utilities that use `pandas`) are optional and not required for the core runtime. To enable post-processing functionality, install the optional extra:
+Some features (notably the post-processing utilities that use `pandas` and MQTT publishing) are optional and not required for the core runtime. To enable these features:
 
 ```bash
+# For post-processing with pandas
 pip install wattameter[postprocessing]
-# or just
-pip install pandas
+
+# For MQTT publishing
+pip install wattameter[mqtt]
+
+# For both
+pip install wattameter[postprocessing,mqtt]
 ```
 
 ## Usage
@@ -66,6 +72,20 @@ with Tracker(
 wattameter --tracker 0.1,nvml-power,rapl --tracker 1.0,nvml-util --suffix test --id 0 --freq-write 600 --log-level info
 ```
 
+For MQTT publishing, add MQTT broker configuration:
+
+```sh
+wattameter \
+  --tracker 0.1,nvml-power,rapl \
+  --mqtt-broker mqtt.example.com \
+  --mqtt-port 1883 \
+  --mqtt-username myuser \
+  --mqtt-password mypassword \
+  --mqtt-topic-prefix "hpc/wattameter"
+```
+
+See [MQTT Usage Documentation](docs/mqtt_usage.md) for detailed information on MQTT publishing.
+
 | Option       | Short | Default             | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ------------ | ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | --tracker    |       | 0.1,nvml-power,rapl | Tracker specification: `dt_read,metric1,metric2,...` where `dt_read` is the time interval in seconds between readings. Available metrics: `rapl` (CPU energy), `nvml-energy` (GPU energy), `nvml-power` (GPU power), `nvml-temp` (GPU temperature), `nvml-util` (GPU utilization), `nvml-nvlink` (GPU NVLink throughput). Can be specified multiple times to create multiple trackers with different configurations. |
@@ -73,6 +93,12 @@ wattameter --tracker 0.1,nvml-power,rapl --tracker 1.0,nvml-util --suffix test -
 | --id         | -i    | UUID                | Identifier for the experiment                                                                                                                                                                                                                                                                                                                                                                                        |
 | --freq-write | -f    | 3600                | Frequency (# reads) for writing data to file                                                                                                                                                                                                                                                                                                                                                                         |
 | --log-level  | -l    | warning             | Logging level: debug, info, warning, error, critical                                                                                                                                                                                                                                                                                                                                                                 |
+| --mqtt-broker|       | None                | MQTT broker hostname. If provided, enables real-time publishing to MQTT                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-port  |       | 1883                | MQTT broker port                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --mqtt-username |    | None                | MQTT authentication username (optional)                                                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-password |    | None                | MQTT authentication password (optional)                                                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-topic-prefix | | wattameter         | Prefix for MQTT topics                                                                                                                                                                                                                                                                                                                                                                                              |
+| --mqtt-qos   |       | 1                   | MQTT Quality of Service level (0, 1, or 2)                                                                                                                                                                                                                                                                                                                                                                          |
 | --help       | -h    |                     | Show the help message and exit                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Command-line interface with SLURM
