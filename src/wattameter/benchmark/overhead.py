@@ -44,9 +44,11 @@ def benchmark_static_overhead():
             return_value=mock.MagicMock(
                 suffix=None,
                 id="benchmark_run",
-                dt_read=0.1,
+                tracker=None,
                 freq_write=3600,
                 log_level="INFO",
+                output_dir=temp_dir,
+                mqtt_broker=None,
             ),
         ),
         mock.patch(
@@ -92,9 +94,11 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
             return_value=mock.MagicMock(
                 suffix=None,
                 id="benchmark_run",
-                dt_read=0.1,
+                tracker=None,
                 freq_write=3600,
                 log_level="INFO",
+                output_dir=temp_dir,
+                mqtt_broker=None,
             ),
         ),
     ):
