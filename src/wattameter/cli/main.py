@@ -14,118 +14,127 @@ from datetime import datetime
 
 
 def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
+    handled_signals = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
+    previous_handlers = {sig: signal.getsignal(sig) for sig in handled_signals}
+
     # Register the signals to handle forced exit
-    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+    for sig in handled_signals:
         signal.signal(sig, handle_signal)
 
-    # Parse command line arguments
-    parser = argparse.ArgumentParser(description="WattAMeter CLI")
-    default_cli_arguments(parser)
-    args = parser.parse_args()
+    try:
+        # Parse command line arguments
+        parser = argparse.ArgumentParser(description="WattAMeter CLI")
+        default_cli_arguments(parser)
+        args = parser.parse_args()
 
-    # Set up logging
-    logging.basicConfig(level=args.log_level.upper())
-    
-    # Build MQTT configuration if broker is specified
-    mqtt_config = None
-    if args.mqtt_broker:
-        mqtt_config = {
-            "broker_host": args.mqtt_broker,
-            "broker_port": args.mqtt_port,
-            "username": args.mqtt_username,
-            "password": args.mqtt_password,
-            "topic_prefix": args.mqtt_topic_prefix,
-            "qos": args.mqtt_qos,
-            "run_id": args.id,
-        }
-        logging.info(
-            f"MQTT publishing enabled to {args.mqtt_broker}:{args.mqtt_port} "
-            f"with topic prefix '{args.mqtt_topic_prefix}'"
+        # Set up logging
+        logging.basicConfig(level=args.log_level.upper())
+
+        # Build MQTT configuration if broker is specified
+        mqtt_config = None
+        if args.mqtt_broker:
+            mqtt_config = {
+                "broker_host": args.mqtt_broker,
+                "broker_port": args.mqtt_port,
+                "username": args.mqtt_username,
+                "password": args.mqtt_password,
+                "topic_prefix": args.mqtt_topic_prefix,
+                "qos": args.mqtt_qos,
+                "run_id": args.id,
+            }
+            logging.info(
+                f"MQTT publishing enabled to {args.mqtt_broker}:{args.mqtt_port} "
+                f"with topic prefix '{args.mqtt_topic_prefix}'"
+            )
+
+        # Initialize base output filename
+        base_output_filename = powerlog_filename(args.suffix)
+        all_outputs = [f"{args.output_dir}/{base_output_filename}"]
+
+        # Use default tracker configuration if user provides none
+        tracker_specs = (
+            args.tracker
+            if args.tracker
+            else [(0.1, [NVMLReader((Power,)), RAPLReader()])]
         )
 
-    # Initialize base output filename
-    base_output_filename = powerlog_filename(args.suffix)
-    all_outputs = [f"{args.output_dir}/{base_output_filename}"]
+        # Create trackers based on specifications
+        trackers = []
+        for idx, (dt_read, r_list) in enumerate(tracker_specs):
+            # Filter out readers with no tags
+            readers = [r for r in r_list if len(r.tags) > 0]
+            if not readers:
+                logging.warning(
+                    f"Tracker specification {idx} has no valid readers. Skipping."
+                )
+                continue
 
-    # Use default tracker configuration if user provides none
-    tracker_specs = (
-        args.tracker if args.tracker else [(0.1, [NVMLReader((Power,)), RAPLReader()])]
-    )
+            # Generate unique output filenames for each reader
+            output_tags = [
+                f"{reader.__class__.__name__.lower()[0:4]}_{str(dt_read).replace('.', '')}"
+                for reader in readers
+            ]
+            for i, tag in enumerate(output_tags):
+                # Count occurrences using substring match
+                count = sum(1 for existing_tag in all_outputs if tag in existing_tag)
+                if count > 0:
+                    output_tags[i] = f"{tag}_{count}"
+            outputs = [
+                f"{args.output_dir}/{tag}_{base_output_filename}" for tag in output_tags
+            ]
+            all_outputs.extend(outputs)
 
-    # Create trackers based on specifications
-    trackers = []
-    for idx, (dt_read, r_list) in enumerate(tracker_specs):
-        # Filter out readers with no tags
-        readers = [r for r in r_list if len(r.tags) > 0]
-        if not readers:
-            logging.warning(
-                f"Tracker specification {idx} has no valid readers. Skipping."
-            )
-            continue
+            if len(readers) == 1:
+                tracker = Tracker(
+                    reader=readers[0],
+                    dt_read=dt_read,
+                    freq_write=args.freq_write,
+                    output=outputs[0],
+                    mqtt_config=mqtt_config,
+                )
+            else:
+                tracker = TrackerArray(
+                    readers,
+                    dt_read=dt_read,
+                    freq_write=args.freq_write,
+                    outputs=outputs,
+                    mqtt_config=mqtt_config,
+                )
+            trackers.append(tracker)
 
-        # Generate unique output filenames for each reader
-        output_tags = [
-            f"{reader.__class__.__name__.lower()[0:4]}_{str(dt_read).replace('.', '')}"
-            for reader in readers
-        ]
-        for i, tag in enumerate(output_tags):
-            # Count occurrences using substring match
-            count = sum(1 for existing_tag in all_outputs if tag in existing_tag)
-            if count > 0:
-                output_tags[i] = f"{tag}_{count}"
-        outputs = [
-            f"{args.output_dir}/{tag}_{base_output_filename}" for tag in output_tags
-        ]
-        all_outputs.extend(outputs)
+        if not trackers:
+            logging.error("No valid readers available. Exiting.")
+            return
 
-        if len(readers) == 1:
-            tracker = Tracker(
-                reader=readers[0],
-                dt_read=dt_read,
-                freq_write=args.freq_write,
-                output=outputs[0],
-                mqtt_config=mqtt_config,
-            )
-        else:
-            tracker = TrackerArray(
-                readers,
-                dt_read=dt_read,
-                freq_write=args.freq_write,
-                outputs=outputs,
-                mqtt_config=mqtt_config,
-            )
-        trackers.append(tracker)
+        # Signal wattameter is starting
+        t0 = time.time_ns()
+        timestamp0 = datetime.fromtimestamp(t0 / 1e9).strftime(timestamp_fmt)
+        for file in all_outputs:
+            with open(file, "a") as f:
+                f.write(f"# {timestamp0} - WattAMeter run {args.id}\n")
 
-    if not trackers:
-        logging.error("No valid readers available. Exiting.")
-        return
+        # Repeat until interrupted
+        try:
+            logging.info("Tracking with WattAMeter...")
+            for t in trackers[:-1]:
+                t.start(freq_write=args.freq_write)
+            trackers[-1].track_until_forced_exit()
+        except ForcedExit:
+            logging.info("Forced exit detected. Stopping tracker...")
 
-    # Signal wattameter is starting
-    t0 = time.time_ns()
-    timestamp0 = datetime.fromtimestamp(t0 / 1e9).strftime(timestamp_fmt)
-    for file in all_outputs:
-        with open(file, "a") as f:
-            f.write(f"# {timestamp0} - WattAMeter run {args.id}\n")
-
-    # Repeat until interrupted
-    try:
-        logging.info("Tracking with WattAMeter...")
-        for t in trackers[:-1]:
-            t.start(freq_write=args.freq_write)
-        trackers[-1].track_until_forced_exit()
-    except ForcedExit:
-        logging.info("Forced exit detected. Stopping tracker...")
-
-        # Ignore further signals during cleanup
-        for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
-            signal.signal(sig, signal.SIG_IGN)
+            # Ignore further signals during cleanup
+            for sig in handled_signals:
+                signal.signal(sig, signal.SIG_IGN)
+        finally:
+            for t in trackers[:-1]:
+                t.stop(freq_write=args.freq_write)
+            trackers[-1].write()
+            t1 = time.time_ns()
+            elapsed_s = (t1 - t0) * 1e-9
+            logging.info(f"Tracker stopped. Elapsed time: {elapsed_s:.2f} seconds.")
     finally:
-        for t in trackers[:-1]:
-            t.stop(freq_write=args.freq_write)
-        trackers[-1].write()
-        t1 = time.time_ns()
-        elapsed_s = (t1 - t0) * 1e-9
-        logging.info(f"Tracker stopped. Elapsed time: {elapsed_s:.2f} seconds.")
+        for sig, previous_handler in previous_handlers.items():
+            signal.signal(sig, previous_handler)
 
 
 if __name__ == "__main__":
