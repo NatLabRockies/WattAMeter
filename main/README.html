@@ -112,14 +112,14 @@
 </section>
 <section id="optional-extras">
 <h2>Optional extras<a class="headerlink" href="#optional-extras" title="Link to this heading"></a></h2>
-<p>Some features (notably the post-processing utilities that use <code class="docutils literal notranslate"><span class="pre">pandas</span></code> and MQTT publishing) are optional and not required for the core runtime. To enable these features:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># For post-processing with pandas</span>
+<p>Some features are optional and not required for the core runtime. The current optional dependencies are post-processing (<code class="docutils literal notranslate"><span class="pre">postprocessing</span></code>) and benchmark (<code class="docutils literal notranslate"><span class="pre">benchmark</span></code>) utilities, and MQTT (<code class="docutils literal notranslate"><span class="pre">mqtt</span></code>) publishing. Here are a few examples of how to install with optional dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install with post-processing utilities</span>
 pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>postprocessing<span class="o">]</span>
 
-<span class="c1"># For MQTT publishing</span>
-pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>mqtt<span class="o">]</span>
+<span class="c1"># Install with benchmark utilities</span>
+pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>benchmark<span class="o">]</span>
 
-<span class="c1"># For both</span>
+<span class="c1"># Install with postprocessing and mqtt</span>
 pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>postprocessing,mqtt<span class="o">]</span>
 </pre></div>
 </div>
@@ -316,6 +316,8 @@ For specific documentation of the NLR module, visit <a class="reference external
       <dt>Tags</dt>
       
         <dd><a href="../v0.8.0/index.html">v0.8.0</a></dd>
+      
+        <dd><a href="../v0.9.0/index.html">v0.9.0</a></dd>
       
     </dl>
     <dl>

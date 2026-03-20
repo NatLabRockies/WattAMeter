@@ -151,7 +151,7 @@ as an example rather than as a test.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wattameter.benchmark.update_time.benchmark_rapl_update_time">
-<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.update_time.</span></span><span class="sig-name descname"><span class="pre">benchmark_rapl_update_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.update_time.benchmark_rapl_update_time" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.update_time.</span></span><span class="sig-name descname"><span class="pre">benchmark_rapl_update_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpu_stress_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.update_time.benchmark_rapl_update_time" title="Link to this definition"></a></dt>
 <dd><p>Benchmarks the update time of the RAPL files using estimate_dt().</p>
 </dd></dl>
 
@@ -215,9 +215,74 @@ Retrieved 2025-12-03, License - CC BY-SA 4.0</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.print_benchmark_banner">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">print_benchmark_banner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.print_benchmark_banner" title="Link to this definition"></a></dt>
+<dd><p>Print a standardized benchmark section banner.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.print_benchmark_footer">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">print_benchmark_footer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.print_benchmark_footer" title="Link to this definition"></a></dt>
+<dd><p>Print a standardized benchmark completion footer.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="wattameter.benchmark.utils.print_system_info">
 <span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">print_system_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.print_system_info" title="Link to this definition"></a></dt>
 <dd><p>Print basic system information that might affect overhead.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.start_cpu_stress">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">start_cpu_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">warmup_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.start_cpu_stress" title="Link to this definition"></a></dt>
+<dd><p>Start the CPU stress process and return it, or None if startup fails.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>warmup_s</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time in seconds to wait after starting the CPU stress before returning (default: <code class="docutils literal notranslate"><span class="pre">5.0</span></code>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The multiprocessing.Process object for the CPU stress process, or None if not started</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.start_gpu_burn">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">start_gpu_burn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gpu_burn_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.start_gpu_burn" title="Link to this definition"></a></dt>
+<dd><p>Optionally compile and start gpu_burn, returning the spawned process or None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gpu_burn_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – Path to the gpu_burn benchmark directory, or None to skip GPU stress. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><strong>warmup_s</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – Time in seconds to wait after starting gpu_burn before returning (default: <code class="docutils literal notranslate"><span class="pre">10.0</span></code>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The subprocess.Popen object for the gpu_burn process, or None if not started</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.stop_cpu_stress">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">stop_cpu_stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpu_stress_process</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.stop_cpu_stress" title="Link to this definition"></a></dt>
+<dd><p>Terminate the CPU stress process if it was started.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cpu_stress_process</strong> – The multiprocessing.Process object for the CPU stress process, or None if not started</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wattameter.benchmark.utils.stop_gpu_burn">
+<span class="sig-prename descclassname"><span class="pre">wattameter.benchmark.utils.</span></span><span class="sig-name descname"><span class="pre">stop_gpu_burn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gpu_burn_process</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.benchmark.utils.stop_gpu_burn" title="Link to this definition"></a></dt>
+<dd><p>Terminate gpu_burn if it was started.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gpu_burn_process</strong> – The subprocess.Popen object for the gpu_burn process, or None if not started</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -271,6 +336,8 @@ Retrieved 2025-12-03, License - CC BY-SA 4.0</p>
       <dt>Tags</dt>
       
         <dd><a href="../../v0.8.0/api/wattameter.benchmark.html">v0.8.0</a></dd>
+      
+        <dd><a href="../../v0.9.0/api/wattameter.benchmark.html">v0.9.0</a></dd>
       
     </dl>
     <dl>

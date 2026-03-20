@@ -26,16 +26,16 @@ pip install wattameter
 
 ## Optional extras
 
-Some features (notably the post-processing utilities that use `pandas` and MQTT publishing) are optional and not required for the core runtime. To enable these features:
+Some features are optional and not required for the core runtime. The current optional dependencies are post-processing (`postprocessing`) and benchmark (`benchmark`) utilities, and MQTT (`mqtt`) publishing. Here are a few examples of how to install with optional dependencies:
 
 ```bash
-# For post-processing with pandas
+# Install with post-processing utilities
 pip install wattameter[postprocessing]
 
-# For MQTT publishing
-pip install wattameter[mqtt]
+# Install with benchmark utilities
+pip install wattameter[benchmark]
 
-# For both
+# Install with postprocessing and mqtt
 pip install wattameter[postprocessing,mqtt]
 ```
 
