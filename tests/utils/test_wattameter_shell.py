@@ -59,8 +59,8 @@ def test_wattameter_sh_execution_and_termination(temp_dir):
 
         return
 
-    # Send a SIGTERM signal to the entire process group
-    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+    # Send SIGTERM to the wrapper script itself so its trap handles shutdown.
+    process.send_signal(signal.SIGTERM)
 
     # Wait for the process to complete
     stdout, stderr = process.communicate(timeout=5)
