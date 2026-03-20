@@ -8,7 +8,6 @@ Overhead of using WattAMeter
 import logging
 import time
 import multiprocessing
-import subprocess
 import signal
 import tempfile
 import os
@@ -17,7 +16,14 @@ from unittest import mock
 
 from ..cli.main import main
 from ..utils import file_to_df
-from .utils import compile_gpu_burn, stress_cpu
+from .utils import (
+    print_benchmark_banner,
+    print_benchmark_footer,
+    start_gpu_burn,
+    stop_gpu_burn,
+    start_cpu_stress,
+    stop_cpu_stress,
+)
 
 
 def benchmark_static_overhead():
@@ -29,10 +35,7 @@ def benchmark_static_overhead():
     :return: static overhead in seconds
     """
 
-    print()
-    print("=" * 60)
-    print("STATIC WATTAMETER CLI OVERHEAD BENCHMARK")
-    print("=" * 60)
+    print_benchmark_banner("STATIC WATTAMETER CLI OVERHEAD BENCHMARK")
 
     with (
         tempfile.TemporaryDirectory() as temp_dir,
@@ -80,10 +83,7 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
     :param gpu_burn_dir: If not None, path to the gpu_burn benchmark
     """
 
-    print()
-    print("=" * 60)
-    print("DYNAMIC WATTAMETER CLI OVERHEAD BENCHMARK")
-    print("=" * 60)
+    print_benchmark_banner("DYNAMIC WATTAMETER CLI OVERHEAD BENCHMARK")
 
     with (
         tempfile.TemporaryDirectory() as temp_dir,
@@ -108,35 +108,11 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
             print("Running for 60 seconds", end="")
 
             # Stress GPUs if gpu_burn is available
-            if gpu_burn_dir is not None:
-                try:
-                    gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
-                    print("\n🔥 Starting gpu_burn to stress GPUs...")
-                    gpu_burn_process = subprocess.Popen(
-                        [gpu_burn_path, "3600"],
-                        cwd=gpu_burn_dir,
-                        stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL,
-                    )
-                    time.sleep(10)  # Give it some time to start
-                    print("✅ gpu_burn started successfully")
-                except Exception as e:
-                    print(
-                        f"\n⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs."
-                    )
+            gpu_burn_process = start_gpu_burn(gpu_burn_dir, warmup_s=10.0)
 
             # Stress CPUs if requested
             if cpu_stress_test:
-                try:
-                    print("\n🔥 Starting stressing CPUs...")
-                    cpu_stress_process = multiprocessing.Process(target=stress_cpu)
-                    cpu_stress_process.start()
-                    time.sleep(5)  # Give it some time to start
-                    print("✅ cpu_stress_process started successfully")
-                except Exception as e:
-                    print(
-                        f"\n⚠️  Could not start CPU stress process: {e}. Continuing with idle CPUs."
-                    )
+                cpu_stress_process = start_cpu_stress(warmup_s=5.0)
 
             # Start the main function in a separate process
             main_process = multiprocessing.Process(target=main)
@@ -172,14 +148,17 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
                     print(f"\nReading output file: {filename}")
                     with open(os.path.join(temp_dir, filename), "r") as f:
                         df = file_to_df(f)
-                        dt = (
+                        mean_delta = (
                             df.index[1:-1]  # avoid edge effects
                             .to_series()
                             .diff()
                             .dropna()
                             .mean()
-                            .total_seconds()
                         )
+                        try:
+                            dt = mean_delta.total_seconds()  # type: ignore[attr-defined]
+                        except AttributeError:
+                            dt = float(mean_delta)
                         desc = df["reading-time[ns]"].describe()
                         print("Reading time statistics (nanoseconds):")
                         for stat, value in desc.items():
@@ -192,18 +171,10 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
                         )
         finally:
             # Terminate gpu_burn if it was started
-            if gpu_burn_process is not None:
-                print("\n🛑 Terminating gpu_burn...")
-                gpu_burn_process.terminate()
-                gpu_burn_process.wait()
-                print("✅ gpu_burn terminated")
+            stop_gpu_burn(gpu_burn_process)
 
             # Terminate CPU stress process
-            if cpu_stress_process is not None:
-                print("\n🛑 Terminating CPU stress process...")
-                cpu_stress_process.terminate()
-                cpu_stress_process.join()
-                print("✅ CPU stress process terminated")
+            stop_cpu_stress(cpu_stress_process)
 
             # Restore the original working directory
             os.chdir(original_cwd)
@@ -221,30 +192,21 @@ def run_benchmark():
     )
     parser.add_argument(
         "--cpu-stress-test",
-        type=bool,
-        default=False,
-        help="If True, stress the CPU during the dynamic overhead benchmark",
+        action="store_true",
+        help="Stress the CPUs during the dynamic overhead benchmark",
     )
     parser.add_argument(
         "--gpu-burn-dir",
         type=str,
         default=None,
-        help="If provided, path to the gpu_burn benchmark to stress GPUs during the dynamic overhead benchmark",
+        help="Path to the gpu_burn benchmark to stress GPUs during the dynamic overhead benchmark",
     )
     args = parser.parse_args()
 
     benchmark_static_overhead()
     benchmark_dynamic_overhead(args.cpu_stress_test, args.gpu_burn_dir)
 
-    print()
-    print("=" * 60)
-    print("BENCHMARK COMPLETE")
-    print("=" * 60)
-    print()
-    print("Note: These measurements are indicative and will vary based on:")
-    print("  - Hardware specifications")
-    print("  - Available power monitoring interfaces")
-    print("  - Background processes")
+    print_benchmark_footer()
 
 
 if __name__ == "__main__":

@@ -12,10 +12,20 @@ Usage:
     python update_time.py
 """
 
-from .utils import estimate_dt, compile_gpu_burn, stress_cpu
 import statistics
 import logging
 import time
+
+from .utils import (
+    estimate_dt,
+    print_benchmark_banner,
+    print_benchmark_footer,
+    start_gpu_burn,
+    stop_gpu_burn,
+    start_cpu_stress,
+    stop_cpu_stress,
+)
+from ..readers import RAPLReader
 
 
 def _benchmark_metric(metric_name, get_metric_func, unit):
@@ -72,9 +82,7 @@ def _benchmark_metric(metric_name, get_metric_func, unit):
 
 def benchmark_pynvml_update_time(gpu_burn_dir=None):
     """Benchmarks the update time of pynvml nvmlDeviceGetPowerUsage function using estimate_dt()."""
-    print("\n" + "=" * 60)
-    print("PYNVML POWER USAGE UPDATE TIME BENCHMARK")
-    print("=" * 60)
+    print_benchmark_banner("PYNVML POWER USAGE UPDATE TIME BENCHMARK")
 
     try:
         import pynvml
@@ -102,22 +110,7 @@ def benchmark_pynvml_update_time(gpu_burn_dir=None):
             return
 
         # Stress GPUs if gpu_burn is available
-        if gpu_burn_dir is not None:
-            try:
-                import subprocess
-
-                gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
-                print("🔥 Starting gpu_burn to stress GPUs...")
-                gpu_burn_process = subprocess.Popen(
-                    [gpu_burn_path, "3600"],
-                    cwd=gpu_burn_dir,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                time.sleep(10)  # Give it some time to start
-                print("✅ gpu_burn started successfully")
-            except Exception as e:
-                print(f"⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs.")
+        gpu_burn_process = start_gpu_burn(gpu_burn_dir, warmup_s=10.0)
 
         # Benchmark each GPU
         for gpu_id in range(device_count):
@@ -206,11 +199,7 @@ def benchmark_pynvml_update_time(gpu_burn_dir=None):
         return
     finally:
         # Terminate gpu_burn if it was started
-        if gpu_burn_process is not None:
-            print("\n🛑 Terminating gpu_burn...")
-            gpu_burn_process.terminate()
-            gpu_burn_process.wait()
-            print("✅ gpu_burn terminated")
+        stop_gpu_burn(gpu_burn_process)
 
         # Shutdown NVML
         try:
@@ -220,32 +209,19 @@ def benchmark_pynvml_update_time(gpu_burn_dir=None):
             pass
 
 
-def benchmark_rapl_update_time():
+def benchmark_rapl_update_time(cpu_stress_test=False):
     """Benchmarks the update time of the RAPL files using estimate_dt()."""
-    print("\n" + "=" * 60)
-    print("RAPL POWER USAGE UPDATE TIME BENCHMARK")
-    print("=" * 60)
+    print_benchmark_banner("RAPL POWER USAGE UPDATE TIME BENCHMARK")
 
-    try:
-        from wattameter.readers import RAPLReader
-
-        rapl = RAPLReader()
-    except ImportError:
-        print("❌ wattameter.readers.rapl not available. Skipping benchmark.")
+    rapl = RAPLReader()
+    if len(rapl.tags) == 0:
+        print("❌ No RAPL devices found. Skipping benchmark.")
         return
 
     # Stress CPUs
     cpu_stress_process = None
-    try:
-        import multiprocessing
-
-        print("🔥 Starting stressing CPUs...")
-        cpu_stress_process = multiprocessing.Process(target=stress_cpu)
-        cpu_stress_process.start()
-        time.sleep(5)  # Give it some time to start
-        print("✅ cpu_stress_process started successfully")
-    except Exception as e:
-        print(f"⚠️  Could not start CPU stress process: {e}. Continuing with idle CPUs.")
+    if cpu_stress_test:
+        cpu_stress_process = start_cpu_stress(warmup_s=5.0)
 
     # Benchmark each RAPL file
     for rapl_file in rapl.devices:
@@ -257,11 +233,7 @@ def benchmark_rapl_update_time():
             print(f"   ❌ Cannot get energy readings: {e}")
 
     # Terminate CPU stress process
-    if cpu_stress_process is not None:
-        print("\n🛑 Terminating CPU stress process...")
-        cpu_stress_process.terminate()
-        cpu_stress_process.join()
-        print("✅ CPU stress process terminated")
+    stop_cpu_stress(cpu_stress_process)
 
 
 def run_benchmark():
@@ -277,24 +249,22 @@ def run_benchmark():
         description="Benchmark the frequency of update of various WattAMeter components"
     )
     parser.add_argument(
+        "--cpu-stress-test",
+        action="store_true",
+        help="Stress the CPUs to see how that affects update times",
+    )
+    parser.add_argument(
         "--gpu-burn-dir",
         type=str,
         default=None,
-        help="If provided, path to the gpu_burn benchmark to stress GPUs during the NVML update time benchmark",
+        help="Path to the gpu_burn benchmark to stress GPUs and see how that affects update times",
     )
     args = parser.parse_args()
 
     benchmark_pynvml_update_time(gpu_burn_dir=args.gpu_burn_dir)
-    benchmark_rapl_update_time()
+    benchmark_rapl_update_time(cpu_stress_test=args.cpu_stress_test)
 
-    print("\n" + "=" * 60)
-    print("BENCHMARK COMPLETE")
-    print("=" * 60)
-    print("Note: These measurements are indicative and will vary based on:")
-    print("- Hardware specifications")
-    print("- System load")
-    print("- Available power monitoring interfaces")
-    print("- Background processes")
+    print_benchmark_footer()
 
 
 if __name__ == "__main__":
