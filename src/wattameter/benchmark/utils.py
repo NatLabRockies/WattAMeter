@@ -12,10 +12,116 @@ import os
 import subprocess
 import re
 import sys
+import multiprocessing
 import pynvml
+from typing import Optional
 
 
 logger = logging.getLogger(__name__)
+
+
+def print_benchmark_banner(title: str):
+    """Print a standardized benchmark section banner."""
+    print("\n" + "=" * 60)
+    print(title)
+    print("=" * 60)
+
+
+def print_benchmark_footer():
+    """Print a standardized benchmark completion footer."""
+    print("\n" + "=" * 60)
+    print("BENCHMARK COMPLETE")
+    print("=" * 60)
+    print("Note: These measurements are indicative and will vary based on:")
+    print("- Hardware specifications")
+    print("- System load")
+    print("- Available power monitoring interfaces")
+    print("- Background processes")
+
+
+def start_gpu_burn(gpu_burn_dir: Optional[str] = None, warmup_s: float = 10.0):
+    """Optionally compile and start gpu_burn, returning the spawned process or None.
+
+    :param gpu_burn_dir: Path to the gpu_burn benchmark directory, or None to skip GPU stress.
+    :param warmup_s: Time in seconds to wait after starting gpu_burn before returning
+    :return: The subprocess.Popen object for the gpu_burn process, or None if not started
+    """
+    if gpu_burn_dir is None:
+        return None
+
+    try:
+        gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
+        print("🔥 Starting gpu_burn to stress GPUs...")
+        gpu_burn_process = subprocess.Popen(
+            [gpu_burn_path, "3600"],
+            cwd=gpu_burn_dir,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        time.sleep(warmup_s)
+        print("✅ gpu_burn started successfully")
+        return gpu_burn_process
+    except Exception as e:
+        print(f"⚠️  Could not start gpu_burn: {e}. Continuing with idle GPUs.")
+        return None
+
+
+def stop_gpu_burn(gpu_burn_process):
+    """Terminate gpu_burn if it was started.
+
+    :param gpu_burn_process: The subprocess.Popen object for the gpu_burn process, or None if not started
+    """
+    if gpu_burn_process is None:
+        return
+
+    print("\n🛑 Terminating gpu_burn...")
+    gpu_burn_process.terminate()
+    gpu_burn_process.wait()
+    print("✅ gpu_burn terminated")
+
+
+def start_cpu_stress(warmup_s: float = 5.0):
+    """Start the CPU stress process and return it, or None if startup fails.
+
+    :param warmup_s: Time in seconds to wait after starting the CPU stress before returning
+    :return: The multiprocessing.Process object for the CPU stress process, or None if not started
+    """
+    try:
+        print("🔥 Starting CPU stress process...")
+        cpu_stress_process = multiprocessing.Process(target=stress_cpu)
+        cpu_stress_process.start()
+        time.sleep(warmup_s)
+        print("✅ CPU stress process started successfully")
+        return cpu_stress_process
+    except Exception as e:
+        print(f"⚠️  Could not start CPU stress process: {e}. Continuing with idle CPUs.")
+        return None
+
+
+def stop_cpu_stress(cpu_stress_process):
+    """Terminate the CPU stress process if it was started.
+
+    :param cpu_stress_process: The multiprocessing.Process object for the CPU stress process, or None if not started
+    """
+    if cpu_stress_process is None:
+        return
+
+    print("\n🛑 Terminating CPU stress process...")
+    cpu_stress_process.terminate()
+    cpu_stress_process.join()
+    print("✅ CPU stress process terminated")
+
+
+def _get_numpy():
+    try:
+        import numpy as np
+    except Exception as exc:  # pragma: no cover - error path
+        raise ImportError(
+            "WattAMeter optional dependency 'numpy' is required for benchmarks. "
+            "Install it with `pip install wattameter[benchmark]` or `pip install numpy`. "
+            f"Original error: {exc}"
+        )
+    return np
 
 
 def get_cpu_info():
@@ -132,16 +238,12 @@ def stress_cpu(n: int = 9999):
 
     :param n: Number of matrix multiplications to perform.
     """
-    try:
-        import numpy as np
+    np = _get_numpy()
 
-        m1 = np.random.randn(8192, 8192)
-        m2 = np.random.randn(8192, 8192)
-        for i in range(n):
-            np.linalg.norm(np.dot(m1, m2))
-    except ImportError:
-        logger.warning("numpy not available. Skipping CPU stress test.")
-        return
+    m1 = np.random.randn(8192, 8192)
+    m2 = np.random.randn(8192, 8192)
+    for i in range(n):
+        np.linalg.norm(np.dot(m1, m2))
 
 
 def compile_gpu_burn(gpu_burn_dir):

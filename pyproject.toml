@@ -59,6 +59,7 @@ wattameter_benchmark_overhead = "wattameter.benchmark.overhead:run_benchmark"
 [project.optional-dependencies]
 postprocessing = ["pandas"]
 mqtt = ["paho-mqtt>=2.0.0"]
+benchmark = ["numpy", "pandas"]
 
 [dependency-groups]
 example = [
