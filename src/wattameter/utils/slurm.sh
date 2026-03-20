@@ -85,7 +85,7 @@ start_wattameter () {
     # Run wattameter on all nodes
     srun --overlap --wait=0 \
         --chdir="$OUTPUT_DIR" \
-        --output="slurm-$ID-wattameter.txt" \
+        --output="$OUTPUT_DIR/slurm-$ID-wattameter.txt" \
         --nodes="$SLURM_JOB_NUM_NODES" --ntasks-per-node=1 \
         "${WATTASCRIPT}" -i "$ID" "$@" 2>/dev/null &
 
