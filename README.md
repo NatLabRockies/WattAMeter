@@ -125,7 +125,7 @@ All options are the same as the regular command-line interface. The script will 
 
 ## Contributing
 
-Contributions are welcome! Please open issues or submit pull requests.
+Contributions are welcome! Please open issues or submit pull requests at [https://github.com/NatLabRockies/WattAMeter/](https://github.com/NatLabRockies/WattAMeter/).
 
 ## Documentation
 
