@@ -79,6 +79,9 @@ class NVMLReader(BaseReader):
                 f"Supported quantities are: {list(self.UNITS.keys())}."
             )
 
+        # Power reading method
+        self._read_instant_power = hasattr(pynvml, "NVML_FI_DEV_POWER_INSTANT")
+
     @property
     def tags(self) -> list[str]:
         _tags = []
@@ -136,7 +139,12 @@ class NVMLReader(BaseReader):
     def read_power_on_device(self, i: int) -> int:
         """Read the current power usage for the i-th device."""
         try:
-            return pynvml.nvmlDeviceGetPowerUsage(self.devices[i])
+            if self._read_instant_power:
+                return pynvml.nvmlDeviceGetFieldValues(
+                    self.devices[i], (pynvml.NVML_FI_DEV_POWER_INSTANT,)
+                )[0].value.uiVal
+            else:
+                return pynvml.nvmlDeviceGetPowerUsage(self.devices[i])
         except pynvml.NVMLError as e:
             logger.error(f"Failed to get power usage for device {i}: {e}")
             return 0
