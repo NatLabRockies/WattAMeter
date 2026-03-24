@@ -11,13 +11,13 @@ A benchmarking script that measures the overhead introduced by WattAMeter when t
 **Usage:**
 
 ```bash
-python overhead.py [--cpu_stress_test CPU_STRESS_TEST] [--gpu_burn_dir GPU_BURN_DIR]
+python overhead.py [--cpu_stress_test] [--gpu_burn_dir GPU_BURN_DIR]
 ```
 
 or, if WattAMeter is installed as a package:
 
 ```bash
-wattameter_benchmark_overhead [--cpu_stress_test CPU_STRESS_TEST] [--gpu_burn_dir GPU_BURN_DIR]
+wattameter_benchmark_overhead [--cpu_stress_test] [--gpu_burn_dir GPU_BURN_DIR]
 ```
 
 The script benchmarks:

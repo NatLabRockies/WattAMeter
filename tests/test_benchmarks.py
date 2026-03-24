@@ -24,12 +24,12 @@ def test_estimate_dt_basic():
         assert v > 0
 
 
-def test__benchmark_metric_prints_stats(monkeypatch, capsys):
+def test_benchmark_metric_prints_stats(monkeypatch, capsys):
     # Force estimate_dt to return deterministic values
     monkeypatch.setattr(
         bench_update,
         "estimate_dt",
-        lambda f, n_trials, ntmax: [0.1, 0.1, 0.1],
+        lambda f, n_trials=10, sleep_dt=0.0001, ntmax=100000: [0.1, 0.1, 0.1],
     )
 
     # Patch time.perf_counter to make mean_freq calculation deterministic
@@ -89,4 +89,4 @@ def test_benchmark_dynamic_overhead_fast(monkeypatch):
     monkeypatch.setattr(time, "sleep", lambda s: None)
 
     # Call the dynamic benchmark; it should run quickly and not raise
-    bench_overhead.benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None)
+    bench_overhead.benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_path=None)

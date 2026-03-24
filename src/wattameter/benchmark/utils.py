@@ -14,7 +14,6 @@ import re
 import sys
 import multiprocessing
 import pynvml
-from typing import Optional
 
 
 logger = logging.getLogger(__name__)
@@ -39,22 +38,21 @@ def print_benchmark_footer():
     print("- Background processes")
 
 
-def start_gpu_burn(gpu_burn_dir: Optional[str] = None, warmup_s: float = 10.0):
+def start_gpu_burn(gpu_burn_path, warmup_s: float = 0.0):
     """Optionally compile and start gpu_burn, returning the spawned process or None.
 
-    :param gpu_burn_dir: Path to the gpu_burn benchmark directory, or None to skip GPU stress.
+    :param gpu_burn_path: Path to gpu_burn executable, or None to skip starting gpu_burn
     :param warmup_s: Time in seconds to wait after starting gpu_burn before returning
     :return: The subprocess.Popen object for the gpu_burn process, or None if not started
     """
-    if gpu_burn_dir is None:
+    if gpu_burn_path is None:
         return None
 
     try:
-        gpu_burn_path = compile_gpu_burn(gpu_burn_dir)
         print("🔥 Starting gpu_burn to stress GPUs...")
         gpu_burn_process = subprocess.Popen(
             [gpu_burn_path, "3600"],
-            cwd=gpu_burn_dir,
+            cwd=os.path.dirname(gpu_burn_path),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
@@ -74,21 +72,31 @@ def stop_gpu_burn(gpu_burn_process):
     if gpu_burn_process is None:
         return
 
-    print("\n🛑 Terminating gpu_burn...")
-    gpu_burn_process.terminate()
-    gpu_burn_process.wait()
-    print("✅ gpu_burn terminated")
+    if gpu_burn_process.poll() is None:  # Check if the process is still running
+        print("\n🛑 Terminating gpu_burn...")
+        gpu_burn_process.terminate()
+        gpu_burn_process.wait()
+        print("✅ gpu_burn terminated")
+    else:
+        print("⚠️  gpu_burn process was not alive at termination time")
 
 
-def start_cpu_stress(warmup_s: float = 5.0):
+def start_cpu_stress(warmup_s: float = 5.0, n: int = 0):
     """Start the CPU stress process and return it, or None if startup fails.
 
     :param warmup_s: Time in seconds to wait after starting the CPU stress before returning
+    :param n: Size of the square matrices to multiply.
     :return: The multiprocessing.Process object for the CPU stress process, or None if not started
     """
     try:
+        stress_cpu_args = []
+        if n > 0:
+            stress_cpu_args.append(n)
+
         print("🔥 Starting CPU stress process...")
-        cpu_stress_process = multiprocessing.Process(target=stress_cpu)
+        cpu_stress_process = multiprocessing.Process(
+            target=stress_cpu, args=tuple(stress_cpu_args)
+        )
         cpu_stress_process.start()
         time.sleep(warmup_s)
         print("✅ CPU stress process started successfully")
@@ -106,10 +114,13 @@ def stop_cpu_stress(cpu_stress_process):
     if cpu_stress_process is None:
         return
 
-    print("\n🛑 Terminating CPU stress process...")
-    cpu_stress_process.terminate()
-    cpu_stress_process.join()
-    print("✅ CPU stress process terminated")
+    if cpu_stress_process.is_alive():
+        print("\n🛑 Terminating CPU stress process...")
+        cpu_stress_process.terminate()
+        cpu_stress_process.join()
+        print("✅ CPU stress process terminated")
+    else:
+        print("⚠️  CPU stress process was not alive at termination time")
 
 
 def _get_numpy():
@@ -174,7 +185,7 @@ def print_system_info():
 
 
 def estimate_dt(
-    f, n_trials: int = 10, sleep_dt: float = 0.0001, ntmax: int = 1000
+    f, n_trials: int = 10, sleep_dt: float = 0.0001, ntmax: int = 100000
 ) -> list[float]:
     """
     Estimates the average time interval between changes in the output of a given function.
@@ -185,7 +196,7 @@ def estimate_dt(
     :param f: A function that retrieves the current value to monitor for changes.
     :param n_trials: The number of trials to average the time interval over (default is 10).
     :param sleep_dt: The sleep duration between checks for value updates in seconds (default is 0.0001).
-    :param ntmax: The maximum number of sleep iterations to wait for a value update (default is 1000).
+    :param ntmax: The maximum number of sleep iterations to wait for a value update (default is 100000).
 
     :return: The estimated average time interval in seconds.
 
@@ -231,19 +242,22 @@ def estimate_dt(
     return res[:n_computed_dt]
 
 
-def stress_cpu(n: int = 9999):
+def stress_cpu(n: int = 8192):
     """Function to stress the CPU by performing large matrix multiplications.
 
     https://www.reddit.com/r/overclocking/comments/1ckvr0w/comment/l2psl0j/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 
-    :param n: Number of matrix multiplications to perform.
+    :param n: Size of the square matrices to multiply.
     """
     np = _get_numpy()
 
-    m1 = np.random.randn(8192, 8192)
-    m2 = np.random.randn(8192, 8192)
-    for i in range(n):
+    m1 = np.random.randn(n, n)
+    m2 = np.random.randn(n, n)
+
+    i = 0
+    while True:
         np.linalg.norm(np.dot(m1, m2))
+        i += 1
 
 
 def compile_gpu_burn(gpu_burn_dir):
@@ -253,37 +267,80 @@ def compile_gpu_burn(gpu_burn_dir):
     :return: Path to the compiled gpu_burn executable.
     """
 
-    # Check CUDA_HOME
+    # Get CUDA path
     cuda_home = os.environ.get("CUDA_HOME") or os.environ.get("CUDA_PATH")
     if not cuda_home or cuda_home == "":
         logger.warning("CUDA_HOME or CUDA_PATH environment variable not set.")
-        cuda_home = ""
+        make_args = []
     else:
-        cuda_home = "CUDAPATH=" + cuda_home
+        make_args = ["CUDAPATH=" + cuda_home]
+
+    # Get CUDA version if nvcc is available
+    try:
+        cuda_version_output = subprocess.check_output(
+            ["nvcc", "--version"], text=True
+        ).strip()
+        cuda_version_match = re.search(r"release (\d+\.\d+)", cuda_version_output)
+        if cuda_version_match:
+            cuda_version = cuda_version_match.group(1)
+            make_args.append("CUDA_VERSION=" + cuda_version)
+        else:
+            logger.warning("Could not parse CUDA version from nvcc output.")
+    except Exception as e:
+        logger.warning(f"Could not determine CUDA version: {e}")
 
     # Get NVIDIA compute capability
-    nvidia_cap = subprocess.check_output(
+    nvidia_caps = subprocess.check_output(
         ["nvidia-smi", "--query-gpu=compute_cap", "--format=csv,noheader"],
-        cwd=gpu_burn_dir,
         text=True,  # Decodes output as text
-    ).strip()
+    ).splitlines()
+    unique_caps = sorted(set(c.strip() for c in nvidia_caps if c.strip()))
+    if len(unique_caps) > 0:
+        nvidia_cap = unique_caps[0]
+        make_args.append("COMPUTE=" + nvidia_cap)
+    else:
+        nvidia_cap = None
 
     # Compile gpu_burn
     logger.info(f"Compiling gpu_burn in {gpu_burn_dir} benchmark...")
+    subprocess.run(["make", "clean"], cwd=gpu_burn_dir, check=True, capture_output=True)
     subprocess.run(
-        ["make", "-j4", "clean"],
-        cwd=gpu_burn_dir,
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        ["make"] + make_args, cwd=gpu_burn_dir, check=True, capture_output=True
     )
-    subprocess.run(
-        ["make", "-j4", cuda_home, "COMPUTE=" + nvidia_cap],
-        cwd=gpu_burn_dir,
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+    gpu_burn_path = os.path.join(gpu_burn_dir, "gpu_burn")
+
+    # Test gpu_burn executable
+    result = subprocess.run(
+        [gpu_burn_path, "1"], cwd=gpu_burn_dir, capture_output=True, text=True
     )
+    if (
+        result.returncode != 0
+        and "the provided PTX was compiled with an unsupported toolchain"
+        in result.stderr
+        and nvidia_cap is not None
+    ):
+        # Build a SASS cubin for this GPU and place it at compare.ptx.
+        # The loader inspects the binary contents, so keeping the legacy filename
+        # preserves default runtime behavior (`./gpu_burn`) while avoiding PTX JIT issues.
+        nvidia_cap_plain = nvidia_cap.replace(".", "")
+        subprocess.run(
+            [
+                "nvcc",
+                "-gencode",
+                f"arch=compute_{nvidia_cap_plain},code=sm_{nvidia_cap_plain}",
+                "-cubin",
+                "compare.cu",
+                "-o",
+                "compare.ptx",
+            ],
+            cwd=gpu_burn_dir,
+            check=True,
+            capture_output=True,
+        )
+        # Retry gpu_burn with the new cubin in place
+        subprocess.run(
+            [gpu_burn_path, "1"], cwd=gpu_burn_dir, check=True, capture_output=True
+        )
 
     logger.info("gpu_burn compiled successfully.")
-    return os.path.join(gpu_burn_dir, "gpu_burn")
+    return gpu_burn_path
