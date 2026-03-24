@@ -19,6 +19,7 @@ from ..utils import file_to_df
 from .utils import (
     print_benchmark_banner,
     print_benchmark_footer,
+    compile_gpu_burn,
     start_gpu_burn,
     stop_gpu_burn,
     start_cpu_stress,
@@ -73,7 +74,7 @@ def benchmark_static_overhead():
     return static_overhead
 
 
-def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
+def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_path=None, n: int = 0):
     """Call main() and let it run for a short time to measure dynamic overhead
 
     - Use a frequency of 10 Hz for writing data to disk
@@ -82,7 +83,9 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
     - Mock the cli arguments to set dt_read to 0.1 seconds
 
     :param cpu_stress_test: If True, stress the CPU during the benchmark
-    :param gpu_burn_dir: If not None, path to the gpu_burn benchmark
+    :param gpu_burn_path: If not None, path to the gpu_burn executable
+    :param n: Size of the square matrices to multiply for CPU stress test
+        (ignored if cpu_stress_test is False). Set to 0 to use the default size.
     """
 
     print_benchmark_banner("DYNAMIC WATTAMETER CLI OVERHEAD BENCHMARK")
@@ -112,11 +115,11 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_dir=None):
             print("Running for 60 seconds", end="")
 
             # Stress GPUs if gpu_burn is available
-            gpu_burn_process = start_gpu_burn(gpu_burn_dir, warmup_s=10.0)
+            gpu_burn_process = start_gpu_burn(gpu_burn_path, warmup_s=5.0)
 
             # Stress CPUs if requested
             if cpu_stress_test:
-                cpu_stress_process = start_cpu_stress(warmup_s=5.0)
+                cpu_stress_process = start_cpu_stress(warmup_s=5.0, n=n)
 
             # Start the main function in a separate process
             main_process = multiprocessing.Process(target=main)
@@ -200,15 +203,38 @@ def run_benchmark():
         help="Stress the CPUs during the dynamic overhead benchmark",
     )
     parser.add_argument(
+        "--n",
+        type=int,
+        default=0,
+        help="Size of the square matrices to multiply for CPU stress test (ignored if --cpu-stress-test is not set). Set to 0 to use the default size.",
+    )
+    parser.add_argument(
         "--gpu-burn-dir",
         type=str,
         default=None,
         help="Path to the gpu_burn benchmark to stress GPUs during the dynamic overhead benchmark",
     )
+    parser.add_argument(
+        "--recompile-gpu-burn",
+        action="store_true",
+        help="Recompile gpu_burn before running the benchmark (requires CUDA toolkit)",
+    )
     args = parser.parse_args()
 
+    # Try compiling gpu_burn if needed
+    gpu_burn_path = None
+    if args.gpu_burn_dir is not None:
+        gpu_burn_path = os.path.join(args.gpu_burn_dir, "gpu_burn")
+        if args.recompile_gpu_burn or not os.path.isfile(gpu_burn_path):
+            try:
+                compile_gpu_burn(args.gpu_burn_dir)
+            except Exception as e:
+                print(f"❌ Failed to compile gpu_burn: {e}. Continuing with idle GPUs.")
+
     benchmark_static_overhead()
-    benchmark_dynamic_overhead(args.cpu_stress_test, args.gpu_burn_dir)
+    benchmark_dynamic_overhead(
+        cpu_stress_test=args.cpu_stress_test, gpu_burn_path=gpu_burn_path, n=args.n
+    )
 
     print_benchmark_footer()
 
