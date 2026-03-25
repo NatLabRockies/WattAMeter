@@ -234,6 +234,7 @@ class TestNVMLReader:
         mock_power.return_value = 250000
 
         reader = NVMLReader()
+        reader._read_instant_power = False  # Ensure it uses the correct method
         result = reader.read_power_on_device(0)
 
         assert result == 250000
