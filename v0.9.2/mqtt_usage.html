@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MQTT Publishing in WattAMeter &mdash; WattAmeter  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Documentation" href="api/wattameter.html" />
+    <link rel="prev" title="WattAMeter" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            WattAmeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">WattAMeter</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MQTT Publishing in WattAMeter</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command-Line Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mqtt-options">MQTT Options</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#python-api">Python API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mqtt-message-format">MQTT Message Format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#topic-structure">Topic Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#message-payload">Message Payload</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#use-cases">Use Cases</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#real-time-monitoring-dashboard">Real-Time Monitoring Dashboard</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#time-series-database-integration">Time-Series Database Integration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hpc-job-accounting">HPC Job Accounting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#alert-systems">Alert Systems</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#connection-behavior">Connection Behavior</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#connection-management">Connection Management</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#error-handling">Error Handling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disconnection">Disconnection</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#security-considerations">Security Considerations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#authentication">Authentication</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tls-ssl">TLS/SSL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#network-isolation">Network Isolation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#mqtt-module-not-available">MQTT Module Not Available</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#connection-timeout">Connection Timeout</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#authentication-failed">Authentication Failed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#messages-not-appearing">Messages Not Appearing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#performance-impact">Performance Impact</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basic-usage-with-mqtt">Basic Usage with MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multi-reader-with-mqtt">Multi-Reader with MQTT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-api-with-mqtt">Python API with MQTT</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#integration-with-monitoring-tools">Integration with Monitoring Tools</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#grafana">Grafana</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#prometheus">Prometheus</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-topics">Advanced Topics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#custom-metadata">Custom Metadata</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multiple-mqtt-brokers">Multiple MQTT Brokers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#message-retention">Message Retention</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#quality-of-service-levels">Quality of Service Levels</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/wattameter.html">API Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">WattAmeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MQTT Publishing in WattAMeter</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/NatLabRockies/WattAMeter/blob/main/docs/mqtt_usage.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mqtt-publishing-in-wattameter">
+<h1>MQTT Publishing in WattAMeter<a class="headerlink" href="#mqtt-publishing-in-wattameter" title="Link to this heading"></a></h1>
+<p>WattAMeter can publish power measurement data to an MQTT broker in real-time, enabling integration with monitoring systems, dashboards, and other applications.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>To use MQTT publishing, install WattAMeter with the MQTT extra:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>mqtt<span class="o">]</span>
+<span class="c1"># or</span>
+pip<span class="w"> </span>install<span class="w"> </span>paho-mqtt
+</pre></div>
+</div>
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>When MQTT publishing is enabled, WattAMeter will:</p>
+<ul class="simple">
+<li><p>Connect to the specified MQTT broker on startup</p></li>
+<li><p>Publish each batch of power measurements as JSON messages</p></li>
+<li><p>Continue writing to local files as usual (dual output)</p></li>
+<li><p>Handle connection failures gracefully and log errors</p></li>
+</ul>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h2>
+<section id="command-line-interface">
+<h3>Command-Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h3>
+<p>MQTT publishing is configured via command-line arguments:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wattameter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tracker<span class="w"> </span><span class="m">0</span>.1,nvml-power,rapl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-broker<span class="w"> </span>mqtt.example.com<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-port<span class="w"> </span><span class="m">1883</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-password<span class="w"> </span>mypassword<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-topic-prefix<span class="w"> </span><span class="s2">&quot;hpc/wattameter&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-qos<span class="w"> </span><span class="m">1</span>
+</pre></div>
+</div>
+<section id="mqtt-options">
+<h4>MQTT Options<a class="headerlink" href="#mqtt-options" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-broker</span></code></p></td>
+<td><p>None</p></td>
+<td><p>MQTT broker hostname or IP. Required to enable MQTT publishing.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-port</span></code></p></td>
+<td><p>1883</p></td>
+<td><p>MQTT broker port</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-username</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Username for authentication (optional)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-password</span></code></p></td>
+<td><p>None</p></td>
+<td><p>Password for authentication (optional)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-topic-prefix</span></code></p></td>
+<td><p>“wattameter”</p></td>
+<td><p>Topic prefix for all messages</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--mqtt-qos</span></code></p></td>
+<td><p>1</p></td>
+<td><p>Quality of Service: 0 (at most once), 1 (at least once), 2 (exactly once)</p></td>
+</tr>
+</tbody>
+</table>
+<p>If <code class="docutils literal notranslate"><span class="pre">--mqtt-broker</span></code> is not specified, MQTT publishing is disabled and WattAMeter operates normally.</p>
+</section>
+</section>
+<section id="python-api">
+<h3>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h3>
+<p>You can enable MQTT publishing when using WattAMeter as a library:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">wattameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wattameter.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVMLReader</span><span class="p">,</span> <span class="n">Power</span>
+
+<span class="c1"># Configure MQTT publishing</span>
+<span class="n">mqtt_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;broker_host&quot;</span><span class="p">:</span> <span class="s2">&quot;mqtt.example.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker_port&quot;</span><span class="p">:</span> <span class="mi">1883</span><span class="p">,</span>
+    <span class="s2">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;myuser&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;mypassword&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;topic_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;hpc/wattameter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qos&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Create tracker with MQTT enabled</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span>
+    <span class="n">reader</span><span class="o">=</span><span class="n">NVMLReader</span><span class="p">((</span><span class="n">Power</span><span class="p">,)),</span>
+    <span class="n">dt_read</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">freq_write</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">output</span><span class="o">=</span><span class="s2">&quot;power_log.txt&quot;</span><span class="p">,</span>
+    <span class="n">mqtt_config</span><span class="o">=</span><span class="n">mqtt_config</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tracker</span><span class="p">:</span>
+    <span class="c1"># Your code here</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+<section id="environment-variables">
+<h3>Environment Variables<a class="headerlink" href="#environment-variables" title="Link to this heading"></a></h3>
+<p>For security, you can use environment variables for credentials:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">MQTT_BROKER</span><span class="o">=</span><span class="s2">&quot;mqtt.example.com&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MQTT_USERNAME</span><span class="o">=</span><span class="s2">&quot;myuser&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MQTT_PASSWORD</span><span class="o">=</span><span class="s2">&quot;mypassword&quot;</span>
+
+<span class="c1"># Then use in your script</span>
+import<span class="w"> </span>os
+
+<span class="nv">mqtt_config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>
+<span class="w">    </span><span class="s2">&quot;broker_host&quot;</span>:<span class="w"> </span>os.getenv<span class="o">(</span><span class="s2">&quot;MQTT_BROKER&quot;</span><span class="o">)</span>,
+<span class="w">    </span><span class="s2">&quot;username&quot;</span>:<span class="w"> </span>os.getenv<span class="o">(</span><span class="s2">&quot;MQTT_USERNAME&quot;</span><span class="o">)</span>,
+<span class="w">    </span><span class="s2">&quot;password&quot;</span>:<span class="w"> </span>os.getenv<span class="o">(</span><span class="s2">&quot;MQTT_PASSWORD&quot;</span><span class="o">)</span>,
+<span class="o">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mqtt-message-format">
+<h2>MQTT Message Format<a class="headerlink" href="#mqtt-message-format" title="Link to this heading"></a></h2>
+<section id="topic-structure">
+<h3>Topic Structure<a class="headerlink" href="#topic-structure" title="Link to this heading"></a></h3>
+<p>Messages are published to topics with this structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="n">topic_prefix</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">reader_name</span><span class="p">}</span><span class="o">/</span><span class="n">data</span>
+</pre></div>
+</div>
+<p>Examples:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">wattameter/nvmlreader/data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wattameter/raplreader/data</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hpc/wattameter/nvmlreader/data</span></code> (with custom prefix)</p></li>
+</ul>
+</section>
+<section id="message-payload">
+<h3>Message Payload<a class="headerlink" href="#message-payload" title="Link to this heading"></a></h3>
+<p>Each message is a JSON object containing:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;timestamp[ns]&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1703347200000000000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;timestamp[iso]&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2023-12-23T12:00:00.000000&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;reading-time[ns]&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1234567</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;gpu-0[mW]&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">300000.5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;experiment_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;job-12345&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Fields:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamp[ns]</span></code>: Measurement timestamp in nanoseconds (Unix epoch)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamp[iso]</span></code>: Human-readable ISO 8601 timestamp</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reading-time[ns]</span></code>: Time taken to perform the measurement in nanoseconds</p></li>
+<li><p>Dynamic fields for each measured quantity (e.g., <code class="docutils literal notranslate"><span class="pre">gpu-0[mW]</span></code>, <code class="docutils literal notranslate"><span class="pre">cpu-0[W]</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code>: Optional additional information (currently unused, available for future extensions)</p></li>
+</ul>
+</section>
+</section>
+<section id="use-cases">
+<h2>Use Cases<a class="headerlink" href="#use-cases" title="Link to this heading"></a></h2>
+<section id="real-time-monitoring-dashboard">
+<h3>Real-Time Monitoring Dashboard<a class="headerlink" href="#real-time-monitoring-dashboard" title="Link to this heading"></a></h3>
+<p>Subscribe to the MQTT topic to display live power consumption:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">paho.mqtt.client</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mqtt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">userdata</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GPU 0 Power: </span><span class="si">{</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gpu-0[mW]&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> W at </span><span class="si">{</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;timestamp[iso]&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">mqtt</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">on_message</span> <span class="o">=</span> <span class="n">on_message</span>
+<span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;mqtt.example.com&quot;</span><span class="p">,</span> <span class="mi">1883</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;wattameter/+/data&quot;</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="n">loop_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="time-series-database-integration">
+<h3>Time-Series Database Integration<a class="headerlink" href="#time-series-database-integration" title="Link to this heading"></a></h3>
+<p>Forward MQTT messages to InfluxDB, Prometheus, or other time-series databases for long-term storage and analysis.</p>
+</section>
+<section id="hpc-job-accounting">
+<h3>HPC Job Accounting<a class="headerlink" href="#hpc-job-accounting" title="Link to this heading"></a></h3>
+<p>Correlate power measurements with job IDs and compute energy costs:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run WattAMeter for a specific job</span>
+wattameter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tracker<span class="w"> </span><span class="m">0</span>.1,nvml-power<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-broker<span class="w"> </span>mqtt.hpc.local<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-topic-prefix<span class="w"> </span><span class="s2">&quot;hpc/jobs/</span><span class="nv">$SLURM_JOB_ID</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--id<span class="w"> </span><span class="nv">$SLURM_JOB_ID</span>
+</pre></div>
+</div>
+</section>
+<section id="alert-systems">
+<h3>Alert Systems<a class="headerlink" href="#alert-systems" title="Link to this heading"></a></h3>
+<p>Set up alerts for abnormal power consumption:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">paho.mqtt.client</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mqtt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+<span class="n">POWER_THRESHOLD</span> <span class="o">=</span> <span class="mi">900000</span>  <span class="c1"># mW</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">on_message</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">userdata</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">payload</span><span class="p">)</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;gpu-0[mW]&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">power</span> <span class="o">&gt;</span> <span class="n">POWER_THRESHOLD</span><span class="p">:</span>
+        <span class="n">send_alert</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;High power consumption: </span><span class="si">{</span><span class="n">power</span><span class="si">}</span><span class="s2">W&quot;</span><span class="p">)</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">mqtt</span><span class="o">.</span><span class="n">Client</span><span class="p">()</span>
+<span class="n">client</span><span class="o">.</span><span class="n">on_message</span> <span class="o">=</span> <span class="n">on_message</span>
+<span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&quot;mqtt.example.com&quot;</span><span class="p">,</span> <span class="mi">1883</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="s2">&quot;wattameter/nvmlreader/data&quot;</span><span class="p">)</span>
+<span class="n">client</span><span class="o">.</span><span class="n">loop_forever</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="connection-behavior">
+<h2>Connection Behavior<a class="headerlink" href="#connection-behavior" title="Link to this heading"></a></h2>
+<section id="connection-management">
+<h3>Connection Management<a class="headerlink" href="#connection-management" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>WattAMeter attempts to connect to the MQTT broker on startup</p></li>
+<li><p>If connection fails, an error is logged but WattAMeter continues running</p></li>
+<li><p>Data continues to be written to local files even if MQTT is unavailable</p></li>
+<li><p>Connection is maintained throughout the tracking session</p></li>
+</ul>
+</section>
+<section id="error-handling">
+<h3>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>If MQTT publishing fails for individual messages, errors are logged</p></li>
+<li><p>Failed MQTT publishes do not affect file writing</p></li>
+<li><p>WattAMeter is designed to be resilient: MQTT is an optional enhancement, not a requirement</p></li>
+</ul>
+</section>
+<section id="disconnection">
+<h3>Disconnection<a class="headerlink" href="#disconnection" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Clean disconnection occurs when WattAMeter stops</p></li>
+<li><p>Final data batch is written to both file and MQTT before shutdown</p></li>
+</ul>
+</section>
+</section>
+<section id="security-considerations">
+<h2>Security Considerations<a class="headerlink" href="#security-considerations" title="Link to this heading"></a></h2>
+<section id="authentication">
+<h3>Authentication<a class="headerlink" href="#authentication" title="Link to this heading"></a></h3>
+<p>Always use username/password authentication when connecting to production MQTT brokers:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>wattameter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-broker<span class="w"> </span>mqtt.example.com<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-username<span class="w"> </span>myuser<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-password<span class="w"> </span>mypassword
+</pre></div>
+</div>
+</section>
+<section id="tls-ssl">
+<h3>TLS/SSL<a class="headerlink" href="#tls-ssl" title="Link to this heading"></a></h3>
+<p>The current implementation uses unencrypted connections. For production deployments with sensitive data:</p>
+<ol class="arabic simple">
+<li><p>Use environment variables for credentials (never hardcode passwords)</p></li>
+<li><p>Configure your MQTT broker with TLS/SSL</p></li>
+<li><p>Restrict MQTT broker access via firewall rules</p></li>
+<li><p>Use MQTT ACLs to limit topic permissions</p></li>
+</ol>
+</section>
+<section id="network-isolation">
+<h3>Network Isolation<a class="headerlink" href="#network-isolation" title="Link to this heading"></a></h3>
+<p>In HPC environments:</p>
+<ul class="simple">
+<li><p>Deploy MQTT broker on a management network</p></li>
+<li><p>Restrict access to compute nodes only</p></li>
+<li><p>Use VLANs or network segmentation for isolation</p></li>
+</ul>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="mqtt-module-not-available">
+<h3>MQTT Module Not Available<a class="headerlink" href="#mqtt-module-not-available" title="Link to this heading"></a></h3>
+<p>Error: <code class="docutils literal notranslate"><span class="pre">paho-mqtt</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">installed</span></code></p>
+<p>Solution:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>paho-mqtt
+<span class="c1"># or</span>
+pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>mqtt<span class="o">]</span>
+</pre></div>
+</div>
+</section>
+<section id="connection-timeout">
+<h3>Connection Timeout<a class="headerlink" href="#connection-timeout" title="Link to this heading"></a></h3>
+<p>Error: <code class="docutils literal notranslate"><span class="pre">Connection</span> <span class="pre">timeout</span> <span class="pre">after</span> <span class="pre">10</span> <span class="pre">seconds</span></code></p>
+<p>Possible causes:</p>
+<ul class="simple">
+<li><p>MQTT broker is not running or unreachable</p></li>
+<li><p>Firewall blocking connection</p></li>
+<li><p>Incorrect hostname or port</p></li>
+</ul>
+<p>Solutions:</p>
+<ol class="arabic simple">
+<li><p>Verify broker is running: <code class="docutils literal notranslate"><span class="pre">telnet</span> <span class="pre">mqtt.example.com</span> <span class="pre">1883</span></code></p></li>
+<li><p>Check firewall rules</p></li>
+<li><p>Verify hostname resolves: <code class="docutils literal notranslate"><span class="pre">ping</span> <span class="pre">mqtt.example.com</span></code></p></li>
+</ol>
+</section>
+<section id="authentication-failed">
+<h3>Authentication Failed<a class="headerlink" href="#authentication-failed" title="Link to this heading"></a></h3>
+<p>Error: <code class="docutils literal notranslate"><span class="pre">Connection</span> <span class="pre">refused</span> <span class="pre">-</span> <span class="pre">bad</span> <span class="pre">username</span> <span class="pre">or</span> <span class="pre">password</span></code></p>
+<p>Solutions:</p>
+<ol class="arabic simple">
+<li><p>Verify credentials are correct</p></li>
+<li><p>Check MQTT broker user configuration</p></li>
+<li><p>Ensure username/password are properly URL-encoded if they contain special characters</p></li>
+</ol>
+</section>
+<section id="messages-not-appearing">
+<h3>Messages Not Appearing<a class="headerlink" href="#messages-not-appearing" title="Link to this heading"></a></h3>
+<p>If WattAMeter connects but you don’t see messages:</p>
+<ol class="arabic simple">
+<li><p>Verify topic subscription matches published topics</p></li>
+<li><p>Check QoS levels are compatible</p></li>
+<li><p>Enable debug logging: <code class="docutils literal notranslate"><span class="pre">--log-level</span> <span class="pre">debug</span></code></p></li>
+<li><p>Monitor MQTT broker logs</p></li>
+</ol>
+</section>
+<section id="performance-impact">
+<h3>Performance Impact<a class="headerlink" href="#performance-impact" title="Link to this heading"></a></h3>
+<p>MQTT publishing adds minimal overhead:</p>
+<ul class="simple">
+<li><p>Network latency for each publish (typically &lt;10ms on local network)</p></li>
+<li><p>JSON serialization overhead (negligible for small messages)</p></li>
+<li><p>No impact on measurement accuracy or timing</p></li>
+</ul>
+<p>If performance is critical:</p>
+<ul class="simple">
+<li><p>Increase <code class="docutils literal notranslate"><span class="pre">--freq-write</span></code> to batch more measurements before publishing</p></li>
+<li><p>Use QoS 0 for lowest latency (with potential message loss)</p></li>
+<li><p>Deploy MQTT broker on local network to minimize latency</p></li>
+</ul>
+</section>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
+<section id="basic-usage-with-mqtt">
+<h3>Basic Usage with MQTT<a class="headerlink" href="#basic-usage-with-mqtt" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Publish NVML power data every 0.1 seconds to local MQTT broker</span>
+wattameter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tracker<span class="w"> </span><span class="m">0</span>.1,nvml-power<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-broker<span class="w"> </span>localhost<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--freq-write<span class="w"> </span><span class="m">600</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-reader-with-mqtt">
+<h3>Multi-Reader with MQTT<a class="headerlink" href="#multi-reader-with-mqtt" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Track both GPU and CPU power at different intervals</span>
+wattameter<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tracker<span class="w"> </span><span class="m">0</span>.1,nvml-power,nvml-temp<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--tracker<span class="w"> </span><span class="m">1</span>.0,rapl<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-broker<span class="w"> </span>mqtt.hpc.local<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-port<span class="w"> </span><span class="m">1883</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--mqtt-topic-prefix<span class="w"> </span><span class="s2">&quot;hpc/node01&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="python-api-with-mqtt">
+<h3>Python API with MQTT<a class="headerlink" href="#python-api-with-mqtt" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">wattameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracker</span><span class="p">,</span> <span class="n">TrackerArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wattameter.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVMLReader</span><span class="p">,</span> <span class="n">RAPLReader</span><span class="p">,</span> <span class="n">Power</span>
+
+<span class="c1"># Configure MQTT</span>
+<span class="n">mqtt_config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;broker_host&quot;</span><span class="p">:</span> <span class="s2">&quot;mqtt.example.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;broker_port&quot;</span><span class="p">:</span> <span class="mi">1883</span><span class="p">,</span>
+    <span class="s2">&quot;topic_prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;hpc/experiment&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;qos&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Track multiple readers with MQTT</span>
+<span class="n">readers</span> <span class="o">=</span> <span class="p">[</span><span class="n">NVMLReader</span><span class="p">((</span><span class="n">Power</span><span class="p">,)),</span> <span class="n">RAPLReader</span><span class="p">()]</span>
+<span class="n">tracker_array</span> <span class="o">=</span> <span class="n">TrackerArray</span><span class="p">(</span>
+    <span class="n">readers</span><span class="o">=</span><span class="n">readers</span><span class="p">,</span>
+    <span class="n">dt_read</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">freq_write</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+    <span class="n">mqtt_config</span><span class="o">=</span><span class="n">mqtt_config</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tracker_array</span><span class="p">:</span>
+    <span class="c1"># Your code here</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Power tracking complete. Check MQTT topics for data.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="integration-with-monitoring-tools">
+<h2>Integration with Monitoring Tools<a class="headerlink" href="#integration-with-monitoring-tools" title="Link to this heading"></a></h2>
+<section id="grafana">
+<h3>Grafana<a class="headerlink" href="#grafana" title="Link to this heading"></a></h3>
+<p>Use MQTT data source plugin or forward to InfluxDB:</p>
+<ol class="arabic simple">
+<li><p>Install InfluxDB MQTT consumer</p></li>
+<li><p>Configure topics: <code class="docutils literal notranslate"><span class="pre">wattameter/+/data</span></code></p></li>
+<li><p>Create Grafana dashboard with InfluxDB data source</p></li>
+<li><p>Visualize power consumption over time</p></li>
+</ol>
+</section>
+<section id="prometheus">
+<h3>Prometheus<a class="headerlink" href="#prometheus" title="Link to this heading"></a></h3>
+<p>Use MQTT exporter to convert messages to Prometheus metrics:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># mqtt_exporter config</span>
+<span class="nt">mqtt</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp://mqtt.example.com:1883</span>
+<span class="w">  </span><span class="nt">topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wattameter/+/data</span>
+<span class="nt">metrics</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wattameter_power_watts</span>
+<span class="w">    </span><span class="nt">help</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;GPU/CPU</span><span class="nv"> </span><span class="s">power</span><span class="nv"> </span><span class="s">consumption&quot;</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gauge</span>
+<span class="w">    </span><span class="nt">mqtt_topic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wattameter/+/data</span>
+<span class="w">    </span><span class="nt">value_path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;power[W]&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-topics">
+<h2>Advanced Topics<a class="headerlink" href="#advanced-topics" title="Link to this heading"></a></h2>
+<section id="custom-metadata">
+<h3>Custom Metadata<a class="headerlink" href="#custom-metadata" title="Link to this heading"></a></h3>
+<p>Future versions may support custom metadata in MQTT messages:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Planned feature (not yet implemented)</span>
+<span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span>
+    <span class="n">reader</span><span class="o">=</span><span class="n">NVMLReader</span><span class="p">((</span><span class="n">Power</span><span class="p">,)),</span>
+    <span class="n">mqtt_config</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;broker_host&quot;</span><span class="p">:</span> <span class="s2">&quot;mqtt.example.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;experiment_id&quot;</span><span class="p">:</span> <span class="s2">&quot;exp-123&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;node_id&quot;</span><span class="p">:</span> <span class="s2">&quot;node-01&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multiple-mqtt-brokers">
+<h3>Multiple MQTT Brokers<a class="headerlink" href="#multiple-mqtt-brokers" title="Link to this heading"></a></h3>
+<p>To publish to multiple brokers, run separate WattAMeter instances or implement custom forwarding logic.</p>
+</section>
+<section id="message-retention">
+<h3>Message Retention<a class="headerlink" href="#message-retention" title="Link to this heading"></a></h3>
+<p>Configure MQTT broker message retention for historical data:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Mosquitto configuration</span>
+persistence<span class="w"> </span><span class="nb">true</span>
+persistence_location<span class="w"> </span>/var/lib/mosquitto/
+</pre></div>
+</div>
+</section>
+<section id="quality-of-service-levels">
+<h3>Quality of Service Levels<a class="headerlink" href="#quality-of-service-levels" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>QoS 0</strong>: Messages delivered at most once (fastest, potential loss)</p></li>
+<li><p><strong>QoS 1</strong>: Messages delivered at least once (reliable, potential duplicates)</p></li>
+<li><p><strong>QoS 2</strong>: Messages delivered exactly once (slowest, guaranteed delivery)</p></li>
+</ul>
+<p>Choose based on your requirements:</p>
+<ul class="simple">
+<li><p>Real-time dashboards: QoS 0 or 1</p></li>
+<li><p>Critical accounting: QoS 1 or 2</p></li>
+<li><p>High-frequency logging: QoS 0</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="README.html" class="btn btn-neutral float-left" title="WattAMeter" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/wattameter.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Alliance for Energy Innovation, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    
+    v: v0.9.2
+    
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      
+        <dd><a href="../v0.8.0/index.html">v0.8.0</a></dd>
+      
+        <dd><a href="../v0.9.0/index.html">v0.9.0</a></dd>
+      
+        <dd><a href="../v0.9.1/index.html">v0.9.1</a></dd>
+      
+        <dd><a href="mqtt_usage.html">v0.9.2</a></dd>
+      
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      
+    </dl>
+  </div>
+</div>
+<script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
