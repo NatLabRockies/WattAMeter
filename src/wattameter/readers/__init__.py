@@ -1,5 +1,6 @@
 from .nvml import NVMLReader, DataThroughput
 from .rapl import RAPLReader
+from .amdsmi import AMDSMIReader
 from .base import BaseReader
 from .utils import (
     Quantity,
@@ -16,6 +17,7 @@ from .utils import (
 __all__ = [
     "NVMLReader",
     "RAPLReader",
+    "AMDSMIReader",
     "BaseReader",
     "Quantity",
     "Energy",

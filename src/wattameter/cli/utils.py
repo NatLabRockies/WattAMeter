@@ -6,7 +6,7 @@ import threading
 import signal
 import uuid
 
-from ..readers import RAPLReader, NVMLReader
+from ..readers import RAPLReader, NVMLReader, AMDSMIReader
 from ..readers import Energy, DataThroughput, Utilization, Power, Temperature
 
 signal_handled = threading.Event()
@@ -40,6 +40,9 @@ def parse_tracker_spec(spec_string):
         "nvml-temp": (NVMLReader, Temperature),
         "nvml-util": (NVMLReader, Utilization),
         "nvml-nvlink": (NVMLReader, DataThroughput),
+        "amdsmi-power": (AMDSMIReader, Power),
+        "amdsmi-temp": (AMDSMIReader, Temperature),
+        "amdsmi-util": (AMDSMIReader, Utilization),
     }
 
     # Group metrics by reader type
