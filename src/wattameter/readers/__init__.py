@@ -1,6 +1,5 @@
 from .nvml import NVMLReader, DataThroughput
 from .rapl import RAPLReader
-from .amdsmi import AMDSMIReader
 from .base import BaseReader
 from .utils import (
     Quantity,
@@ -14,10 +13,14 @@ from .utils import (
     Utilization,
 )
 
+try:
+    from .amdsmi import AMDSMIReader
+except ModuleNotFoundError:
+    AMDSMIReader = None
+
 __all__ = [
     "NVMLReader",
     "RAPLReader",
-    "AMDSMIReader",
     "BaseReader",
     "Quantity",
     "Energy",
@@ -30,3 +33,6 @@ __all__ = [
     "Utilization",
     "DataThroughput",
 ]
+
+if AMDSMIReader is not None:
+    __all__.append("AMDSMIReader")
