@@ -7,15 +7,12 @@ import logging
 from .base import BaseReader
 from .utils import (
     Power,
-    Energy,
     Temperature,
     Quantity,
-    Joule,
     Watt,
     Celsius,
     Unit,
     Utilization,
-    Byte,
 )
 
 # Module-level logger
@@ -44,7 +41,13 @@ class AMDSMIReader(BaseReader):
         # Initialize AMDSMI
         try:
             ret = amdsmi.amdsmi_init()
-            logger.info("AMDSMI initialized successfully.")
+            if ret != 0:
+                logger.warning(
+                    f"AMDSMI initialization returned non-zero status: {ret}. "
+                    f"Continuing without AMDSMI support."
+                )
+            else:
+                logger.info("AMDSMI initialized successfully.")
         except amdsmi.AmdSmiException as e:
             logger.warning(
                 f"Failed to initialize AMDSMI: {e}. Continuing without AMDSMI support."
@@ -102,8 +105,11 @@ class AMDSMIReader(BaseReader):
     def read_temperature_on_device(self, i: int) -> int:
         """Read the temperature for the i-th device."""
         try:
-            return amdsmi.amdsmi_get_temp_metric(self.devices[i], amdsmi.AmdSmiTemperatureType.EDGE,
-                            amdsmi.AmdSmiTemperatureMetric.CURRENT)
+            return amdsmi.amdsmi_get_temp_metric(
+                self.devices[i],
+                amdsmi.AmdSmiTemperatureType.EDGE,
+                amdsmi.AmdSmiTemperatureMetric.CURRENT,
+            )
         except amdsmi.AmdSmiException as e:
             logger.error(f"Failed to get temperature for device {i}: {e}")
             return 0
@@ -114,7 +120,9 @@ class AMDSMIReader(BaseReader):
     def read_power_on_device(self, i: int) -> int:
         """Read the current power usage for the i-th device."""
         try:
-            return int(amdsmi.amdsmi_get_power_info(self.devices[i])['average_socket_power'])
+            return int(
+                amdsmi.amdsmi_get_power_info(self.devices[i])["average_socket_power"]
+            )
         except amdsmi.AmdSmiException as e:
             logger.error(f"Failed to get power usage for device {i}: {e}")
             return 0
@@ -126,11 +134,15 @@ class AMDSMIReader(BaseReader):
         """Read the current utilization for the i-th device."""
         try:
             utilization = amdsmi.amdsmi_get_utilization_count(
-                            self.devices[i],
-                            [amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_GFX_ACTIVITY,
-                            amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_MEM_ACTIVITY]
+                self.devices[i],
+                [
+                    amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_GFX_ACTIVITY,
+                    amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_MEM_ACTIVITY,
+                ],
             )
-            return utilization[0]['value'], utilization[1]['value']  # GPU utilization, Memory utilization
+            return utilization[0]["value"], utilization[1][
+                "value"
+            ]  # GPU utilization, Memory utilization
         except amdsmi.AmdSmiException as e:
             logger.error(f"Failed to get utilization for device {i}: {e}")
             return 0, 0
