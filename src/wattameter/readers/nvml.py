@@ -82,6 +82,14 @@ class NVMLReader(BaseReader):
         # Power reading method
         self._read_instant_power = hasattr(pynvml, "NVML_FI_DEV_POWER_INSTANT")
 
+    def __del__(self):
+        """Shutdown NVML on deletion."""
+        try:
+            pynvml.nvmlShutdown()
+            logger.info("NVML shutdown successfully.")
+        except pynvml.NVMLError as e:
+            logger.warning(f"Failed to shutdown NVML: {e}")
+
     @property
     def tags(self) -> list[str]:
         _tags = []
