@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary &mdash; WattAmeter  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            WattAmeter
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../README.html">WattAMeter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../mqtt_usage.html">MQTT Publishing in WattAMeter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api/wattameter.html">API Documentation</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">WattAmeter</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Summary</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/NatLabRockies/WattAMeter/blob/main/docs/joss/paper.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="summary">
+<h1>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h1>
+<p>WattAMeter is an open-source Python toolkit for CPU and GPU power telemetry which provides synchronized time-series data during computational workloads [&#64;wattameter_software]. It targets users who need consistent measurement workflows in scientific and engineering environments without building custom instrumentation pipelines for each project.</p>
+<p>The software provides both a Python API and a command-line interface (CLI). At runtime, it periodically samples metrics from Linux CPU powercap/RAPL interfaces and NVIDIA GPUs through NVML, then records structured logs for downstream analysis [&#64;linuxpowercap; &#64;nvidia_nvml]. Optional MQTT publishing enables live integration with dashboards and external monitoring services while retaining local file output as the default persistent record [&#64;mqtt; &#64;wattameter_mqtt_docs].</p>
+<p>WattAMeter is designed for high-performance computing (HPC) workflows where jobs run under schedulers, may span multiple nodes, and require measurement methods that are lightweight, portable, and non-intrusive. In addition to standalone package usage, WattAMeter is deployed as a loadable module in the National Laboratory of the Rockies’ (NLR) HPC environment, where users can start and stop tracking sessions inside SLURM jobs with documented operational guidance [&#64;nlr_wattameter_module].</p>
+</section>
+<section id="statement-of-need">
+<h1>Statement of need<a class="headerlink" href="#statement-of-need" title="Link to this heading"></a></h1>
+<p>Energy and power are now central evaluation dimensions in computational research, especially in HPC systems where short-lived fluctuations can matter as much as totals. Users increasingly need time-resolved answers to questions such as: when power or temperature spikes occur and how to mitigate them before they stress equipment, whether short transients correlate with instability or throttling, and whether power profile history can be used to forecast near-term demand for scheduler- or runtime-level decisions. Many existing tools focus on aggregate reporting, while researchers and operators still face practical gaps when they need scheduler-aware time-series telemetry that can be embedded directly into experiments and operations workflows.</p>
+<p>WattAMeter addresses this need by combining heterogeneous hardware telemetry into one Python-native interface and one CLI workflow. It supports periodic collection of CPU and GPU metrics in a common time-series format and can be launched as part of an experiment script or from SLURM job scripts. This lowers friction for users who need to run repeated measurements across different machines and software versions.</p>
+<p>The package emphasizes repeatability and operational simplicity:</p>
+<ul class="simple">
+<li><p>deterministic sampling intervals,</p></li>
+<li><p>configurable write frequency while guaranteeing a final write on shutdown,</p></li>
+<li><p>parity between Python API and CLI interfaces,</p></li>
+<li><p>optional real-time publication over MQTT, and</p></li>
+<li><p>shell utilities that integrate with SLURM jobs.</p></li>
+</ul>
+<p>The resulting workflow reduces the overhead for experiment instrumentation and supports comparative studies across nodes, job configurations, and application versions.</p>
+</section>
+<section id="state-of-the-field">
+<h1>State of the field<a class="headerlink" href="#state-of-the-field" title="Link to this heading"></a></h1>
+<p>The ecosystem includes mature components for device telemetry and energy accounting. NVIDIA tooling and NVML bindings expose GPU counters [&#64;nvidia_nvml], and Linux powercap/RAPL interfaces expose CPU-domain energy counters [&#64;linuxpowercap]. At the tooling level, Scaphandre provides host-level energy metrology with exporter integrations for time-series monitoring stacks [&#64;scaphandre], Kepler provides Kubernetes-oriented power telemetry and attribution at node/pod/container scopes [&#64;kepler], and Zeus provides energy monitoring for deep-learning workloads with support for measurement and optimization workflows [&#64;zeus]. CodeCarbon remains a widely used reference for process-level energy and carbon accounting [&#64;codecarbon]. pyJoules is another well-designed Python energy-measurement library, particularly strong for process/function or code-region instrumentation workflows [&#64;pyjoules].</p>
+<p>Compared with this landscape, WattAMeter is explicitly Python-native for both in-code instrumentation and CLI operation, and it is designed around scheduler-managed HPC usage, including multi-node SLURM workflows. Published documentation for the tools cited above generally emphasizes exporters, dashboards, carbon accounting, or container orchestration rather than multi-node SLURM orchestration. Thus, WattAMeter is complementary to these tools: it focuses on synchronized CPU+GPU time-series telemetry in scheduler-managed HPC workflows, from which aggregate metrics such as total energy can be inferred by integration.</p>
+<p>In terms of extensibility, Scaphandre and Kepler emphasize integration through observability/export pipelines and deployment patterns, while Zeus emphasizes programmable ML-energy measurement and optimization workflows. CodeCarbon provides strong extensibility for outputs and integrations (for example, custom output handlers and multiple built-in sinks), while hardware-tracker extension is more tightly coupled to its internal emissions and resource-tracking stack. pyJoules exposes clear device and handler abstractions, but its common usage remains centered on function- or scope-level traces. WattAMeter prioritizes backend extensibility through reader abstractions, allowing new hardware backends without changing the user-facing tracking interface in Python scripts or SLURM wrappers.</p>
+<p>The WattAMeter contribution is a workflow-oriented collection layer that unifies CPU and GPU telemetry in one configuration model, with emphasis on scheduler-managed HPC operation. Compared with assembling custom scripts around individual low-level interfaces, WattAMeter provides:</p>
+<ul class="simple">
+<li><p>a unified entry point for multi-metric tracking,</p></li>
+<li><p>Python-native in-code instrumentation,</p></li>
+<li><p>direct SLURM integration through <code class="docutils literal notranslate"><span class="pre">start_wattameter</span></code> and <code class="docutils literal notranslate"><span class="pre">stop_wattameter</span></code> CLI utilities,</p></li>
+<li><p>multi-node session orchestration for repeated start/stop tracking within job allocations,</p></li>
+<li><p>file outputs for direct ingestion in analysis workflows, and</p></li>
+<li><p>optional MQTT streaming for live monitoring and integration with external services.</p></li>
+</ul>
+</section>
+<section id="software-design">
+<h1>Software design<a class="headerlink" href="#software-design" title="Link to this heading"></a></h1>
+<p>WattAMeter follows a modular reader and tracker architecture [&#64;wattameter_software]. Reader classes encapsulate device-specific access (for example RAPL and NVML), while tracker classes manage periodic polling, buffering, and persistence. In practice, this means users can change metrics and sampling settings without modifying the underlying collection logic.</p>
+<p>The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the pull request adding an <code class="docutils literal notranslate"><span class="pre">AMDSMIReader</span></code> for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [&#64;wattameter_pr9_amdsmi].</p>
+<p>The core tracker loop is thread-based and uses fixed sampling intervals (<code class="docutils literal notranslate"><span class="pre">dt_read</span></code>) with configurable write cadence (<code class="docutils literal notranslate"><span class="pre">freq_write</span></code>). On shutdown, trackers perform a final read/write cycle to reduce end-of-run data loss in short jobs or interrupted sessions. The implementation also supports context-manager usage and signal-aware command-line execution, which maps well to batch-system lifecycle control.</p>
+<p>Two design choices are central for research use.</p>
+<ol class="arabic simple">
+<li><p>The software prioritizes periodic sampling over event-driven callbacks to produce uniformly sampled series that are easier to compare under controlled conditions. The tradeoff is that transients shorter than the selected interval may be missed. Each sample stores both a timestamp and a read-duration field, enabling users to assess telemetry overhead and timing fidelity in high-frequency collection.</p></li>
+<li><p>WattAMeter uses dual-output semantics: local files are always first-class, and MQTT publication is optional. This ensures robust baseline operation even when network services are unavailable, while still supporting live observability when needed.</p></li>
+</ol>
+<p>For scheduler workflows, shell utilities wrap <code class="docutils literal notranslate"><span class="pre">srun</span></code> orchestration to start and stop tracking sessions across allocated nodes, including support for multiple sequential sessions in one job allocation [&#64;nlr_wattameter_module; &#64;wattameter_software]. Tracking sessions do not block resources and can be started and stopped independently of the main workload. The implementation includes benchmark utilities for sampling-frequency characterization and runtime overhead estimation, plus post-processing helpers for parsing and aligning log files.</p>
+</section>
+<section id="research-impact-statement">
+<h1>Research impact statement<a class="headerlink" href="#research-impact-statement" title="Link to this heading"></a></h1>
+<p>WattAMeter has practical impact for teams running experiments on mixed CPU and GPU nodes, because it packages data collection and operational orchestration into one reusable workflow. Instead of writing cluster-specific wrappers for each study, users can adopt a common interface for repeated measurement studies.</p>
+<p>This impact is already visible in two concrete outputs. WattAMeter was used to generate the publicly released “Dataset of Generative AI Workload Power Profiles” in the NLR Data Catalog [&#64;nlr_genai_power_dataset]. The same dataset, together with WattAMeter post-processing functionality, was then used in the study “Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning” [&#64;vercellino2026measurement].</p>
+<p>Additional impact is evidenced by the deployment of WattAMeter as an NLR HPC module, with documented <code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">wattameter</span></code> usage and scheduler guidance for production SLURM jobs [&#64;nlr_wattameter_module]. The documentation includes concrete operational practices, including paired start/stop commands, interpretation of node-level CPU counters, and use of exclusive allocations for CPU analyses, indicating active use beyond a purely aspirational design.</p>
+<p>The project is structured for ongoing reuse:</p>
+<ul class="simple">
+<li><p>permissive BSD-3-Clause licensing,</p></li>
+<li><p>command-line and API documentation with runnable examples,</p></li>
+<li><p>automated tests spanning readers, trackers, CLI parsing, shell utilities, MQTT, and post-processing,</p></li>
+<li><p>benchmark tooling for overhead characterization, and</p></li>
+<li><p>integration paths for both offline analysis and live monitoring.</p></li>
+</ul>
+<p>These attributes make WattAMeter suitable as measurement infrastructure for performance studies, energy-aware benchmarking, and operations-focused workload analysis where transparent and repeatable telemetry collection is required.</p>
+</section>
+<section id="ai-usage-disclosure">
+<h1>AI usage disclosure<a class="headerlink" href="#ai-usage-disclosure" title="Link to this heading"></a></h1>
+<p>This manuscript draft was prepared with assistance from a generative AI writing tool. The authors are responsible for all technical claims and manually reviewed and edited the text for accuracy and clarity.</p>
+</section>
+<section id="acknowledgements">
+<h1>Acknowledgements<a class="headerlink" href="#acknowledgements" title="Link to this heading"></a></h1>
+<p>This work was authored by the National Laboratory of the Rockies (NLR) for the U.S. Department of Energy (DOE), operated under Contract No. DE-AC36-08GO28308. Funding was provided by the NLR. The views expressed in the article do not necessarily represent the views of the DOE or the U.S. Government. The U.S. Government retains and the publisher, by accepting the article for publication, acknowledges that the U.S. Government retains a nonexclusive, paid-up, irrevocable, worldwide license to publish or reproduce the published form of this work, or allow others to do so, for U.S. Government purposes.</p>
+<p>We thank Matt Selensky (NLR) for maintaining the WattAMeter module on the NLR HPC system and supporting operational deployment.</p>
+</section>
+<section id="references">
+<h1>References<a class="headerlink" href="#references" title="Link to this heading"></a></h1>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Alliance for Energy Innovation, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    
+    v: main
+    
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      
+        <dd><a href="../../v0.8.0/index.html">v0.8.0</a></dd>
+      
+        <dd><a href="../../v0.9.0/index.html">v0.9.0</a></dd>
+      
+        <dd><a href="../../v0.9.1/index.html">v0.9.1</a></dd>
+      
+        <dd><a href="../../v0.9.2/index.html">v0.9.2</a></dd>
+      
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      
+        <dd><a href="paper.html">main</a></dd>
+      
+    </dl>
+  </div>
+</div>
+<script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
