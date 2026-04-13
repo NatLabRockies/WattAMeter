@@ -98,7 +98,7 @@ These attributes make WattAMeter suitable as measurement infrastructure for perf
 
 # AI usage disclosure
 
-This manuscript draft was prepared with assistance from a generative AI writing tool. The authors are responsible for all technical claims and manually reviewed and edited the text for accuracy and clarity.
+This manuscript draft was prepared with assistance from GPT-5.3-Codex. The authors are responsible for all technical claims and manually reviewed and edited the text for accuracy and clarity.
 
 # Acknowledgements
 
