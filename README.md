@@ -37,6 +37,10 @@ pip install wattameter[benchmark]
 pip install wattameter[postprocessing,mqtt]
 ```
 
+### AMD SMI support
+
+For AMD GPU monitoring, WattAMeter relies on the AMD SMI Python package. Follow the instructions at https://rocm.docs.amd.com/projects/amdsmi/en/latest/install/install.html to install the AMD SMI Python package from your ROCm installation. If you have a ROCm installation, you can try to use [setup-amdsmi](src/wattameter/utils/setup_amdsmi.sh) to automatically set up the AMD SMI environment, which includes installing the AMD SMI Python package to your Python environment.
+
 ## Usage
 
 ### As a Python module
