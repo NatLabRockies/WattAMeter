@@ -12,6 +12,7 @@ particular focus on the track_until_forced_exit method functionality, including:
 
 import pytest
 import logging
+import statistics
 import tempfile
 import os
 import time
@@ -76,23 +77,20 @@ class ConcreteTracker(BaseTracker):
 
     def __init__(self, dt_read: float = 1.0):
         super().__init__(dt_read)
-        self.read_calls = []
-        self.write_calls = []
-        self.write_header_calls = []
+        self.read_calls = 0
+        self.write_calls = 0
+        self.write_header_calls = 0
 
-    def read(self) -> float:
-        start_time = time.perf_counter()
+    def read(self) -> None:
         # Simulate some work
         time.sleep(0.001)
-        elapsed = time.perf_counter() - start_time
-        self.read_calls.append(elapsed)
-        return elapsed
+        self.read_calls += 1
 
     def write(self) -> None:
-        self.write_calls.append(time.time())
+        self.write_calls += 1
 
     def write_header(self) -> None:
-        self.write_header_calls.append(time.time())
+        self.write_header_calls += 1
 
 
 class TestBaseTracker:
@@ -105,27 +103,45 @@ class TestBaseTracker:
         assert tracker._async_thread is None
 
     def test_read_and_sleep_normal_case(self):
-        """Test _read_and_sleep when read time is less than dt_read."""
+        """Test read+sleep when read time is less than dt_read."""
         tracker = ConcreteTracker(dt_read=0.1)
 
-        start_time = time.perf_counter()
-        tracker._read_and_sleep()
-        total_time = time.perf_counter() - start_time
+        perf_counter = time.perf_counter
+        sleep = time.sleep
+        tick = tracker._sleep_until_next_tick
+
+        start_time = perf_counter()
+        tracker.read()
+        tick(
+            perf_counter(),
+            tracker.dt_read,
+            perf_counter,
+            sleep,
+        )
+        total_time = perf_counter() - start_time
 
         # Should take approximately dt_read time
         assert 0.09 <= total_time <= 0.15  # Allow some tolerance
-        assert len(tracker.read_calls) == 1
+        assert tracker.read_calls == 1
 
     def test_read_and_sleep_slow_read(self, caplog):
-        """Test _read_and_sleep when read time exceeds dt_read."""
-        # Mock read to take longer than dt_read
+        """Test read+sleep when read time exceeds dt_read."""
         tracker = ConcreteTracker(dt_read=0.001)
 
-        with patch.object(tracker, "read", return_value=0.01):  # 10ms read time
-            with caplog.at_level(logging.WARNING):
-                tracker._read_and_sleep()
+        perf_counter = time.perf_counter
+        sleep = time.sleep
+        tick = tracker._sleep_until_next_tick
 
-        assert "Time taken for reading" in caplog.text
+        with caplog.at_level(logging.WARNING):
+            tick(
+                perf_counter() - 0.01,
+                tracker.dt_read,
+                perf_counter,
+                sleep,
+                logging.warning,
+            )
+
+        assert "Falling behind schedule" in caplog.text
 
     def test_start_success(self):
         """Test successful start of async thread."""
@@ -197,8 +213,8 @@ class TestBaseTracker:
         stop_event.set()
         thread.join(timeout=1.0)
 
-        assert len(tracker.read_calls) > 0
-        assert len(tracker.write_calls) == 0
+        assert tracker.read_calls > 0
+        assert tracker.write_calls == 0
 
     def test_update_series_with_write(self):
         """Test _update_series with write interval."""
@@ -217,14 +233,14 @@ class TestBaseTracker:
         stop_event.set()
         thread.join(timeout=1.0)
 
-        assert len(tracker.read_calls) > 0
-        assert len(tracker.write_calls) > 0
+        assert tracker.read_calls > 0
+        assert tracker.write_calls > 0
 
     def test_track_until_forced_exit_keyboard_interrupt(self, caplog):
         """Test track_until_forced_exit with KeyboardInterrupt."""
         tracker = ConcreteTracker(dt_read=0.01)
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             with caplog.at_level(logging.INFO):
                 result = tracker.track_until_forced_exit()
 
@@ -236,7 +252,7 @@ class TestBaseTracker:
         tracker = ConcreteTracker(dt_read=0.01)
 
         with patch.object(
-            tracker, "_read_and_sleep", side_effect=ValueError("Test error")
+            tracker, "read", side_effect=ValueError("Test error")
         ):
             with pytest.raises(ValueError, match="Test error"):
                 tracker.track_until_forced_exit()
@@ -245,29 +261,29 @@ class TestBaseTracker:
         """Test BaseTracker performs final read but no write when freq_write=0."""
         tracker = ConcreteTracker(dt_read=0.01)
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             tracker.track_until_forced_exit(freq_write=0)
 
-        # Final read should occur
-        assert len(tracker.read_calls) == 1
+        # One loop read + one final read should occur
+        assert tracker.read_calls == 2
         # No writes when freq_write=0
-        assert len(tracker.write_calls) == 0
+        assert tracker.write_calls == 0
         # BaseTracker doesn't call write_header itself
-        assert len(tracker.write_header_calls) == 0
+        assert tracker.write_header_calls == 0
 
     def test_track_until_forced_exit_final_operations_freq_write_positive(self):
         """Test BaseTracker performs final read and write when freq_write > 0."""
         tracker = ConcreteTracker(dt_read=0.01)
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             tracker.track_until_forced_exit(freq_write=5)
 
-        # Final read should occur
-        assert len(tracker.read_calls) == 1
+        # One loop read + one final read should occur
+        assert tracker.read_calls == 2
         # Final write should occur when freq_write > 0
-        assert len(tracker.write_calls) == 1
+        assert tracker.write_calls == 1
         # BaseTracker doesn't call write_header itself
-        assert len(tracker.write_header_calls) == 0
+        assert tracker.write_header_calls == 0
 
     def test_track_until_forced_exit_periodic_writes_based_on_freq_write(self):
         """Test BaseTracker performs periodic writes based on freq_write parameter."""
@@ -275,33 +291,66 @@ class TestBaseTracker:
 
         call_count = 0
 
-        def mock_read_and_sleep():
+        def mock_sleep_until_next_tick(*_args, **_kwargs):
             nonlocal call_count
             call_count += 1
             if call_count >= 5:  # Stop after 5 calls
                 raise KeyboardInterrupt()
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=mock_read_and_sleep):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=mock_sleep_until_next_tick):
             tracker.track_until_forced_exit(freq_write=2)
 
         # Should have periodic writes: at calls 2, 4 + final write = 3 total
-        assert len(tracker.write_calls) == 3
-        # Should have final read
-        assert len(tracker.read_calls) == 1
+        assert tracker.write_calls == 3
+        # Five loop reads + one final read
+        assert tracker.read_calls == 6
 
     def test_track_until_forced_exit_final_operations_always_execute(self):
         """Test that final read/write operations always execute in finally block."""
         tracker = ConcreteTracker(dt_read=0.01)
 
         # Even with an exception in the loop, final operations should execute
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             tracker.track_until_forced_exit(freq_write=1)
 
-        # Final read should always happen
-        assert len(tracker.read_calls) == 1
-        # Final write should happen when freq_write > 0
-        assert len(tracker.write_calls) == 1
+        # One loop read + one final read should always happen
+        assert tracker.read_calls == 2
+        # One loop write + one final write for freq_write=1
+        assert tracker.write_calls == 2
 
+    def test_tracking_bias(self):
+        """Test that tracking read-and-sleep bias decreases over time."""
+        tracker = ConcreteTracker(dt_read=0.003)
+
+        call_count = 0
+        timestamps = []
+
+        def mock_read():
+            # Simulate some work
+            time.sleep(0.001)
+
+            nonlocal call_count
+            call_count += 1
+            timestamps.append(time.time_ns())
+
+            if call_count >= 1000:  # Stop after 1000 calls
+                raise KeyboardInterrupt()
+
+        try:
+            with patch.object(tracker, "read", side_effect=mock_read):
+                tracker.track_until_forced_exit(freq_write=2)
+        except KeyboardInterrupt:
+            pass
+
+        # Ensure bias decreases over time
+        intervals_s = [
+            (timestamps[i] - timestamps[i - 1]) * 1e-9
+            for i in range(1, len(timestamps))
+        ]
+        for n in [10, 100, 1000]:
+            mean_period_s = statistics.mean(intervals_s[:n])
+            bias_interval = (mean_period_s - tracker.dt_read) / tracker.dt_read
+            assert abs(bias_interval) < 0.02 * n
 
 @pytest.fixture()
 def temp_dir():
@@ -340,10 +389,8 @@ class TestTracker:
         reader = MockReader(read_return_value=[10, 20])
         tracker = Tracker(reader, dt_read=1.0, output=output_file)
 
-        elapsed = tracker.read()
+        tracker.read()
 
-        assert isinstance(elapsed, float)
-        assert elapsed > 0
         assert len(tracker.time_series) == 1
         assert len(tracker.reading_time) == 1
         assert len(tracker.data) == 1
@@ -474,7 +521,7 @@ class TestTracker:
         with (
             patch.object(tracker, "write_header") as mock_header,
             patch.object(tracker, "write") as mock_write,
-            patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()),
+            patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()),
         ):
             tracker.track_until_forced_exit()
 
@@ -486,7 +533,7 @@ class TestTracker:
         reader = MockReader(read_return_value=[10, 20])
         tracker = Tracker(reader, dt_read=0.01, output=output_file)
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             tracker.track_until_forced_exit()
 
         # Check that header was written to file
@@ -517,7 +564,7 @@ class TestTracker:
             reader, dt_read=0.01, freq_write=100, output=output_file
         )  # High freq to avoid periodic writes
 
-        with patch.object(tracker, "_read_and_sleep", side_effect=KeyboardInterrupt()):
+        with patch.object(tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()):
             tracker.track_until_forced_exit()
 
         # File should exist and have both header and some data
@@ -643,6 +690,20 @@ class TestTracker:
 
         mqtt_instance.disconnect.assert_called_once()
 
+    def test_writing_in_disk_behavior(self, output_file):
+        """Test that writing to disk creates the file and writes data."""
+        reader = MockReader()
+        tracker = Tracker(reader, dt_read=0.05, freq_write=2, output=output_file)
+
+        tracker.start(freq_write=0)
+        time.sleep(0.5)
+        tracker.stop(freq_write=0)
+        assert not os.path.exists(output_file)
+
+        with Tracker(reader, dt_read=0.05, freq_write=2, output=output_file):
+            time.sleep(0.5)
+        assert os.path.exists(output_file)
+        
 
 class TestTrackerArray:
     """Test cases for TrackerArray class."""
@@ -680,10 +741,8 @@ class TestTrackerArray:
         readers = [MockReader(read_delay=0.001), MockReader(read_delay=0.001)]
         tracker_array = TrackerArray(readers, dt_read=1.0)  # type: ignore
 
-        elapsed = tracker_array.read()
+        tracker_array.read()
 
-        assert isinstance(elapsed, float)
-        assert elapsed > 0
         # Each tracker should have been read once
         for tracker in tracker_array.trackers:
             assert len(tracker.time_series) == 1
@@ -728,7 +787,7 @@ class TestTrackerArray:
         tracker_array = TrackerArray(readers, dt_read=0.01, outputs=outputs)  # type: ignore
 
         with patch.object(
-            tracker_array, "_read_and_sleep", side_effect=KeyboardInterrupt()
+            tracker_array, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()
         ):
             tracker_array.track_until_forced_exit()
 
@@ -745,7 +804,7 @@ class TestTrackerArray:
         )  # type: ignore
 
         with patch.object(
-            tracker_array, "_read_and_sleep", side_effect=KeyboardInterrupt()
+            tracker_array, "_sleep_until_next_tick", side_effect=KeyboardInterrupt()
         ):
             tracker_array.track_until_forced_exit()
 
@@ -772,6 +831,27 @@ class TestTrackerArray:
 
         # Verify base method was called with instance's freq_write
         mock_base.assert_called_once_with(9)
+
+    def test_writing_in_disk_behavior(self, temp_dir):
+        """Test that writing to disk creates the file and writes data."""
+        readers = [MockReader(), MockReader()]
+        outputs = [os.path.join(temp_dir, f"disk_test_{i}.log") for i in range(2)]
+        tracker_array = TrackerArray(
+            readers, dt_read=0.05, freq_write=2, outputs=outputs
+        )  # type: ignore
+
+        tracker_array.start(freq_write=0)
+        time.sleep(0.5)
+        tracker_array.stop(freq_write=0)
+        for output in outputs:
+            assert not os.path.exists(output)
+
+        with TrackerArray(
+            readers, dt_read=0.05, freq_write=2, outputs=outputs
+        ):
+            time.sleep(0.5)
+        for output in outputs:
+            assert os.path.exists(output)
 
 
 @pytest.fixture(params=[Tracker, TrackerArray])

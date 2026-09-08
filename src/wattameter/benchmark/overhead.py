@@ -154,7 +154,7 @@ def benchmark_dynamic_overhead(cpu_stress_test=False, gpu_burn_path=None, n: int
                 if filename.endswith("_wattameter.log"):
                     print(f"\nReading output file: {filename}")
                     with open(os.path.join(temp_dir, filename), "r") as f:
-                        df = file_to_df(f)
+                        df = file_to_df(f, skip_lines=1)
                         mean_delta = (
                             df.index[1:-1]  # avoid edge effects
                             .to_series()
