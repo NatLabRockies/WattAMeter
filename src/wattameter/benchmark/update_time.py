@@ -85,9 +85,13 @@ def benchmark_pynvml_update_time(gpu_burn_path=None, n_trials=100):
     :param gpu_burn_path: If not None, path to the gpu_burn executable
     :param n_trials: Number of trials to perform for estimating update time
     """
+    try:
+        nvml = NVMLReader()
+    except RuntimeError:
+        return
+
     print_benchmark_banner("PYNVML POWER USAGE UPDATE TIME BENCHMARK")
 
-    nvml = NVMLReader()
     if len(nvml.tags) == 0:
         print("❌ No NVML devices found. Skipping benchmark.")
         return

@@ -11,38 +11,52 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nvidia: [true, false]
+        postprocessing: [true, false]
+        mqtt: [true, false]
+        benchmark: [true, false]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
-      - name: Cache pip packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.local
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - name: Cache PDM packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pdm
-          key: ${{ runner.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pdm-
+          python-version: "3.9"
+          cache: 'pip'
+
       - name: Upgrade pip
-        run: python -m pip install --upgrade pip --user
-      - name: Install and configure PDM
+        run: python -m pip install --upgrade pip
+
+      - name: Install the package
         run: |
-          python -m pip install --user pdm
-          pdm config python.use_venv false
-      - name: Install dependencies
-        run: |
-          pdm install -G test
-          pdm install -G example
+          # Append optional groups based on matrix booleans
+          DEPS=""
+          if [ "${{ matrix.nvidia }}" == "true" ]; then DEPS="$DEPS,nvidia"; fi
+          if [ "${{ matrix.postprocessing }}" == "true" ]; then DEPS="$DEPS,postprocessing"; fi
+          if [ "${{ matrix.mqtt }}" == "true" ]; then DEPS="$DEPS,mqtt"; fi
+          if [ "${{ matrix.benchmark }}" == "true" ]; then DEPS="$DEPS,benchmark"; fi
+
+          # Remove leading comma if any
+          DEPS="${DEPS#,}"
+
+          # Put groups inside brackets
+          if [ -n "$DEPS" ]; then
+            DEPS="[$DEPS]"
+          fi
+          
+          python -m pip install ".$DEPS"
+
       - name: Run tests
-        run: pdm run pytest
-      - name: Run benchmarks
         run: |
-          pdm run wattameter_benchmark_dt
-          pdm run wattameter_benchmark_overhead
+          python -m pip install pytest pytest-asyncio numpy pytest-timeout
+          # -v prints each test name as it starts
+          # -s prevents pytest from capturing stdout so you see logs instantly
+          # --timeout=60 kills any individual test that takes longer than 60 seconds
+          python -m pytest -v -s --timeout=60
+
+      - name: Run benchmarks
+        if: matrix.benchmark == 'true'
+        run: |
+          wattameter_benchmark_dt
+          wattameter_benchmark_overhead

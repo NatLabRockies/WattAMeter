@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
-import pynvml
+# NVML is an optional dependency
+try:
+    import pynvml
+except ImportError:
+    pynvml = None  # type: ignore
+
 import logging
 
 from .base import BaseReader
@@ -50,6 +55,8 @@ class NVMLReader(BaseReader):
         super().__init__(quantities)
 
         self.devices = []
+        if pynvml is None:
+            return
 
         # Initialize NVML
         try:

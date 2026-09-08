@@ -10,9 +10,7 @@ authors = [
     {name = "Weslley da Silva Pereira", email = "wdasilv@nlr.gov"},
     {name = "Struan Clark", email = "Struan.Clark@nlr.gov"},
 ]
-dependencies = [
-    "nvidia-ml-py",
-]
+dependencies = []
 requires-python = ">=3.9"
 readme = "README.md"
 license = {text = "BSD-3-Clause"}
@@ -59,6 +57,7 @@ wattameter_benchmark_dt = "wattameter.benchmark.update_time:run_benchmark"
 wattameter_benchmark_overhead = "wattameter.benchmark.overhead:run_benchmark"
 
 [project.optional-dependencies]
+nvidia = ["nvidia-ml-py"]
 postprocessing = ["pandas", "scipy"]
 mqtt = ["paho-mqtt>=2.0.0"]
 benchmark = ["numpy", "pandas"]

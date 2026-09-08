@@ -3,7 +3,8 @@
 
 import pytest
 import argparse
-from wattameter.cli.utils import parse_tracker_spec
+from unittest.mock import patch
+from wattameter.cli.utils import parse_tracker_spec, powerlog_filename
 from wattameter.readers import RAPLReader, NVMLReader
 from wattameter.readers import Energy, Power, Temperature, Utilization, DataThroughput
 
@@ -296,3 +297,17 @@ class TestDefaultCliArguments:
 
         with pytest.raises(SystemExit):  # argparse exits on error
             parser.parse_args(["--tracker", "invalid"])
+
+
+class TestPowerlogFilename:
+    """Regression tests for powerlog filename generation."""
+
+    def test_explicit_none_suffix_does_not_parse_argv(self):
+        """Explicit None means no suffix and must not reparse process argv."""
+        with patch("sys.argv", ["pytest", "-s", "--timeout=60"]):
+            assert powerlog_filename(None) == "wattameter.log"
+
+    def test_no_argument_still_parses_suffix_from_argv(self):
+        """No argument keeps CLI utility behavior for --suffix parsing."""
+        with patch("sys.argv", ["wattameter_powerlog_filename", "--suffix", "run1"]):
+            assert powerlog_filename() == "wattameter_run1.log"

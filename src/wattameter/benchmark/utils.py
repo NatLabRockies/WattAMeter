@@ -13,7 +13,12 @@ import subprocess
 import re
 import sys
 import multiprocessing
-import pynvml
+
+# NVML is an optional dependency
+try:
+    import pynvml
+except ImportError:
+    pynvml = None  # type: ignore
 
 
 logger = logging.getLogger(__name__)
@@ -168,20 +173,21 @@ def print_system_info():
     print(f"Architecture: {platform.architecture()}")
     print(f"Processor: {get_cpu_info()}")
 
-    try:
-        pynvml.nvmlInit()
+    if pynvml is not None:
         try:
-            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
-            name = pynvml.nvmlDeviceGetName(handle)
-            if hasattr(name, "decode"):
-                name = name.decode("utf-8")
-            print(f"GPU: {name}")
-        except pynvml.NVMLError as e:
-            print(f"GPU: Error retrieving GPU info - {e}")
-        finally:
-            pynvml.nvmlShutdown()
-    except pynvml.NVMLError:
-        pass  # NVML not available, skip GPU info
+            pynvml.nvmlInit()
+            try:
+                handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+                name = pynvml.nvmlDeviceGetName(handle)
+                if hasattr(name, "decode"):
+                    name = name.decode("utf-8")
+                print(f"GPU: {name}")
+            except pynvml.NVMLError as e:
+                print(f"GPU: Error retrieving GPU info - {e}")
+            finally:
+                pynvml.nvmlShutdown()
+        except pynvml.NVMLError:
+            pass  # NVML not available, skip GPU info
 
 
 def estimate_dt(

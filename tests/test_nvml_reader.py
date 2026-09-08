@@ -1,11 +1,51 @@
 import pytest
 import logging
+import importlib
+import sys
+from types import ModuleType
 from unittest.mock import Mock, patch
-import pynvml
 
-from wattameter.readers.nvml import NVMLReader, DataThroughput
+try:
+    import pynvml
+except ImportError:
+    pynvml = ModuleType("pynvml")
+
+    class NVMLError(Exception):
+        pass
+
+    setattr(pynvml, "NVMLError", NVMLError)
+    setattr(pynvml, "NVML_ERROR_UNINITIALIZED", 1)
+    setattr(pynvml, "NVML_ERROR_INVALID_ARGUMENT", 2)
+    setattr(pynvml, "NVML_ERROR_NOT_SUPPORTED", 3)
+    setattr(pynvml, "NVML_TEMPERATURE_GPU", 0)
+    setattr(pynvml, "NVML_FI_DEV_POWER_INSTANT", 1)
+    setattr(pynvml, "NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_TX", 2)
+    setattr(pynvml, "NVML_FI_DEV_NVLINK_THROUGHPUT_DATA_RX", 3)
+
+    for name in (
+        "nvmlInit",
+        "nvmlShutdown",
+        "nvmlDeviceGetCount",
+        "nvmlDeviceGetHandleByIndex",
+        "nvmlDeviceGetTotalEnergyConsumption",
+        "nvmlDeviceGetTemperature",
+        "nvmlDeviceGetPowerUsage",
+        "nvmlDeviceGetUtilizationRates",
+        "nvmlDeviceGetFieldValues",
+    ):
+        setattr(pynvml, name, Mock())
+    pynvml.nvmlDeviceGetCount.return_value = 0
+
+    sys.modules["pynvml"] = pynvml
+
 from wattameter.readers.utils import Quantity, Energy, Power, Temperature, Utilization
 
+import wattameter.readers.nvml as nvml_module
+
+# Make sure NVMLReader uses the correct pynvml module
+nvml_module = importlib.reload(nvml_module)
+NVMLReader = nvml_module.NVMLReader
+DataThroughput = nvml_module.DataThroughput
 
 class TestNVMLReader:
     """Test cases for NVMLReader class."""
