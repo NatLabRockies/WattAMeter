@@ -12,7 +12,7 @@ from collections import deque
 from datetime import datetime
 from abc import abstractmethod
 from itertools import zip_longest
-from typing import Optional
+from typing import Optional, Callable
 
 # Import MQTT publisher if available
 try:
@@ -39,11 +39,8 @@ class BaseTracker(AbstractContextManager):
         self._async_thread = None  #: Asynchronous thread for reading data.
 
     @abstractmethod
-    def read(self) -> float:
-        """Read data.
-
-        :return: Time taken for the reading (in seconds).
-        """
+    def read(self) -> None:
+        """Read data."""
         pass
 
     @abstractmethod
@@ -56,16 +53,25 @@ class BaseTracker(AbstractContextManager):
         """Write data."""
         pass
 
-    def _read_and_sleep(self):
-        """Read data and sleep to maintain the desired frequency."""
-        # Read data from the reader
-        elapsed_s = self.read()
+    @staticmethod
+    def _sleep_until_next_tick(
+        next_t: float,
+        dt_read: float,
+        perf_counter,
+        sleep,
+        warn: Optional[Callable] = None,
+    ) -> float:
+        """Sleep until next scheduled read time and return updated schedule time."""
+        next_t += dt_read
+        now = perf_counter()
+        delay = next_t - now
+        if delay > 0.0:
+            sleep(delay)
+            return next_t
 
-        # Sleep for the remaining time if needed
-        if elapsed_s < self.dt_read:
-            time.sleep(self.dt_read - elapsed_s)
-        else:
-            logger.warning(f"Time taken for reading: {elapsed_s:.3e} seconds.")
+        if warn is not None:
+            warn("Falling behind schedule by %.3e seconds.", -delay)
+        return now
 
     def _update_series(self, event, freq_write: int = 0):
         """Asynchronous task that reads data and writes it at specified intervals.
@@ -74,17 +80,39 @@ class BaseTracker(AbstractContextManager):
         :param freq_write: Frequency (in number of reads) to write the collected data.
             If set to 0, data is never written.
         """
+        perf_counter = time.perf_counter
+        sleep = time.sleep
+        warn = logger.warning if logger.isEnabledFor(logging.WARNING) else None
+        tick = self._sleep_until_next_tick
+
+        next_t = perf_counter()
         if freq_write == 0:
             while not event.is_set():
-                self._read_and_sleep()
+                self.read()
+
+                next_t = tick(
+                    next_t,
+                    self.dt_read,
+                    perf_counter,
+                    sleep,
+                    warn,
+                )
         else:
             read_count = 0
             while not event.is_set():
-                self._read_and_sleep()
+                self.read()
                 read_count += 1
                 if read_count >= freq_write:
                     self.write()
                     read_count = 0
+
+                next_t = tick(
+                    next_t,
+                    self.dt_read,
+                    perf_counter,
+                    sleep,
+                    warn,
+                )
 
     def start(self, freq_write: int = 0):
         """Start asynchronous task :meth:`_update_series`.
@@ -157,18 +185,40 @@ class BaseTracker(AbstractContextManager):
         :param freq_write: Frequency (in number of reads) to write the collected data.
             If set to 0, data is never written.
         """
+        perf_counter = time.perf_counter
+        sleep = time.sleep
+        warn = logger.warning if logger.isEnabledFor(logging.WARNING) else None
+        tick = self._sleep_until_next_tick
+
+        next_t = perf_counter()
         try:
             if freq_write == 0:
                 while True:
-                    self._read_and_sleep()
+                    self.read()
+
+                    next_t = tick(
+                        next_t,
+                        self.dt_read,
+                        perf_counter,
+                        sleep,
+                        warn,
+                    )
             else:
                 read_count = 0
                 while True:
-                    self._read_and_sleep()
+                    self.read()
                     read_count += 1
                     if read_count >= freq_write:
                         self.write()
                         read_count = 0
+
+                    next_t = tick(
+                        next_t,
+                        self.dt_read,
+                        perf_counter,
+                        sleep,
+                        warn,
+                    )
         except KeyboardInterrupt:
             logger.info("Forced exit detected. Stopping tracker...")
         finally:
@@ -250,7 +300,7 @@ class Tracker(BaseTracker):
                 "Install with: pip install paho-mqtt"
             )
 
-    def read(self) -> float:
+    def read(self) -> None:
         # Read data from the reader and measure the time taken
         timestamp0 = time.time_ns()
         data = self.reader.read()
@@ -266,12 +316,6 @@ class Tracker(BaseTracker):
             self.time_series.append(timestamp)
             self.reading_time.append(elapsed)
             self.data.append(data)
-
-        # Compute the total elapsed time including reading and storing
-        timestamp2 = time.time_ns()
-        elapsed_s = (timestamp2 - timestamp0) / 1e9  # Convert to seconds
-
-        return elapsed_s
     
     def _setup_mqtt_publisher(self):
         """Initialize and connect the MQTT publisher.
@@ -328,17 +372,15 @@ class Tracker(BaseTracker):
     def write(self):
         self.write_data(*self.flush_data())
 
-    def __enter__(self):
-        super().start(self.freq_write)
-        return self
+    def start(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().start(freq_write)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
-        if exc_type is not None:
-            logger.error(
-                "Exception in context:", exc_info=(exc_type, exc_value, traceback)
-            )
-        return None
+    def stop(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().stop(freq_write)
 
     def track_until_forced_exit(self):
         self.write_header()  # Write header at the beginning
@@ -483,11 +525,9 @@ class TrackerArray(BaseTracker):
 
         self.freq_write = freq_write
 
-    def read(self) -> float:
-        elapsed_s = 0.0
+    def read(self) -> None:
         for tracker in self.trackers:
-            elapsed_s += tracker.read()
-        return elapsed_s
+            tracker.read()
 
     def write_header(self) -> None:
         for tracker in self.trackers:
@@ -497,17 +537,15 @@ class TrackerArray(BaseTracker):
         for tracker in self.trackers:
             tracker.write()
 
-    def __enter__(self):
-        super().start(self.freq_write)
-        return self
+    def start(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().start(freq_write)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
-        if exc_type is not None:
-            logger.error(
-                "Exception in context:", exc_info=(exc_type, exc_value, traceback)
-            )
-        return None
+    def stop(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().stop(freq_write)
 
     def track_until_forced_exit(self):
         self.write_header()

@@ -2,7 +2,17 @@
 
 ![wattameter_logo](wattameter_logo.png)
 
-**wattameter** is a Python package for monitoring and recording power usage over time, among other metrics. It enables time series data collection on hardware components such as CPUs and GPUs.
+**wattameter** is a Python package for collecting and unifying heterogeneous hardware telemetry. It supports periodic collection of CPU and GPU metrics in a common time-series format and can be launched as part of an experiment script or from SLURM job scripts. This lowers friction for users who need to run repeated measurements across different machines and software versions.
+
+The package emphasizes repeatability and operational simplicity:
+
+- unbiased sampling intervals,
+- configurable write frequency while guaranteeing a final write on shutdown,
+- parity between Python API and CLI interfaces,
+- optional real-time publication over MQTT, and
+- shell utilities that integrate with SLURM jobs.
+
+The resulting workflow reduces the overhead for experiment instrumentation and supports comparative studies across nodes, job configurations, and application versions.
 
 ## Current Features
 
@@ -41,9 +51,11 @@ pip install wattameter[postprocessing,mqtt]
 
 ### As a Python module
 
+There are at least two ways to use **wattameter** in your Python code: using the tracker `start()` and `stop()` methods, or using the tracker as a context manager. The following example demonstrates both approaches:
+
 ```python
 from wattameter import Tracker
-from wattameter.readers import NVMLReader
+from wattameter.readers import NVMLReader, Power
 
 tracker = Tracker(
     reader=NVMLReader((Power,)),
@@ -51,9 +63,9 @@ tracker = Tracker(
     freq_write=600,  # Frequency (# reads) for writing power data to file
     output="power_log.txt",
 )
-tracker.start()
+tracker.start(freq_write=0)
 # ... your code ...
-tracker.stop()
+tracker.stop(freq_write=0)
 
 # ... or ...
 
@@ -65,6 +77,8 @@ with Tracker(
 ) as tracker:
     # ... your code ...
 ```
+
+The first approach saves data within the `Tracker` object, and allows you to start and stop the same tracker multiple times. The second approach is more convenient for one-off tracking, as it automatically handles starting and stopping the tracker, and saves the data to the specified output file when the context is exited.
 
 ### Command-line interface
 
@@ -131,6 +145,13 @@ Contributions are welcome! Please open issues or submit pull requests at [https:
 
 The API documentation is available at [https://NatLabRockies.github.io/WattAMeter/](https://NatLabRockies.github.io/WattAMeter/).
 For specific documentation of the NLR module, visit [https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/](https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/).
+
+## Publications and data
+
+This software has been used in the following publications:
+
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matthew Selensky, and Juliane Mueller, "Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning," [arXiv:2604.07345](https://arxiv.org/abs/2604.07345) (2026)
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matt Selensky, and Juliane Mueller. 2026. "Dataset of Generative AI Workload Power Profiles." NLR Data Catalog. Golden, CO: National Laboratory of the Rockies. Last updated: July 17, 2026. DOI: [10.7799/3025227](https://data.nlr.gov/submissions/312) — measured with WattAMeter
 
 ## License
 

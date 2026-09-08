@@ -38,6 +38,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Operating System :: POSIX :: Linux",
     "Environment :: Console",
 ]
@@ -56,7 +58,7 @@ wattameter_benchmark_overhead = "wattameter.benchmark.overhead:run_benchmark"
 
 [project.optional-dependencies]
 nvidia = ["nvidia-ml-py"]
-postprocessing = ["pandas"]
+postprocessing = ["pandas", "scipy"]
 mqtt = ["paho-mqtt>=2.0.0"]
 benchmark = ["numpy", "pandas"]
 

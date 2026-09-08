@@ -37,7 +37,7 @@ WattAMeter addresses this need by combining heterogeneous hardware telemetry int
 
 The package emphasizes repeatability and operational simplicity:
 
-- deterministic sampling intervals,
+- unbiased sampling intervals,
 - configurable write frequency while guaranteeing a final write on shutdown,
 - parity between Python API and CLI interfaces,
 - optional real-time publication over MQTT, and
@@ -66,23 +66,25 @@ The WattAMeter contribution is a workflow-oriented collection layer that unifies
 
 WattAMeter follows a modular reader and tracker architecture [@wattameter_software]. Reader classes encapsulate device-specific access (for example RAPL and NVML), while tracker classes manage periodic polling, buffering, and persistence. In practice, this means users can change metrics and sampling settings without modifying the underlying collection logic.
 
-The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the pull request adding an `AMDSMIReader` for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [@wattameter_pr9_amdsmi].
+The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the (open) pull request adding an `AMDSMIReader` for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [@wattameter_pr9_amdsmi].
 
 The core tracker loop is thread-based and uses fixed sampling intervals (`dt_read`) with configurable write cadence (`freq_write`). On shutdown, trackers perform a final read/write cycle to reduce end-of-run data loss in short jobs or interrupted sessions. The implementation also supports context-manager usage and signal-aware command-line execution, which maps well to batch-system lifecycle control.
 
 Two design choices are central for research use.
 
-1. The software prioritizes periodic sampling over event-driven callbacks to produce uniformly sampled series that are easier to compare under controlled conditions. The tradeoff is that transients shorter than the selected interval may be missed. Each sample stores both a timestamp and a read-duration field, enabling users to assess telemetry overhead and timing fidelity in high-frequency collection.
+1. The software prioritizes periodic sampling over event-driven callbacks to produce unbiased sampled series that are easier to compare under controlled conditions. The tradeoff is that transients shorter than the selected interval may be missed. Each sample stores both a timestamp and a read-duration field, enabling users to assess telemetry overhead and timing fidelity in high-frequency collection.
 
 2. WattAMeter uses dual-output semantics: local files are always first-class, and MQTT publication is optional. This ensures robust baseline operation even when network services are unavailable, while still supporting live observability when needed.
 
 For scheduler workflows, shell utilities wrap `srun` orchestration to start and stop tracking sessions across allocated nodes, including support for multiple sequential sessions in one job allocation [@nlr_wattameter_module; @wattameter_software]. Tracking sessions do not block resources and can be started and stopped independently of the main workload. The implementation includes benchmark utilities for sampling-frequency characterization and runtime overhead estimation, plus post-processing helpers for parsing and aligning log files.
 
+It is worth mentioning that WattAMeter started as a thin module on top of CodeCarbon, and slowly evolved into a separate project which enabled data collection at a higher frequency. WattAMeter has no external dependencies beyond standard Python packages, so we expect it to be easy to integrate into existing workflows.
+
 # Research impact statement
 
 WattAMeter has practical impact for teams running experiments on mixed CPU and GPU nodes, because it packages data collection and operational orchestration into one reusable workflow. Instead of writing cluster-specific wrappers for each study, users can adopt a common interface for repeated measurement studies.
 
-This impact is already visible in two concrete outputs. WattAMeter was used to generate the publicly released "Dataset of Generative AI Workload Power Profiles" in the NLR Data Catalog [@nlr_genai_power_dataset]. The same dataset, together with WattAMeter post-processing functionality, was then used in the study "Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning" [@vercellino2026measurement].
+This impact is already visible in two concrete outputs. WattAMeter was used to generate the publicly released "Dataset of Generative AI Workload Power Profiles" in the NLR Data Catalog [@nlr_genai_power_dataset]. The same dataset, together with WattAMeter post-processing functionality, was then used in the study "Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning" [@vercellino2026measurement]. On the other hand, the design of WattAMeter was influenced by the practical needs encountered in these studies.
 
 Additional impact is evidenced by the deployment of WattAMeter as an NLR HPC module, with documented `module load wattameter` usage and scheduler guidance for production SLURM jobs [@nlr_wattameter_module]. The documentation includes concrete operational practices, including paired start/stop commands, interpretation of node-level CPU counters, and use of exclusive allocations for CPU analyses, indicating active use beyond a purely aspirational design.
 
@@ -104,6 +106,6 @@ This manuscript draft was prepared with assistance from GPT-5.3-Codex. The autho
 
 This work was authored by the National Laboratory of the Rockies (NLR) for the U.S. Department of Energy (DOE), operated under Contract No. DE-AC36-08GO28308. Funding was provided by the NLR. The views expressed in the article do not necessarily represent the views of the DOE or the U.S. Government. The U.S. Government retains and the publisher, by accepting the article for publication, acknowledges that the U.S. Government retains a nonexclusive, paid-up, irrevocable, worldwide license to publish or reproduce the published form of this work, or allow others to do so, for U.S. Government purposes.
 
-We thank Matt Selensky (NLR) for maintaining the WattAMeter module on the NLR HPC system and supporting operational deployment.
+We thank all the NLR staff who contributed to the ideation and deployment of this software. In particular, we thank Matt Selensky (NLR) for maintaining the WattAMeter module on the NLR HPC system and supporting operational deployment.
 
 # References

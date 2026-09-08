@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
 import argparse
+import signal
 from unittest.mock import patch, MagicMock, mock_open
 from wattameter.cli.main import main
 from wattameter.cli.utils import parse_tracker_spec, ForcedExit
@@ -178,17 +179,88 @@ class TestCLIMain:
         assert len(readers) == 2
         assert dt_read == 0.5
 
-    def test_empty_readers_skipped(self):
-        """Test that tracker specs with no valid readers are skipped."""
-        # This would happen if a reader has no tags (e.g., no GPU available)
-        # The main() function should log a warning and skip that tracker
-        pass
+    def test_empty_readers_skipped(self, caplog):
+        """Test that tracker specifications with no valid readers are skipped."""
+        empty_reader = MagicMock()
+        empty_reader.tags = []
+        empty_reader.__class__.__name__ = "NVMLReader"
 
-    def test_no_valid_trackers_exits_gracefully(self):
+        valid_reader = MagicMock()
+        valid_reader.tags = ["package-0[mJ]"]
+        valid_reader.__class__.__name__ = "RAPLReader"
+
+        args = argparse.Namespace(
+            tracker=[
+                (0.1, [empty_reader]),
+                (0.5, [valid_reader]),
+            ],
+            suffix=None,
+            id="test-run",
+            output_dir=".",
+            freq_write=0,
+            log_level="warning",
+            mqtt_broker=None,
+            mqtt_port=1883,
+            mqtt_username=None,
+            mqtt_password=None,
+            mqtt_topic_prefix="wattameter",
+            mqtt_qos=1,
+        )
+
+        tracker = MagicMock()
+        tracker.track_until_forced_exit.side_effect = ForcedExit()
+
+        with (
+            patch("argparse.ArgumentParser.parse_args", return_value=args),
+            patch("wattameter.cli.main.Tracker", return_value=tracker) as mock_tracker,
+            patch("wattameter.cli.main.TrackerArray") as mock_tracker_array,
+            patch("builtins.open", mock_open()),
+            patch("time.time_ns", return_value=1000000000),
+            caplog.at_level("WARNING"),
+        ):
+            main()
+
+        assert "Tracker specification 0 has no valid readers. Skipping." in caplog.text
+        mock_tracker.assert_called_once()
+        mock_tracker_array.assert_not_called()
+
+    def test_no_valid_trackers_exits_gracefully(self, caplog):
         """Test that the program exits gracefully when no valid trackers exist."""
-        # When all readers have no tags, no trackers should be created
-        # and the program should exit with an error message
-        pass
+        reader = MagicMock()
+        reader.tags = []
+        reader.__class__.__name__ = "NVMLReader"
+
+        args = argparse.Namespace(
+            tracker=[(0.5, [reader])],
+            suffix=None,
+            id="test-run",
+            output_dir=".",
+            freq_write=0,
+            log_level="warning",
+            mqtt_broker=None,
+            mqtt_port=1883,
+            mqtt_username=None,
+            mqtt_password=None,
+            mqtt_topic_prefix="wattameter",
+            mqtt_qos=1,
+        )
+
+        mocked_open = mock_open()
+
+        with (
+            patch("argparse.ArgumentParser.parse_args", return_value=args),
+            patch("wattameter.cli.main.Tracker") as mock_tracker,
+            patch("wattameter.cli.main.TrackerArray") as mock_tracker_array,
+            patch("builtins.open", mocked_open),
+            caplog.at_level("ERROR"),
+        ):
+            result = main()
+
+        assert result is None
+        assert "No valid readers available. Exiting." in caplog.text
+        mock_tracker.assert_not_called()
+        mock_tracker_array.assert_not_called()
+        mocked_open.assert_not_called()
 
     def test_timestamp_format_in_output(self):
         """Test that timestamps are written in the correct format."""
@@ -205,21 +277,138 @@ class TestCLIMain:
 
     def test_all_outputs_receive_header(self):
         """Test that all output files receive the initial header comment."""
-        # The main() function writes a header to all output files including base
-        # This test would verify that behavior with mocked file I/O
-        pass
+        reader = MagicMock()
+        reader.tags = ["gpu-0[mW]"]
+        reader.__class__.__name__ = "NVMLReader"
+
+        args = argparse.Namespace(
+            tracker=[(0.1, [reader])],
+            suffix="test",
+            id="run-123",
+            output_dir="logs",
+            freq_write=0,
+            log_level="warning",
+            mqtt_broker=None,
+            mqtt_port=1883,
+            mqtt_username=None,
+            mqtt_password=None,
+            mqtt_topic_prefix="wattameter",
+            mqtt_qos=1,
+        )
+
+        tracker = MagicMock()
+        tracker.track_until_forced_exit.side_effect = ForcedExit()
+        mocked_open = mock_open()
+
+        with (
+            patch("argparse.ArgumentParser.parse_args", return_value=args),
+            patch("wattameter.cli.main.Tracker", return_value=tracker),
+            patch("builtins.open", mocked_open),
+            patch("time.time_ns", return_value=1000000000),
+        ):
+            main()
+
+        opened_files = [call.args[0] for call in mocked_open.call_args_list]
+
+        assert "logs/wattameter_test.log" in opened_files
+        assert "logs/nvml_01_wattameter_test.log" in opened_files
+
+        written_values = [
+            write_call.args[0] for write_call in mocked_open().write.call_args_list
+        ]
+        assert len(written_values) == 2
+        assert all(value.startswith("# ") for value in written_values)
+        assert all("WattAMeter run run-123" in value for value in written_values)
 
     def test_signal_handling_graceful_shutdown(self):
-        """Test that signal handling allows graceful shutdown of trackers."""
-        # When a signal is received, all trackers should stop gracefully
-        # and write their final data
-        pass
+        """Test that forced exit signals trigger graceful cleanup."""
+        reader = MagicMock()
+        reader.tags = ["gpu-0[mW]"]
+        reader.__class__.__name__ = "NVMLReader"
+
+        args = argparse.Namespace(
+            tracker=[(0.1, [reader])],
+            suffix=None,
+            id="test-run",
+            output_dir=".",
+            freq_write=0,
+            log_level="warning",
+            mqtt_broker=None,
+            mqtt_port=1883,
+            mqtt_username=None,
+            mqtt_password=None,
+            mqtt_topic_prefix="wattameter",
+            mqtt_qos=1,
+        )
+
+        tracker = MagicMock()
+        tracker.track_until_forced_exit.side_effect = ForcedExit()
+
+        with (
+            patch("argparse.ArgumentParser.parse_args", return_value=args),
+            patch("wattameter.cli.main.Tracker", return_value=tracker),
+            patch("builtins.open", mock_open()),
+            patch("time.time_ns", return_value=1000000000),
+            patch("signal.signal") as mock_signal,
+        ):
+            main()
+
+        for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+            mock_signal.assert_any_call(signum, signal.SIG_IGN)
+
+        tracker.track_until_forced_exit.assert_called_once_with()
+        tracker.write.assert_called_once()
 
     def test_trackers_start_and_stop_correctly(self):
-        """Test that all but the last tracker are started, and last uses track_until_forced_exit."""
-        # The main() function starts all trackers except the last one,
-        # then calls track_until_forced_exit on the last tracker
-        pass
+        """Test that all but the last tracker are started and the last tracks until exit."""
+        first_reader = MagicMock()
+        first_reader.tags = ["gpu-0[mW]"]
+        first_reader.__class__.__name__ = "NVMLReader"
+
+        last_reader = MagicMock()
+        last_reader.tags = ["package-0[mJ]"]
+        last_reader.__class__.__name__ = "RAPLReader"
+
+        args = argparse.Namespace(
+            tracker=[
+                (0.1, [first_reader]),
+                (1.0, [last_reader]),
+            ],
+            suffix=None,
+            id="test-run",
+            output_dir=".",
+            freq_write=5,
+            log_level="warning",
+            mqtt_broker=None,
+            mqtt_port=1883,
+            mqtt_username=None,
+            mqtt_password=None,
+            mqtt_topic_prefix="wattameter",
+            mqtt_qos=1,
+        )
+
+        first_tracker = MagicMock()
+        last_tracker = MagicMock()
+        last_tracker.track_until_forced_exit.side_effect = ForcedExit()
+
+        with (
+            patch("argparse.ArgumentParser.parse_args", return_value=args),
+            patch(
+                "wattameter.cli.main.Tracker",
+                side_effect=[first_tracker, last_tracker],
+            ),
+            patch("builtins.open", mock_open()),
+            patch("time.time_ns", return_value=1000000000),
+        ):
+            main()
+
+        first_tracker.start.assert_called_once_with(freq_write=5)
+        first_tracker.stop.assert_called_once_with(freq_write=5)
+
+        last_tracker.start.assert_not_called()
+        last_tracker.track_until_forced_exit.assert_called_once_with()
+        last_tracker.stop.assert_not_called()
+        last_tracker.write.assert_called_once_with()
 
 
 class TestTrackerConfiguration:
