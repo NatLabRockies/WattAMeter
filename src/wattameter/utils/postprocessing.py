@@ -41,8 +41,11 @@ def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=
     _n_fields = len(_header)
 
     # Read data
+    # From now on, skip comment lines starting with '#'
     _data = deque([])
     for _line in f:
+        if _line.startswith("#"):
+            continue
         _fields = _line.split()
         _numeric_fields = [float("NAN")] * _n_fields
         _numeric_fields[0] = datetime.strptime(_fields[0], timestamp_fmt)

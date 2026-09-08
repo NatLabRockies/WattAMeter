@@ -328,17 +328,15 @@ class Tracker(BaseTracker):
     def write(self):
         self.write_data(*self.flush_data())
 
-    def __enter__(self):
-        super().start(self.freq_write)
-        return self
+    def start(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().start(freq_write)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
-        if exc_type is not None:
-            logger.error(
-                "Exception in context:", exc_info=(exc_type, exc_value, traceback)
-            )
-        return None
+    def stop(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().stop(freq_write)
 
     def track_until_forced_exit(self):
         self.write_header()  # Write header at the beginning
@@ -497,17 +495,15 @@ class TrackerArray(BaseTracker):
         for tracker in self.trackers:
             tracker.write()
 
-    def __enter__(self):
-        super().start(self.freq_write)
-        return self
+    def start(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().start(freq_write)
 
-    def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
-        if exc_type is not None:
-            logger.error(
-                "Exception in context:", exc_info=(exc_type, exc_value, traceback)
-            )
-        return None
+    def stop(self, freq_write: int = -1):
+        if freq_write == -1:
+            freq_write = self.freq_write
+        super().stop(freq_write)
 
     def track_until_forced_exit(self):
         self.write_header()

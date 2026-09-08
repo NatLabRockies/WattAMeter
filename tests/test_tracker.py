@@ -575,6 +575,20 @@ class TestTracker:
         assert kwargs["tags"] == reader.tags
         assert kwargs["time_series"][0] == 1_000_000_000
 
+    def test_writing_in_disk_behavior(self, output_file):
+        """Test that writing to disk creates the file and writes data."""
+        reader = MockReader()
+        tracker = Tracker(reader, dt_read=0.05, freq_write=2, output=output_file)
+
+        tracker.start(freq_write=0)
+        time.sleep(0.5)
+        tracker.stop(freq_write=0)
+        assert not os.path.exists(output_file)
+
+        with Tracker(reader, dt_read=0.05, freq_write=2, output=output_file):
+            time.sleep(0.5)
+        assert os.path.exists(output_file)
+        
 
 class TestTrackerArray:
     """Test cases for TrackerArray class."""
@@ -704,6 +718,27 @@ class TestTrackerArray:
 
         # Verify base method was called with instance's freq_write
         mock_base.assert_called_once_with(9)
+
+    def test_writing_in_disk_behavior(self, temp_dir):
+        """Test that writing to disk creates the file and writes data."""
+        readers = [MockReader(), MockReader()]
+        outputs = [os.path.join(temp_dir, f"disk_test_{i}.log") for i in range(2)]
+        tracker_array = TrackerArray(
+            readers, dt_read=0.05, freq_write=2, outputs=outputs
+        )  # type: ignore
+
+        tracker_array.start(freq_write=0)
+        time.sleep(0.5)
+        tracker_array.stop(freq_write=0)
+        for output in outputs:
+            assert not os.path.exists(output)
+
+        with TrackerArray(
+            readers, dt_read=0.05, freq_write=2, outputs=outputs
+        ):
+            time.sleep(0.5)
+        for output in outputs:
+            assert os.path.exists(output)
 
 
 class TestIntegration:

@@ -51,6 +51,8 @@ pip install wattameter[postprocessing,mqtt]
 
 ### As a Python module
 
+There are at least two ways to use **wattameter** in your Python code: using the tracker `start()` and `stop()` methods, or using the tracker as a context manager. The following example demonstrates both approaches:
+
 ```python
 from wattameter import Tracker
 from wattameter.readers import NVMLReader
@@ -61,9 +63,9 @@ tracker = Tracker(
     freq_write=600,  # Frequency (# reads) for writing power data to file
     output="power_log.txt",
 )
-tracker.start()
+tracker.start(freq_write=0)
 # ... your code ...
-tracker.stop()
+tracker.stop(freq_write=0)
 
 # ... or ...
 
@@ -75,6 +77,8 @@ with Tracker(
 ) as tracker:
     # ... your code ...
 ```
+
+The first approach saves data within the `Tracker` object, and allows you to start and stop the same tracker multiple times. The second approach is more convenient for one-off tracking, as it automatically handles starting and stopping the tracker, and saves the data to the specified output file when the context is exited.
 
 ### Command-line interface
 

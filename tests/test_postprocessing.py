@@ -85,11 +85,13 @@ class TestFileToDf:
 # Timestamp Power
 2024-01-01_10:00:00.000000 100.5
 2024-01-01_10:00:01.000000 105.3
+# Another comment line
+2024-01-02_10:00:00.000000 110.2
 """
         f = StringIO(file_content)
         df = file_to_df(f, skip_lines=3)
 
-        assert len(df) == 2
+        assert len(df) == 3
         assert "Power" in df.columns
 
     def test_missing_values_handling(self):
