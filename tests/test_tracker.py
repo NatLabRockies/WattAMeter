@@ -575,6 +575,74 @@ class TestTracker:
         assert kwargs["tags"] == reader.tags
         assert kwargs["time_series"][0] == 1_000_000_000
 
+    def test_context_manager_disconnects_mqtt(self, output_file):
+        """Regression test for issue #16: MQTT is disconnected on tracker exit."""
+        reader = MockReader(read_return_value=[10, 20])
+        mqtt_instance = MagicMock()
+        mqtt_instance.connect.return_value = True
+
+        with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+            "wattameter.tracker.MQTTPublisher", return_value=mqtt_instance
+        ):
+            tracker = Tracker(
+                reader,
+                dt_read=0.1,
+                freq_write=10,
+                output=output_file,
+                mqtt_config={"broker_host": "broker.local"},
+            )
+            tracker.__enter__()
+            tracker.__exit__(None, None, None)
+
+        mqtt_instance.disconnect.assert_called_once()
+
+    def test_stop_disconnects_mqtt(self, output_file):
+        """Regression test for issue #16: stop() disconnects the MQTT publisher."""
+        reader = MockReader(read_return_value=[10, 20])
+        mqtt_instance = MagicMock()
+        mqtt_instance.connect.return_value = True
+
+        with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+            "wattameter.tracker.MQTTPublisher", return_value=mqtt_instance
+        ):
+            tracker = Tracker(
+                reader,
+                dt_read=0.1,
+                freq_write=10,
+                output=output_file,
+                mqtt_config={"broker_host": "broker.local"},
+            )
+            tracker.start(freq_write=10)
+            tracker.stop(freq_write=10)
+
+        mqtt_instance.disconnect.assert_called_once()
+        # Idempotent: a second stop must not raise or re-disconnect.
+        tracker.disconnect_mqtt()
+        mqtt_instance.disconnect.assert_called_once()
+
+    def test_track_until_forced_exit_disconnects_mqtt(self, output_file):
+        """Regression test for issue #16: forced-exit path disconnects MQTT."""
+        reader = MockReader(read_return_value=[10, 20])
+        mqtt_instance = MagicMock()
+        mqtt_instance.connect.return_value = True
+
+        with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+            "wattameter.tracker.MQTTPublisher", return_value=mqtt_instance
+        ):
+            tracker = Tracker(
+                reader,
+                dt_read=0.01,
+                freq_write=0,
+                output=output_file,
+                mqtt_config={"broker_host": "broker.local"},
+            )
+            with patch.object(
+                tracker, "_read_and_sleep", side_effect=KeyboardInterrupt
+            ):
+                tracker.track_until_forced_exit()
+
+        mqtt_instance.disconnect.assert_called_once()
+
 
 class TestTrackerArray:
     """Test cases for TrackerArray class."""

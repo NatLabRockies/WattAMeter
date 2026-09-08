@@ -328,12 +328,33 @@ class Tracker(BaseTracker):
     def write(self):
         self.write_data(*self.flush_data())
 
+    def disconnect_mqtt(self):
+        """Disconnect the MQTT publisher if one is active.
+
+        Cleanly closes the MQTT connection and stops paho's background
+        network-loop thread. Safe to call multiple times and when no
+        publisher is configured.
+        """
+        if self.mqtt_publisher is not None:
+            try:
+                self.mqtt_publisher.disconnect()
+            except Exception as e:
+                logger.error(f"Error disconnecting MQTT publisher: {e}")
+            finally:
+                self.mqtt_publisher = None
+
+    def stop(self, freq_write: int = 0):
+        try:
+            super().stop(freq_write)
+        finally:
+            self.disconnect_mqtt()
+
     def __enter__(self):
         super().start(self.freq_write)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
+        self.stop(self.freq_write)
         if exc_type is not None:
             logger.error(
                 "Exception in context:", exc_info=(exc_type, exc_value, traceback)
@@ -342,7 +363,10 @@ class Tracker(BaseTracker):
 
     def track_until_forced_exit(self):
         self.write_header()  # Write header at the beginning
-        super().track_until_forced_exit(self.freq_write)
+        try:
+            super().track_until_forced_exit(self.freq_write)
+        finally:
+            self.disconnect_mqtt()
 
     def flush_data(self):
         """Flush all collected data from the tracker.
@@ -497,12 +521,23 @@ class TrackerArray(BaseTracker):
         for tracker in self.trackers:
             tracker.write()
 
+    def disconnect_mqtt(self):
+        """Disconnect the MQTT publishers of all managed trackers."""
+        for tracker in self.trackers:
+            tracker.disconnect_mqtt()
+
+    def stop(self, freq_write: int = 0):
+        try:
+            super().stop(freq_write)
+        finally:
+            self.disconnect_mqtt()
+
     def __enter__(self):
         super().start(self.freq_write)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        super().stop(self.freq_write)
+        self.stop(self.freq_write)
         if exc_type is not None:
             logger.error(
                 "Exception in context:", exc_info=(exc_type, exc_value, traceback)
@@ -511,4 +546,7 @@ class TrackerArray(BaseTracker):
 
     def track_until_forced_exit(self):
         self.write_header()
-        super().track_until_forced_exit(self.freq_write)
+        try:
+            super().track_until_forced_exit(self.freq_write)
+        finally:
+            self.disconnect_mqtt()

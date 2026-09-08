@@ -7,14 +7,21 @@ from unittest.mock import MagicMock, patch
 from wattameter import mqtt_publisher
 
 
+class FakeCallbackAPIVersion:
+    VERSION1 = 1
+    VERSION2 = 2
+
+
 class FakeMQTTModule:
     MQTT_ERR_SUCCESS = 0
+    CallbackAPIVersion = FakeCallbackAPIVersion
 
     def __init__(self, client):
         self._client = client
 
-    def Client(self, client_id=None):
+    def Client(self, client_id=None, callback_api_version=None):
         self._client.client_id = client_id
+        self._client.callback_api_version = callback_api_version
         return self._client
 
 
@@ -99,3 +106,57 @@ def test_publish_batch_counts_successful_messages():
         )
 
     assert count == 2
+
+
+def test_client_created_with_v2_callback_api():
+    """Regression test for issue #15: paho-mqtt v2 callback API is used."""
+    fake_client = MagicMock()
+
+    with patch.object(mqtt_publisher, "MQTT_AVAILABLE", True), patch.object(
+        mqtt_publisher, "mqtt", FakeMQTTModule(fake_client)
+    ):
+        pub = mqtt_publisher.MQTTPublisher(broker_host="broker.local")
+
+    # The client must be constructed requesting the v2 callback API version.
+    assert fake_client.callback_api_version == FakeCallbackAPIVersion.VERSION2
+    assert pub.client is fake_client
+
+
+def test_on_connect_uses_v2_signature():
+    """Regression test for issue #15: _on_connect accepts the 5-arg v2 signature."""
+    fake_client = MagicMock()
+
+    with patch.object(mqtt_publisher, "MQTT_AVAILABLE", True), patch.object(
+        mqtt_publisher, "mqtt", FakeMQTTModule(fake_client)
+    ):
+        pub = mqtt_publisher.MQTTPublisher(broker_host="broker.local")
+
+    class ReasonCode:
+        def __init__(self, value):
+            self.value = value
+
+        @property
+        def is_failure(self):
+            return self.value != 0
+
+    # Success reason code marks the publisher connected.
+    pub._on_connect(fake_client, None, {}, ReasonCode(0), properties=None)
+    assert pub._connected is True
+
+    # Failure reason code clears the connected flag.
+    pub._on_connect(fake_client, None, {}, ReasonCode(5), properties=None)
+    assert pub._connected is False
+
+
+def test_on_disconnect_uses_v2_signature():
+    """Regression test for issue #15: _on_disconnect accepts the v2 signature."""
+    fake_client = MagicMock()
+
+    with patch.object(mqtt_publisher, "MQTT_AVAILABLE", True), patch.object(
+        mqtt_publisher, "mqtt", FakeMQTTModule(fake_client)
+    ):
+        pub = mqtt_publisher.MQTTPublisher(broker_host="broker.local")
+
+    pub._connected = True
+    pub._on_disconnect(fake_client, None, {}, 0, properties=None)
+    assert pub._connected is False
