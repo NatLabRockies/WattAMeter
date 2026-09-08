@@ -208,6 +208,7 @@ client.loop_forever()
 - If connection fails, an error is logged but WattAMeter continues running
 - Data continues to be written to local files even if MQTT is unavailable
 - Connection is maintained throughout the tracking session
+- Restarting a stopped tracker reconnects its configured MQTT publisher
 
 ### Error Handling
 
@@ -218,7 +219,11 @@ client.loop_forever()
 ### Disconnection
 
 - Clean disconnection occurs when WattAMeter stops
-- Final data batch is written to both file and MQTT before shutdown
+- With periodic writing enabled, the final data batch is written to file and queued for MQTT before shutdown
+- Local files are the authoritative record. MQTT delivery is best-effort: shutdown sends DISCONNECT before stopping the network loop but does not wait for publish acknowledgements, so queued messages may be lost
+- The CLI flushes final samples before disconnecting, including with `--freq-write 0`
+- In Python, `freq_write=0` retains samples in memory. A `write()` after `stop()` saves locally only; writes never reconnect MQTT. Use a positive write frequency when final samples should also be queued for MQTT during shutdown
+- Failed connection attempts and startup errors clean up any MQTT network loop already started
 
 ## Security Considerations
 

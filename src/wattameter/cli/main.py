@@ -21,6 +21,7 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
     for sig in handled_signals:
         signal.signal(sig, handle_signal)
 
+    trackers = []
     try:
         # Parse command line arguments
         parser = argparse.ArgumentParser(description="WattAMeter CLI")
@@ -59,7 +60,6 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
         )
 
         # Create trackers based on specifications
-        trackers = []
         for idx, (dt_read, r_list) in enumerate(tracker_specs):
             # Filter out readers with no tags
             readers = [r for r in r_list if len(r.tags) > 0]
@@ -118,7 +118,8 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
             logging.info("Tracking with WattAMeter...")
             for t in trackers[:-1]:
                 t.start(freq_write=args.freq_write)
-            trackers[-1].track_until_forced_exit()
+            # The CLI owns cleanup so its final write still has an MQTT connection.
+            trackers[-1].track_until_forced_exit(disconnect_mqtt=False)
         except ForcedExit:
             logging.info("Forced exit detected. Stopping tracker...")
 
@@ -127,14 +128,18 @@ def main(timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f"):
                 signal.signal(sig, signal.SIG_IGN)
         finally:
             for t in trackers[:-1]:
-                t.stop(freq_write=args.freq_write)
+                t.stop(freq_write=max(1, args.freq_write))
             trackers[-1].write()
             t1 = time.time_ns()
             elapsed_s = (t1 - t0) * 1e-9
             logging.info(f"Tracker stopped. Elapsed time: {elapsed_s:.2f} seconds.")
     finally:
-        for sig, previous_handler in previous_handlers.items():
-            signal.signal(sig, previous_handler)
+        try:
+            for tracker in trackers:
+                tracker.disconnect_mqtt()
+        finally:
+            for sig, previous_handler in previous_handlers.items():
+                signal.signal(sig, previous_handler)
 
 
 if __name__ == "__main__":

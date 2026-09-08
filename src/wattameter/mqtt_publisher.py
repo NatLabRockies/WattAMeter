@@ -195,7 +195,8 @@ class MQTTPublisher:
         """Connect to the MQTT broker.
         
         Attempts to establish a connection to the configured MQTT broker.
-        This method will block for up to timeout seconds waiting for the connection.
+        The timeout bounds the wait for the connection callback, not blocking
+        transport operations or cleanup.
         
         :param timeout: Maximum time to wait for connection (seconds)
         :return: True if connection successful, False otherwise
@@ -204,6 +205,8 @@ class MQTTPublisher:
             logger.info("Already connected to MQTT broker")
             return True
         
+        self._connection_attempted = True
+        connected = False
         try:
             logger.info(f"Connecting to MQTT broker at {self.broker_host}:{self.broker_port}")
             self.client.connect(self.broker_host, self.broker_port, self.keepalive)
@@ -212,35 +215,44 @@ class MQTTPublisher:
             self.client.loop_start()
             
             # Wait for connection with timeout
-            start_time = time.time()
-            while not self._connected and (time.time() - start_time) < timeout:
+            start_time = time.monotonic()
+            while not self._connected and (time.monotonic() - start_time) < timeout:
                 time.sleep(0.1)
-            
-            self._connection_attempted = True
             
             if not self._connected:
                 logger.error(f"Connection timeout after {timeout} seconds")
                 return False
             
+            connected = True
             return True
             
         except Exception as e:
             logger.error(f"Error connecting to MQTT broker: {e}")
             return False
+        finally:
+            if not connected:
+                self.disconnect()
     
     def disconnect(self):
         """Disconnect from the MQTT broker.
         
-        Cleanly disconnects from the broker and stops the network loop.
+        Best effort: does not wait for publish acknowledgments, so queued messages
+        may be lost. There is no hard overall time bound if the transport blocks.
         """
         if self._connection_attempted:
             try:
-                self.client.loop_stop()
+                # Disconnect first so the loop need not wait for outstanding QoS ACKs.
                 self.client.disconnect()
-                self._connected = False
-                logger.info("Disconnected from MQTT broker")
             except Exception as e:
                 logger.error(f"Error disconnecting from MQTT broker: {e}")
+            finally:
+                try:
+                    self.client.loop_stop()
+                except Exception as e:
+                    logger.error(f"Error stopping MQTT network loop: {e}")
+                finally:
+                    self._connected = False
+                    self._connection_attempted = False
     
     def publish_data(
         self,

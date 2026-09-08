@@ -774,6 +774,135 @@ class TestTrackerArray:
         mock_base.assert_called_once_with(9)
 
 
+@pytest.fixture(params=[Tracker, TrackerArray])
+def mqtt_tracker(request, tmp_path, monkeypatch):
+    publishers = []
+
+    def make_publisher(**kwargs):
+        publisher = MagicMock()
+        publisher.connect.return_value = True
+        publishers.append(publisher)
+        return publisher
+
+    monkeypatch.setattr("wattameter.tracker.MQTT_AVAILABLE", True)
+    monkeypatch.setattr("wattameter.tracker.MQTTPublisher", make_publisher)
+    config = {"broker_host": "broker.local"}
+    if request.param is Tracker:
+        tracker = Tracker(MockReader(), dt_read=0.001, freq_write=1000,
+                          output=tmp_path / "data", mqtt_config=config)
+    else:
+        tracker = TrackerArray([MockReader(), MockReader()], dt_read=0.001,
+                               freq_write=1000, outputs=[tmp_path / "a", tmp_path / "b"],
+                               mqtt_config=config)
+    # Keep sampling deterministic while exercising real startup and final reads.
+    monkeypatch.setattr(tracker, "_update_series", lambda *args: None)
+    yield tracker, publishers
+    tracker.stop()
+
+
+@pytest.mark.parametrize("mode", ["stop", "context", "forced"])
+def test_mqtt_restart_and_cleanup(mqtt_tracker, monkeypatch, mode):
+    tracker, publishers = mqtt_tracker
+    count = len(publishers)
+    monkeypatch.setattr(tracker, "_read_and_sleep", MagicMock(side_effect=KeyboardInterrupt))
+    for session in range(2):
+        if mode == "stop":
+            tracker.start(1000)
+            tracker.stop(1000)
+        elif mode == "context":
+            with tracker:
+                pass
+        else:
+            tracker.track_until_forced_exit()
+        assert len(publishers) == count * (session + 1)
+        for publisher in publishers:
+            publisher.connect.assert_called_once()
+            publisher.publish_batch.assert_called_once()
+            publisher.disconnect.assert_called_once()
+            assert [call[0] for call in publisher.method_calls] == [
+                "connect", "publish_batch", "disconnect"
+            ]
+
+
+def test_write_after_stop_is_local_only(mqtt_tracker):
+    tracker, publishers = mqtt_tracker
+    count = len(publishers)
+    tracker.start()
+    tracker.stop()
+    tracker.write()
+    assert len(publishers) == count
+    for publisher in publishers:
+        publisher.publish_batch.assert_not_called()
+        publisher.disconnect.assert_called_once()
+
+
+@pytest.mark.parametrize("mode", ["start", "context", "forced"])
+def test_mqtt_header_error_cleans_up(mqtt_tracker, monkeypatch, mode):
+    tracker, publishers = mqtt_tracker
+    monkeypatch.setattr(tracker, "write_header", MagicMock(side_effect=OSError("header failed")))
+    with pytest.raises(OSError, match="header failed"):
+        if mode == "start":
+            tracker.start(1)
+        elif mode == "context":
+            with tracker:
+                pass
+        else:
+            tracker.track_until_forced_exit()
+    for publisher in publishers:
+        publisher.disconnect.assert_called_once()
+
+
+@pytest.mark.parametrize("operation", ["read", "write"])
+def test_mqtt_final_error_cleans_up_all_children(mqtt_tracker, monkeypatch, operation):
+    tracker, publishers = mqtt_tracker
+    tracker.start(1)
+    monkeypatch.setattr(tracker, operation, MagicMock(side_effect=OSError("final failed")))
+    publishers[0].disconnect.side_effect = RuntimeError("disconnect failed")
+    with pytest.raises(OSError, match="final failed"):
+        tracker.stop(1)
+    for publisher in publishers:
+        publisher.disconnect.assert_called_once()
+
+
+def test_mqtt_thread_start_failure_allows_retry(mqtt_tracker):
+    tracker, publishers = mqtt_tracker
+    with patch("threading.Thread.start", side_effect=RuntimeError("thread failed")):
+        with pytest.raises(RuntimeError, match="thread failed"):
+            tracker.start(1)
+    assert tracker._async_thread is None
+    for publisher in publishers:
+        publisher.disconnect.assert_called_once()
+    tracker.start(1)
+    tracker.stop(1)
+    for publisher in publishers:
+        publisher.disconnect.assert_called_once()
+
+
+def test_mqtt_failed_setup_disconnects(tmp_path):
+    publisher = MagicMock()
+    publisher.connect.return_value = False
+    with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+        "wattameter.tracker.MQTTPublisher", return_value=publisher
+    ):
+        tracker = Tracker(MockReader(), output=tmp_path / "data",
+                          mqtt_config={"broker_host": "broker.local"})
+        assert tracker.mqtt_publisher is None
+        publisher.disconnect.assert_called_once()
+
+
+def test_mqtt_array_partial_construction_cleans_up(tmp_path):
+    publisher = MagicMock()
+    invalid_reader = MagicMock(tags=[])
+    with patch("wattameter.tracker.MQTT_AVAILABLE", True), patch(
+        "wattameter.tracker.MQTTPublisher", return_value=publisher
+    ):
+        with pytest.raises(ValueError, match="at least one tag"):
+            TrackerArray([MockReader(), invalid_reader],
+                         outputs=[tmp_path / "a", tmp_path / "b"],
+                         mqtt_config={"broker_host": "broker.local"})
+    publisher.disconnect.assert_called_once()
+
+
 class TestIntegration:
     """Integration tests for tracker functionality."""
 

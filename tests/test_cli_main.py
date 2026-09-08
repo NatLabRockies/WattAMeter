@@ -2,10 +2,67 @@
 # SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
 import argparse
+from contextlib import nullcontext
 from unittest.mock import patch, MagicMock, mock_open
+import pytest
 from wattameter.cli.main import main
 from wattameter.cli.utils import parse_tracker_spec, ForcedExit
 from wattameter.readers import NVMLReader, RAPLReader
+from wattameter.tracker import BaseTracker
+
+
+@pytest.mark.parametrize("foreground_array", [False, True])
+@pytest.mark.parametrize("fail_write", [False, True])
+def test_cli_final_batch_before_disconnect(tmp_path, foreground_array, fail_write):
+    readers = [
+        MagicMock(spec=reader_type, tags=[f"power-{i}[W]"], derived_tags=[])
+        for i, reader_type in enumerate(
+            [RAPLReader, NVMLReader, RAPLReader][: 2 + foreground_array]
+        )
+    ]
+    for i, reader in enumerate(readers):
+        reader.read.return_value = [i + 1]
+        reader.compute_derived.return_value = []
+    error = OSError("final file write failed")
+    if fail_write:
+        readers[-1].compute_derived.side_effect = error
+    args = argparse.Namespace(
+        tracker=[(0.1, readers[:1]), (0.2, readers[1:])],
+        freq_write=0, output_dir=str(tmp_path), suffix="test", id="run",
+        log_level="warning", mqtt_broker="unused", mqtt_port=1883,
+        mqtt_username=None, mqtt_password=None, mqtt_topic_prefix="test", mqtt_qos=1,
+    )
+    publishers = [MagicMock() for _ in readers]
+    with (
+        patch("argparse.ArgumentParser.parse_args", return_value=args),
+        patch("wattameter.tracker.MQTT_AVAILABLE", True),
+        patch("wattameter.tracker.MQTTPublisher", side_effect=publishers),
+        patch.object(BaseTracker, "_update_series", return_value=None),
+        patch.object(BaseTracker, "_read_and_sleep", side_effect=ForcedExit),
+    ):
+        with pytest.raises(OSError) if fail_write else nullcontext() as caught:
+            main()
+    if fail_write:
+        assert caught.value is error
+    for i, (reader, publisher) in enumerate(zip(readers, publishers)):
+        reader.read.assert_called_once_with()
+        publisher.disconnect.assert_called_once_with()
+        if fail_write and i == len(readers) - 1:
+            publisher.publish_batch.assert_not_called()
+            continue
+        publisher.publish_batch.assert_called_once()
+        batch = publisher.publish_batch.call_args.kwargs
+        assert batch["data_series"] == [[i + 1]]
+        assert batch["tags"] == reader.tags
+        assert len(batch["time_series"]) == 1
+        assert [call[0] for call in publisher.method_calls] == [
+            "connect", "publish_batch", "disconnect"
+        ]
+    rows = [
+        line for path in tmp_path.glob("*.log") for line in path.read_text().splitlines()
+        if line and not line.startswith("#")
+    ]
+    assert len(rows) == len(readers) - fail_write
 
 
 class TestCLIMain:

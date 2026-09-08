@@ -104,7 +104,11 @@ class BaseTracker(AbstractContextManager):
             )
 
             # Start the async task
-            self._async_thread.start()
+            try:
+                self._async_thread.start()
+            except BaseException:
+                self._async_thread = None
+                raise
         else:
             logger.warning("Tracker is already running. Use stop() to stop it first.")
 
@@ -319,11 +323,14 @@ class Tracker(BaseTracker):
                 logger.info("MQTT publisher initialized and connected")
             else:
                 logger.error("Failed to connect MQTT publisher")
-                self.mqtt_publisher = None
+                self.disconnect_mqtt()
                 
         except Exception as e:
             logger.error(f"Error setting up MQTT publisher: {e}")
-            self.mqtt_publisher = None
+            self.disconnect_mqtt()
+        except BaseException:
+            self.disconnect_mqtt()
+            raise
 
     def write(self):
         self.write_data(*self.flush_data())
@@ -343,6 +350,18 @@ class Tracker(BaseTracker):
             finally:
                 self.mqtt_publisher = None
 
+    def start(self, freq_write: int = 0):
+        if self._async_thread is not None:
+            logger.warning("Tracker is already running. Use stop() to stop it first.")
+            return
+        try:
+            if self.mqtt_config and self.mqtt_publisher is None:
+                self._setup_mqtt_publisher()
+            super().start(freq_write)
+        except BaseException:
+            self.disconnect_mqtt()
+            raise
+
     def stop(self, freq_write: int = 0):
         try:
             super().stop(freq_write)
@@ -350,7 +369,7 @@ class Tracker(BaseTracker):
             self.disconnect_mqtt()
 
     def __enter__(self):
-        super().start(self.freq_write)
+        self.start(self.freq_write)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -361,12 +380,16 @@ class Tracker(BaseTracker):
             )
         return None
 
-    def track_until_forced_exit(self):
-        self.write_header()  # Write header at the beginning
+    def track_until_forced_exit(self, *, disconnect_mqtt: bool = True):
+        """Track until interrupted; callers deferring cleanup must disconnect MQTT."""
         try:
+            if self.mqtt_config and self.mqtt_publisher is None:
+                self._setup_mqtt_publisher()
+            self.write_header()
             super().track_until_forced_exit(self.freq_write)
         finally:
-            self.disconnect_mqtt()
+            if disconnect_mqtt:
+                self.disconnect_mqtt()
 
     def flush_data(self):
         """Flush all collected data from the tracker.
@@ -447,8 +470,8 @@ class Tracker(BaseTracker):
         with open(self.output, "a", encoding="utf-8") as f:
             f.write(buffer)
         
-        # Publish to MQTT if configured
-        if self.mqtt_publisher:
+        # MQTT is best-effort and only uses an already configured connection.
+        if len(time_series) > 0 and self.mqtt_publisher is not None:
             try:
                 reader_name = self.reader.__class__.__name__.lower()
                 self.mqtt_publisher.publish_batch(
@@ -501,9 +524,13 @@ class TrackerArray(BaseTracker):
                 "Length of outputs must be equal to length of readers or zero."
             )
 
-        self.trackers = [
-            Tracker(reader, output=o, mqtt_config=mqtt_config) for reader, o in zip(readers, outputs)
-        ]
+        self.trackers = []
+        try:
+            for reader, output in zip(readers, outputs):
+                self.trackers.append(Tracker(reader, output=output, mqtt_config=mqtt_config))
+        except BaseException:
+            self.disconnect_mqtt()
+            raise
 
         self.freq_write = freq_write
 
@@ -526,6 +553,19 @@ class TrackerArray(BaseTracker):
         for tracker in self.trackers:
             tracker.disconnect_mqtt()
 
+    def start(self, freq_write: int = 0):
+        if self._async_thread is not None:
+            logger.warning("Tracker is already running. Use stop() to stop it first.")
+            return
+        try:
+            for tracker in self.trackers:
+                if tracker.mqtt_config and tracker.mqtt_publisher is None:
+                    tracker._setup_mqtt_publisher()
+            super().start(freq_write)
+        except BaseException:
+            self.disconnect_mqtt()
+            raise
+
     def stop(self, freq_write: int = 0):
         try:
             super().stop(freq_write)
@@ -533,7 +573,7 @@ class TrackerArray(BaseTracker):
             self.disconnect_mqtt()
 
     def __enter__(self):
-        super().start(self.freq_write)
+        self.start(self.freq_write)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
@@ -544,9 +584,14 @@ class TrackerArray(BaseTracker):
             )
         return None
 
-    def track_until_forced_exit(self):
-        self.write_header()
+    def track_until_forced_exit(self, *, disconnect_mqtt: bool = True):
+        """Track until interrupted; callers deferring cleanup must disconnect MQTT."""
         try:
+            for tracker in self.trackers:
+                if tracker.mqtt_config and tracker.mqtt_publisher is None:
+                    tracker._setup_mqtt_publisher()
+            self.write_header()
             super().track_until_forced_exit(self.freq_write)
         finally:
-            self.disconnect_mqtt()
+            if disconnect_mqtt:
+                self.disconnect_mqtt()
