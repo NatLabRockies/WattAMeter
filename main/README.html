@@ -140,7 +140,7 @@ pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class=
 <h3>As a Python module<a class="headerlink" href="#as-a-python-module" title="Link to this heading"></a></h3>
 <p>There are at least two ways to use <strong>wattameter</strong> in your Python code: using the tracker <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods, or using the tracker as a context manager. The following example demonstrates both approaches:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">wattameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracker</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wattameter.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVMLReader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wattameter.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVMLReader</span><span class="p">,</span> <span class="n">Power</span>
 
 <span class="n">tracker</span> <span class="o">=</span> <span class="n">Tracker</span><span class="p">(</span>
     <span class="n">reader</span><span class="o">=</span><span class="n">NVMLReader</span><span class="p">((</span><span class="n">Power</span><span class="p">,)),</span>

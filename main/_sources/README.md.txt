@@ -57,7 +57,7 @@ There are at least two ways to use **wattameter** in your Python code: using the
 
 ```python
 from wattameter import Tracker
-from wattameter.readers import NVMLReader
+from wattameter.readers import NVMLReader, Power
 
 tracker = Tracker(
     reader=NVMLReader((Power,)),
