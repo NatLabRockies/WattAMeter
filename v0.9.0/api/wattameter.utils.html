@@ -117,7 +117,7 @@ use time stamps that start at a common start time among the dataframes. (default
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wattameter.utils.postprocessing.file_to_df">
-<span class="sig-prename descclassname"><span class="pre">wattameter.utils.postprocessing.</span></span><span class="sig-name descname"><span class="pre">file_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp_fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%Y-%m-%d_%H:%M:%S.%f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.utils.postprocessing.file_to_df" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wattameter.utils.postprocessing.</span></span><span class="sig-name descname"><span class="pre">file_to_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp_fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%Y-%m-%d_%H:%M:%S.%f'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.utils.postprocessing.file_to_df" title="Link to this definition"></a></dt>
 <dd><p>Convert an output file from Wattameter Tracker to a pandas DataFrame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -126,7 +126,7 @@ use time stamps that start at a common start time among the dataframes. (default
 <li><p><strong>timestamp_fmt</strong> – Format string for parsing timestamps. (default: <code class="docutils literal notranslate"><span class="pre">'%Y-%m-%d_%H:%M:%S.%f'</span></code>)</p></li>
 <li><p><strong>header</strong> – List of column names. If None, the header is read from the
 file. (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
-<li><p><strong>skip_lines</strong> – Number of lines to skip at the beginning of the file. (default: <code class="docutils literal notranslate"><span class="pre">1</span></code>)</p></li>
+<li><p><strong>skip_lines</strong> – Number of lines to skip at the beginning of the file. (default: <code class="docutils literal notranslate"><span class="pre">0</span></code>)</p></li>
 </ul>
 </dd>
 </dl>
