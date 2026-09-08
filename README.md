@@ -142,6 +142,13 @@ Contributions are welcome! Please open issues or submit pull requests at [https:
 The API documentation is available at [https://NatLabRockies.github.io/WattAMeter/](https://NatLabRockies.github.io/WattAMeter/).
 For specific documentation of the NLR module, visit [https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/](https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/).
 
+## Publications and data
+
+This software has been used in the following publications:
+
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matthew Selensky, and Juliane Mueller, "Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning," [arXiv:2604.07345](https://arxiv.org/abs/2604.07345) (2026)
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matt Selensky, and Juliane Mueller. 2026. "Dataset of Generative AI Workload Power Profiles." NLR Data Catalog. Golden, CO: National Laboratory of the Rockies. Last updated: July 17, 2026. DOI: [10.7799/3025227](https://data.nlr.gov/submissions/312) — measured with WattAMeter
+
 ## License
 
 See the [LICENSE](LICENSE) file for details.
