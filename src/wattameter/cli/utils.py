@@ -9,6 +9,11 @@ import uuid
 from ..readers import RAPLReader, NVMLReader
 from ..readers import Energy, DataThroughput, Utilization, Power, Temperature
 
+try:
+    from ..readers import AMDSMIReader
+except ImportError:
+    AMDSMIReader = None
+
 signal_handled = threading.Event()
 
 
@@ -41,11 +46,24 @@ def parse_tracker_spec(spec_string):
         "nvml-util": (NVMLReader, Utilization),
         "nvml-nvlink": (NVMLReader, DataThroughput),
     }
+    if AMDSMIReader is not None:
+        metric_map.update(
+            {
+                "amdsmi-power": (AMDSMIReader, Power),
+                "amdsmi-temp": (AMDSMIReader, Temperature),
+                "amdsmi-util": (AMDSMIReader, Utilization),
+            }
+        )
 
     # Group metrics by reader type
     _metrics = {}
     for metric_name in parts[1:]:
         metric_name_lower = metric_name.strip().lower()
+        if metric_name_lower.startswith("amdsmi-") and AMDSMIReader is None:
+            raise argparse.ArgumentTypeError(
+                "AMD SMI metrics require the ROCm-provided amdsmi package. "
+                "Run: bash src/wattameter/utils/setup_amdsmi.sh"
+            )
         if metric_name_lower not in metric_map:
             raise argparse.ArgumentTypeError(
                 f"Unknown metric: {metric_name}. Valid metrics: {', '.join(metric_map.keys())}"
