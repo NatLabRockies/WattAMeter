@@ -394,7 +394,7 @@ class Tracker(BaseTracker):
             finally:
                 self.mqtt_publisher = None
 
-    def start(self, freq_write: int = 0):
+    def start(self, freq_write: int = -1):
         if self._async_thread is not None:
             logger.warning("Tracker is already running. Use stop() to stop it first.")
             return
@@ -587,7 +587,7 @@ class TrackerArray(BaseTracker):
         for tracker in self.trackers:
             tracker.disconnect_mqtt()
 
-    def start(self, freq_write: int = 0):
+    def start(self, freq_write: int = -1):
         if self._async_thread is not None:
             logger.warning("Tracker is already running. Use stop() to stop it first.")
             return
