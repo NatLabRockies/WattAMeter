@@ -30,7 +30,7 @@ class AMDSMIReader(BaseReader):
 
     UNITS = {
         Temperature: Celsius(),
-        Power: Watt("m"),
+        Power: Watt(),
     }  #: Dictionary of measurement units for physical quantities.
 
     def __init__(self, quantities=(Power,)) -> None:
