@@ -138,6 +138,7 @@ pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class=
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
 <section id="as-a-python-module">
 <h3>As a Python module<a class="headerlink" href="#as-a-python-module" title="Link to this heading"></a></h3>
+<p>There are at least two ways to use <strong>wattameter</strong> in your Python code: using the tracker <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> methods, or using the tracker as a context manager. The following example demonstrates both approaches:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">wattameter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tracker</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wattameter.readers</span><span class="w"> </span><span class="kn">import</span> <span class="n">NVMLReader</span>
 
@@ -147,9 +148,9 @@ pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class=
     <span class="n">freq_write</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>  <span class="c1"># Frequency (# reads) for writing power data to file</span>
     <span class="n">output</span><span class="o">=</span><span class="s2">"power_log.txt"</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">freq_write</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="c1"># ... your code ...</span>
-<span class="n">tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="n">tracker</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="n">freq_write</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># ... or ...</span>
 
@@ -162,6 +163,7 @@ pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class=
     <span class="c1"># ... your code ...</span>
 </pre></div>
 </div>
+<p>The first approach saves data within the <code class="docutils literal notranslate"><span class="pre">Tracker</span></code> object, and allows you to start and stop the same tracker multiple times. The second approach is more convenient for one-off tracking, as it automatically handles starting and stopping the tracker, and saves the data to the specified output file when the context is exited.</p>
 </section>
 <section id="command-line-interface">
 <h3>Command-line interface<a class="headerlink" href="#command-line-interface" title="Link to this heading"></a></h3>
