@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.16.2"
+__generated_with = "0.24.0"
 app = marimo.App(width="medium", auto_download=["ipynb"])
 
 
@@ -17,21 +17,21 @@ def _():
 @app.cell
 def _(align_and_concat_df, file_to_df, re):
     _files = [
-        "nvml_wattameter.log",
-        "rapl_wattameter.log",
+        "nvml_01_wattameter.log",
+        "rapl_01_wattameter.log",
     ]
-    df = align_and_concat_df([file_to_df(open(f)) for f in _files], start_at_0=True)
+    df = align_and_concat_df([file_to_df(open(f), skip_lines=1) for f in _files], start_at_0=True)
 
     # Add a few columns
-    _cpu_power_columns = [col for col in df.columns if re.search(r"cpu-\d+\[W\]", col)]
+    _cpu_power_columns = [col for col in df.columns if re.search(r"cpu-\d+\[W\]", col) or re.search(r"cpu-\d-r0\[W\]", col)]
     _gpu_power_columns = [col for col in df.columns if re.search(r"gpu-\d+\[mW\]", col)]
     _readt_columns = [col for col in df.columns if "reading-time" in col]
     if len(_cpu_power_columns) > 1:
         df["cpu_power[W]"] = df[_cpu_power_columns].sum(axis=1)
     if len(_gpu_power_columns) > 1:
         df["gpu_power[W]"] = df[_gpu_power_columns].sum(axis=1) * 1e-3
-    if len(_cpu_power_columns) > 1 and len(_gpu_power_columns) > 1:
-        df["total_power[W]"] = df["cpu_power[W]"] + df["gpu_power[W]"]
+    if len(_cpu_power_columns) + len(_gpu_power_columns) > 1:
+        df["total_power[W]"] = df[_cpu_power_columns].sum(axis=1) + df[_gpu_power_columns].sum(axis=1) * 1e-3
     if len(_readt_columns) > 1:
         df["total_readt[s]"] = df[_readt_columns].sum(axis=1) * 1e-9
 
@@ -44,7 +44,7 @@ def _(df, mo):
     array_ui = mo.ui.array(
         [
             mo.ui.multiselect(
-                df.columns, value=["total_power[W]", "cpu_power[W]", "gpu_power[W]"]
+                df.columns
             ),
             mo.ui.checkbox(label="Log scale", value=False),
         ]

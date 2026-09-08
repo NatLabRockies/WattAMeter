@@ -17,7 +17,7 @@ def _get_pandas():
     return pd
 
 
-def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=1):
+def file_to_df(f, timestamp_fmt="%Y-%m-%d_%H:%M:%S.%f", header=None, skip_lines=0):
     """Convert an output file from Wattameter Tracker to a pandas DataFrame.
 
     :param f: Open file object to read from.

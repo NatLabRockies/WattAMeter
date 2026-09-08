@@ -67,6 +67,10 @@ class RAPLDevice(BaseReader):
 
         Name of the RAPL device, read from the 'name' file.
 
+    .. attribute:: domain_name
+
+        Domain name of the RAPL device, generated based on its name and path.
+
     .. attribute:: max_energy_range
 
         Maximum energy range, read from the 'max_energy_range_uj' file.
@@ -102,7 +106,7 @@ class RAPLDevice(BaseReader):
             logger.warning(f"Energy file not found for {self.path}")
 
         # Post-process device name
-        self._device_name = _get_rapl_domain_name(
+        self.domain_name = _get_rapl_domain_name(
             self.path, tag_for_unnamed_device="unknown"
         )
 
@@ -117,12 +121,12 @@ class RAPLDevice(BaseReader):
 
     @property
     def tags(self) -> list[str]:
-        return [f"{self._device_name}[{self.get_unit(q)}]" for q in self.quantities]
+        return [f"{self.domain_name}[{self.get_unit(q)}]" for q in self.quantities]
 
     @property
     def derived_tags(self) -> list[str]:
         return [
-            f"{self._device_name}[{self.get_unit(q)}]" for q in self.derived_quantities
+            f"{self.domain_name}[{self.get_unit(q)}]" for q in self.derived_quantities
         ]
 
     def get_unit(self, quantity: type[Quantity]) -> Unit:
@@ -203,6 +207,20 @@ class RAPLReader(BaseReader):
 
         # Order devices by their path for consistency
         self.devices.sort(key=lambda d: d.path)
+
+        # Modify names of devices if repeated
+        unique_devices = {}
+        for device in self.devices:
+            if device.domain_name in unique_devices:
+                unique_devices[device.domain_name] += 1
+            else:
+                unique_devices[device.domain_name] = 1
+        for name, count in unique_devices.items():
+            if count == 1:
+                continue
+            for i, device in enumerate([d for d in self.devices if d.domain_name == name]):
+                device.domain_name = f"{name}-r{i}"
+                assert device.domain_name not in unique_devices, "Device name collision after renaming."
 
         # Post-process tags
         count = 0

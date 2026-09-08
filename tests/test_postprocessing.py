@@ -31,8 +31,7 @@ class TestFileToDf:
 
     def test_basic_file_conversion(self):
         """Test basic file conversion with default parameters."""
-        file_content = """# WattAMeter Output
-# Timestamp Power Temperature
+        file_content = """# Timestamp Power Temperature
 2024-01-01_10:00:00.000000 100.5 45.2
 2024-01-01_10:00:01.000000 105.3 46.1
 2024-01-01_10:00:02.000000 98.7 44.8
@@ -49,8 +48,7 @@ class TestFileToDf:
 
     def test_custom_header(self):
         """Test file conversion with custom header."""
-        file_content = """# WattAMeter Output
-2024-01-01_10:00:00.000000 100.5 45.2
+        file_content = """2024-01-01_10:00:00.000000 100.5 45.2
 2024-01-01_10:00:01.000000 105.3 46.1
 """
         f = StringIO(file_content)
@@ -63,8 +61,7 @@ class TestFileToDf:
 
     def test_custom_timestamp_format(self):
         """Test file conversion with custom timestamp format."""
-        file_content = """# Header line
-# Timestamp Power
+        file_content = """# Timestamp Power
 01/01/2024-10:00:00 100.5
 01/01/2024-10:00:01 105.3
 """
@@ -96,8 +93,7 @@ class TestFileToDf:
 
     def test_missing_values_handling(self):
         """Test that missing values are handled correctly."""
-        file_content = """# Header
-# Timestamp Power Temperature
+        file_content = """# Timestamp Power Temperature
 2024-01-01_10:00:00.000000 100.5
 2024-01-01_10:00:01.000000 105.3 46.1
 """
@@ -111,8 +107,7 @@ class TestFileToDf:
 
     def test_multiple_numeric_columns(self):
         """Test conversion with multiple numeric columns."""
-        file_content = """# Header
-# Timestamp Power Energy Temp CPU GPU
+        file_content = """# Timestamp Power Energy Temp CPU GPU
 2024-01-01_10:00:00.000000 100.5 500.2 45.3 55.1 72.8
 2024-01-01_10:00:01.000000 105.3 520.1 46.1 56.2 73.5
 """
@@ -128,8 +123,7 @@ class TestFileToDf:
 
     def test_empty_file_handling(self):
         """Test handling of empty or minimal files."""
-        file_content = """# Header
-# Timestamp Power
+        file_content = """# Timestamp Power
 """
         f = StringIO(file_content)
         df = file_to_df(f)
@@ -140,7 +134,6 @@ class TestFileToDf:
     def test_with_actual_file(self):
         """Test conversion from an actual file on disk."""
         with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".txt") as tmp:
-            tmp.write("# WattAMeter Output\n")
             tmp.write("# Timestamp Power Temperature\n")
             tmp.write("2024-01-01_10:00:00.000000 100.5 45.2\n")
             tmp.write("2024-01-01_10:00:01.000000 105.3 46.1\n")
@@ -353,15 +346,13 @@ class TestIntegration:
     def test_file_to_df_then_align(self):
         """Test reading files and then aligning them."""
         # Create two temporary files
-        file1_content = """# WattAMeter Output
-# Timestamp Power
+        file1_content = """# Timestamp Power
 2024-01-01_10:00:00.000000 100.0
 2024-01-01_10:00:01.000000 101.0
 2024-01-01_10:00:02.000000 102.0
 2024-01-01_10:00:03.000000 103.0
 """
-        file2_content = """# WattAMeter Output
-# Timestamp Power
+        file2_content = """# Timestamp Power
 2024-01-01_10:00:00.000000 200.0
 2024-01-01_10:00:01.000000 201.0
 2024-01-01_10:00:02.000000 202.0
