@@ -684,7 +684,7 @@ class TestTracker:
                 mqtt_config={"broker_host": "broker.local"},
             )
             with patch.object(
-                tracker, "_read_and_sleep", side_effect=KeyboardInterrupt
+                tracker, "_sleep_until_next_tick", side_effect=KeyboardInterrupt
             ):
                 tracker.track_until_forced_exit()
 
@@ -884,7 +884,13 @@ def mqtt_tracker(request, tmp_path, monkeypatch):
 def test_mqtt_restart_and_cleanup(mqtt_tracker, monkeypatch, mode):
     tracker, publishers = mqtt_tracker
     count = len(publishers)
-    monkeypatch.setattr(tracker, "_read_and_sleep", MagicMock(side_effect=KeyboardInterrupt))
+    # Interrupt the read loop right after the first read so the forced-exit
+    # path exercises its final read/write and MQTT cleanup. The scheduler tick
+    # runs once per loop iteration after read(), so raising here stops the loop
+    # while leaving the final read (which does not tick) intact.
+    monkeypatch.setattr(
+        tracker, "_sleep_until_next_tick", MagicMock(side_effect=KeyboardInterrupt)
+    )
     for session in range(2):
         if mode == "stop":
             tracker.start(1000)
@@ -909,10 +915,15 @@ def test_write_after_stop_is_local_only(mqtt_tracker):
     count = len(publishers)
     tracker.start()
     tracker.stop()
+    # stop() flushes the final batch and then disconnects; capture how many
+    # publishes happened during the stop so we can prove write() adds none.
+    publishes_after_stop = [p.publish_batch.call_count for p in publishers]
     tracker.write()
+    # write() after stop must be local-only: no new publisher, no new publish,
+    # and the single disconnect from stop() must not be repeated.
     assert len(publishers) == count
-    for publisher in publishers:
-        publisher.publish_batch.assert_not_called()
+    for publisher, before in zip(publishers, publishes_after_stop):
+        assert publisher.publish_batch.call_count == before
         publisher.disconnect.assert_called_once()
 
 
