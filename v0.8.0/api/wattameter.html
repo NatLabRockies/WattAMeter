@@ -68,6 +68,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.reading_time"><code class="docutils literal notranslate"><span class="pre">Tracker.reading_time</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.data"><code class="docutils literal notranslate"><span class="pre">Tracker.data</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.freq_write"><code class="docutils literal notranslate"><span class="pre">Tracker.freq_write</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.disconnect_mqtt"><code class="docutils literal notranslate"><span class="pre">Tracker.disconnect_mqtt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.flush_data"><code class="docutils literal notranslate"><span class="pre">Tracker.flush_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.format_timestamp"><code class="docutils literal notranslate"><span class="pre">Tracker.format_timestamp()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.Tracker.output"><code class="docutils literal notranslate"><span class="pre">Tracker.output</span></code></a></li>
@@ -83,6 +84,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#wattameter.tracker.TrackerArray"><code class="docutils literal notranslate"><span class="pre">TrackerArray</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.trackers"><code class="docutils literal notranslate"><span class="pre">TrackerArray.trackers</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.freq_write"><code class="docutils literal notranslate"><span class="pre">TrackerArray.freq_write</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.disconnect_mqtt"><code class="docutils literal notranslate"><span class="pre">TrackerArray.disconnect_mqtt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.read"><code class="docutils literal notranslate"><span class="pre">TrackerArray.read()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.start"><code class="docutils literal notranslate"><span class="pre">TrackerArray.start()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wattameter.tracker.TrackerArray.stop"><code class="docutils literal notranslate"><span class="pre">TrackerArray.stop()</span></code></a></li>
@@ -474,6 +476,15 @@ If set to 0, data is never written.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.Tracker.disconnect_mqtt">
+<span class="sig-name descname"><span class="pre">disconnect_mqtt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.disconnect_mqtt" title="Link to this definition"></a></dt>
+<dd><p>Disconnect the MQTT publisher if one is active.</p>
+<p>Cleanly closes the MQTT connection and stops paho’s background
+network-loop thread. Safe to call multiple times and when no
+publisher is configured.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="wattameter.tracker.Tracker.flush_data">
 <span class="sig-name descname"><span class="pre">flush_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.flush_data" title="Link to this definition"></a></dt>
 <dd><p>Flush all collected data from the tracker.</p>
@@ -549,21 +560,8 @@ If set to 0, data is never written. (default: <code class="docutils literal notr
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wattameter.tracker.Tracker.track_until_forced_exit">
-<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.track_until_forced_exit" title="Link to this definition"></a></dt>
-<dd><p>Track data as the main task of the program until a forced exit.</p>
-<p>On exit, perform a final read and write of the collected data.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is the preferred way to track data of programs that are being
-executed in the machine. This method will block the main thread
-until a forced exit is detected (e.g., SIGINT or SIGTERM).</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>freq_write</strong> – Frequency (in number of reads) to write the collected data.
-If set to 0, data is never written.</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">disconnect_mqtt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.Tracker.track_until_forced_exit" title="Link to this definition"></a></dt>
+<dd><p>Track until interrupted; callers deferring cleanup must disconnect MQTT.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -627,6 +625,12 @@ If set to 0, data is never written.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.disconnect_mqtt">
+<span class="sig-name descname"><span class="pre">disconnect_mqtt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.TrackerArray.disconnect_mqtt" title="Link to this definition"></a></dt>
+<dd><p>Disconnect the MQTT publishers of all managed trackers.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.read">
 <span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#wattameter.tracker.TrackerArray.read" title="Link to this definition"></a></dt>
 <dd><p>Read data.</p>
@@ -664,21 +668,8 @@ If set to 0, data is never written. (default: <code class="docutils literal notr
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wattameter.tracker.TrackerArray.track_until_forced_exit">
-<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.TrackerArray.track_until_forced_exit" title="Link to this definition"></a></dt>
-<dd><p>Track data as the main task of the program until a forced exit.</p>
-<p>On exit, perform a final read and write of the collected data.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is the preferred way to track data of programs that are being
-executed in the machine. This method will block the main thread
-until a forced exit is detected (e.g., SIGINT or SIGTERM).</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>freq_write</strong> – Frequency (in number of reads) to write the collected data.
-If set to 0, data is never written.</p>
-</dd>
-</dl>
+<span class="sig-name descname"><span class="pre">track_until_forced_exit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">disconnect_mqtt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#wattameter.tracker.TrackerArray.track_until_forced_exit" title="Link to this definition"></a></dt>
+<dd><p>Track until interrupted; callers deferring cleanup must disconnect MQTT.</p>
 </dd></dl>
 
 <dl class="py method">

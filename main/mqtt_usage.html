@@ -368,6 +368,7 @@ wattameter<span class="w"> </span><span class="se">\</span>
 <li><p>If connection fails, an error is logged but WattAMeter continues running</p></li>
 <li><p>Data continues to be written to local files even if MQTT is unavailable</p></li>
 <li><p>Connection is maintained throughout the tracking session</p></li>
+<li><p>Restarting a stopped tracker reconnects its configured MQTT publisher</p></li>
 </ul>
 </section>
 <section id="error-handling">
@@ -382,7 +383,11 @@ wattameter<span class="w"> </span><span class="se">\</span>
 <h3>Disconnection<a class="headerlink" href="#disconnection" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Clean disconnection occurs when WattAMeter stops</p></li>
-<li><p>Final data batch is written to both file and MQTT before shutdown</p></li>
+<li><p>With periodic writing enabled, the final data batch is written to file and queued for MQTT before shutdown</p></li>
+<li><p>Local files are the authoritative record. MQTT delivery is best-effort: shutdown sends DISCONNECT before stopping the network loop but does not wait for publish acknowledgements, so queued messages may be lost</p></li>
+<li><p>The CLI flushes final samples before disconnecting, including with <code class="docutils literal notranslate"><span class="pre">--freq-write</span> <span class="pre">0</span></code></p></li>
+<li><p>In Python, <code class="docutils literal notranslate"><span class="pre">freq_write=0</span></code> retains samples in memory. A <code class="docutils literal notranslate"><span class="pre">write()</span></code> after <code class="docutils literal notranslate"><span class="pre">stop()</span></code> saves locally only; writes never reconnect MQTT. Use a positive write frequency when final samples should also be queued for MQTT during shutdown</p></li>
+<li><p>Failed connection attempts and startup errors clean up any MQTT network loop already started</p></li>
 </ul>
 </section>
 </section>
