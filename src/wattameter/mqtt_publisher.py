@@ -114,8 +114,11 @@ class MQTTPublisher:
         if client_id is None:
             client_id = f"wattameter_{int(time.time() * 1000)}"
         
-        # Create MQTT client instance
-        self.client = mqtt.Client(client_id=client_id)  # type: ignore
+        # Create MQTT client instance using the paho-mqtt v2 callback API
+        self.client = mqtt.Client(  # type: ignore
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+            client_id=client_id,
+        )
         
         # Set authentication if provided
         if username and password:
@@ -130,15 +133,21 @@ class MQTTPublisher:
         self._connected = False
         self._connection_attempted = False
     
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, reason_code, properties=None):
         """Callback for when the client connects to the broker.
-        
+
+        Uses the paho-mqtt v2 callback signature.
+
         :param client: MQTT client instance
         :param userdata: User data (unused)
         :param flags: Response flags from the broker
-        :param rc: Connection result code
+        :param reason_code: Connection reason code (v2 ReasonCode, or int)
+        :param properties: MQTT v5 properties (unused)
         """
-        if rc == 0:
+        # In v2, reason_code is a ReasonCode object; is_failure/value give status.
+        rc = getattr(reason_code, "value", reason_code)
+        is_failure = getattr(reason_code, "is_failure", rc != 0)
+        if not is_failure:
             self._connected = True
             logger.info(f"Connected to MQTT broker at {self.broker_host}:{self.broker_port}")
         else:
@@ -150,26 +159,35 @@ class MQTTPublisher:
                 4: "Connection refused - bad username or password",
                 5: "Connection refused - not authorized",
             }
-            error_msg = error_messages.get(rc, f"Unknown error code: {rc}")
+            error_msg = error_messages.get(rc, str(reason_code))
             logger.error(f"Failed to connect to MQTT broker: {error_msg}")
-    
-    def _on_disconnect(self, client, userdata, rc):
+
+    def _on_disconnect(self, client, userdata, flags, reason_code, properties=None):
         """Callback for when the client disconnects from the broker.
-        
+
+        Uses the paho-mqtt v2 callback signature.
+
         :param client: MQTT client instance
         :param userdata: User data (unused)
-        :param rc: Disconnection result code
+        :param flags: Disconnect flags (unused)
+        :param reason_code: Disconnection reason code
+        :param properties: MQTT v5 properties (unused)
         """
         self._connected = False
+        rc = getattr(reason_code, "value", reason_code)
         if rc != 0:
-            logger.warning(f"Unexpected disconnection from MQTT broker (code: {rc})")
-    
-    def _on_publish(self, client, userdata, mid):
+            logger.warning(f"Unexpected disconnection from MQTT broker (code: {reason_code})")
+
+    def _on_publish(self, client, userdata, mid, reason_code=None, properties=None):
         """Callback for when a message is published.
-        
+
+        Uses the paho-mqtt v2 callback signature.
+
         :param client: MQTT client instance
         :param userdata: User data (unused)
         :param mid: Message ID
+        :param reason_code: Publish reason code (unused)
+        :param properties: MQTT v5 properties (unused)
         """
         logger.debug(f"Message {mid} published successfully")
     
@@ -177,7 +195,8 @@ class MQTTPublisher:
         """Connect to the MQTT broker.
         
         Attempts to establish a connection to the configured MQTT broker.
-        This method will block for up to timeout seconds waiting for the connection.
+        The timeout bounds the wait for the connection callback, not blocking
+        transport operations or cleanup.
         
         :param timeout: Maximum time to wait for connection (seconds)
         :return: True if connection successful, False otherwise
@@ -186,6 +205,8 @@ class MQTTPublisher:
             logger.info("Already connected to MQTT broker")
             return True
         
+        self._connection_attempted = True
+        connected = False
         try:
             logger.info(f"Connecting to MQTT broker at {self.broker_host}:{self.broker_port}")
             self.client.connect(self.broker_host, self.broker_port, self.keepalive)
@@ -194,35 +215,44 @@ class MQTTPublisher:
             self.client.loop_start()
             
             # Wait for connection with timeout
-            start_time = time.time()
-            while not self._connected and (time.time() - start_time) < timeout:
+            start_time = time.monotonic()
+            while not self._connected and (time.monotonic() - start_time) < timeout:
                 time.sleep(0.1)
-            
-            self._connection_attempted = True
             
             if not self._connected:
                 logger.error(f"Connection timeout after {timeout} seconds")
                 return False
             
+            connected = True
             return True
             
         except Exception as e:
             logger.error(f"Error connecting to MQTT broker: {e}")
             return False
+        finally:
+            if not connected:
+                self.disconnect()
     
     def disconnect(self):
         """Disconnect from the MQTT broker.
         
-        Cleanly disconnects from the broker and stops the network loop.
+        Best effort: does not wait for publish acknowledgments, so queued messages
+        may be lost. There is no hard overall time bound if the transport blocks.
         """
         if self._connection_attempted:
             try:
-                self.client.loop_stop()
+                # Disconnect first so the loop need not wait for outstanding QoS ACKs.
                 self.client.disconnect()
-                self._connected = False
-                logger.info("Disconnected from MQTT broker")
             except Exception as e:
                 logger.error(f"Error disconnecting from MQTT broker: {e}")
+            finally:
+                try:
+                    self.client.loop_stop()
+                except Exception as e:
+                    logger.error(f"Error stopping MQTT network loop: {e}")
+                finally:
+                    self._connected = False
+                    self._connection_attempted = False
     
     def publish_data(
         self,

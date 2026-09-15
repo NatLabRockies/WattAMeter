@@ -2,11 +2,89 @@
 # SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
 
 import argparse
+from contextlib import nullcontext
 import signal
 from unittest.mock import patch, MagicMock, mock_open
+import pytest
 from wattameter.cli.main import main
 from wattameter.cli.utils import parse_tracker_spec, ForcedExit
 from wattameter.readers import NVMLReader, RAPLReader
+from wattameter.tracker import BaseTracker
+
+
+@pytest.mark.parametrize("foreground_array", [False, True])
+@pytest.mark.parametrize("fail_write", [False, True])
+def test_cli_final_batch_before_disconnect(tmp_path, foreground_array, fail_write):
+    readers = [
+        MagicMock(spec=reader_type, tags=[f"power-{i}[W]"], derived_tags=[])
+        for i, reader_type in enumerate(
+            [RAPLReader, NVMLReader, RAPLReader][: 2 + foreground_array]
+        )
+    ]
+    for i, reader in enumerate(readers):
+        reader.read.return_value = [i + 1]
+        reader.compute_derived.return_value = []
+    error = OSError("final file write failed")
+    if fail_write:
+        readers[-1].compute_derived.side_effect = error
+    args = argparse.Namespace(
+        tracker=[(0.1, readers[:1]), (0.2, readers[1:])],
+        freq_write=0, output_dir=str(tmp_path), suffix="test", id="run",
+        log_level="warning", mqtt_broker="unused", mqtt_port=1883,
+        mqtt_username=None, mqtt_password=None, mqtt_topic_prefix="test", mqtt_qos=1,
+    )
+    publishers = [MagicMock() for _ in readers]
+    # Simulate a signal (ForcedExit) arriving during the read loop's scheduler
+    # sleep. The new scheduler seam is `_sleep_until_next_tick`; raising there
+    # stops the loop after its single read, mirroring a real forced exit. The
+    # foreground trackers use a no-op `_update_series`, so they only perform
+    # their final read during stop().
+    with (
+        patch("argparse.ArgumentParser.parse_args", return_value=args),
+        patch("wattameter.tracker.MQTT_AVAILABLE", True),
+        patch("wattameter.tracker.MQTTPublisher", side_effect=publishers),
+        patch.object(BaseTracker, "_update_series", return_value=None),
+        patch.object(BaseTracker, "_sleep_until_next_tick", side_effect=ForcedExit),
+    ):
+        with pytest.raises(OSError) if fail_write else nullcontext() as caught:
+            main()
+    if fail_write:
+        assert caught.value is error
+    for i, (reader, publisher) in enumerate(zip(readers, publishers)):
+        # The last tracker spec (readers[1:]) runs the forced-exit loop: one
+        # loop read plus one final read. Foreground trackers (readers[:1]) only
+        # perform the single final read during stop().
+        in_last_tracker = i >= 1
+        is_last = i == len(readers) - 1
+        assert reader.read.call_count == (2 if in_last_tracker else 1)
+        publisher.disconnect.assert_called_once_with()
+        if fail_write and is_last:
+            publisher.publish_batch.assert_not_called()
+            continue
+        publisher.publish_batch.assert_called_once()
+        batch = publisher.publish_batch.call_args.kwargs
+        expected_samples = 2 if in_last_tracker else 1
+        assert batch["data_series"] == [[i + 1]] * expected_samples
+        assert batch["tags"] == reader.tags
+        assert len(batch["time_series"]) == expected_samples
+        assert [call[0] for call in publisher.method_calls] == [
+            "connect", "publish_batch", "disconnect"
+        ]
+    rows = [
+        line for path in tmp_path.glob("*.log") for line in path.read_text().splitlines()
+        if line and not line.startswith("#")
+    ]
+    # One row per foreground reader (single final read) plus two rows per reader
+    # in the last tracker (loop read + final read). On a failed final write only
+    # the last tracker's failing reader (readers[-1]) writes nothing; readers in
+    # the array before it still flush their two rows.
+    n_last = len(readers) - 1  # readers in the last tracker spec (readers[1:])
+    if fail_write:
+        # foreground reader (1 row) + array readers before the failing last one
+        expected_rows = 1 + 2 * (n_last - 1)
+    else:
+        expected_rows = 1 + 2 * n_last
+    assert len(rows) == expected_rows
 
 
 class TestCLIMain:
@@ -356,7 +434,7 @@ class TestCLIMain:
         for signum in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
             mock_signal.assert_any_call(signum, signal.SIG_IGN)
 
-        tracker.track_until_forced_exit.assert_called_once_with()
+        tracker.track_until_forced_exit.assert_called_once_with(disconnect_mqtt=False)
         tracker.write.assert_called_once()
 
     def test_trackers_start_and_stop_correctly(self):
@@ -406,7 +484,7 @@ class TestCLIMain:
         first_tracker.stop.assert_called_once_with(freq_write=5)
 
         last_tracker.start.assert_not_called()
-        last_tracker.track_until_forced_exit.assert_called_once_with()
+        last_tracker.track_until_forced_exit.assert_called_once_with(disconnect_mqtt=False)
         last_tracker.stop.assert_not_called()
         last_tracker.write.assert_called_once_with()
 
