@@ -120,9 +120,14 @@ class AMDSMIReader(BaseReader):
     def read_power_on_device(self, i: int) -> int:
         """Read the current power usage for the i-th device."""
         try:
-            return int(
-                amdsmi.amdsmi_get_power_info(self.devices[i])["average_socket_power"]
-            )
+            power_info = amdsmi.amdsmi_get_power_info(self.devices[i])
+            power = power_info["average_socket_power"]
+            if power == "N/A":
+                power = power_info["current_socket_power"]
+            if power == "N/A":
+                logger.warning(f"Power unavailable for device {i}.")
+                return 0
+            return int(power)
         except amdsmi.AmdSmiException as e:
             logger.error(f"Failed to get power usage for device {i}: {e}")
             return 0
@@ -133,16 +138,8 @@ class AMDSMIReader(BaseReader):
     def read_utilization_on_device(self, i: int) -> tuple[int, int]:
         """Read the current utilization for the i-th device."""
         try:
-            utilization = amdsmi.amdsmi_get_utilization_count(
-                self.devices[i],
-                [
-                    amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_GFX_ACTIVITY,
-                    amdsmi.AmdSmiUtilizationCounterType.COARSE_GRAIN_MEM_ACTIVITY,
-                ],
-            )
-            return utilization[0]["value"], utilization[1][
-                "value"
-            ]  # GPU utilization, Memory utilization
+            activity = amdsmi.amdsmi_get_gpu_activity(self.devices[i])
+            return activity["gfx_activity"], activity["umc_activity"]
         except amdsmi.AmdSmiException as e:
             logger.error(f"Failed to get utilization for device {i}: {e}")
             return 0, 0
