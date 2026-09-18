@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
+# SPDX-FileCopyrightText: 2025-2026, Alliance for Energy Innovation, LLC
 """
 Frequency of Update Benchmark Script for WattAMeter
 

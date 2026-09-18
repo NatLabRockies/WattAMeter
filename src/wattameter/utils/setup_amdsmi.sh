@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: BSD-3-Clause
-# SPDX-FileCopyrightText: 2025, Alliance for Energy Innovation, LLC
+# SPDX-FileCopyrightText: 2025-2026, Alliance for Energy Innovation, LLC
 #
 # This script sets up the AMD SMI Python environment by installing the amdsmi package
 

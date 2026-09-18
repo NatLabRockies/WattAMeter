@@ -64,7 +64,7 @@ def add_version_context(app, pagename, templatename, context, doctree):
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "WattAmeter"
-copyright = "2025, Alliance for Energy Innovation, LLC"
+copyright = "2025-2026, Alliance for Energy Innovation, LLC"
 author = "Weslley S. Pereira"
 
 # -- General configuration ---------------------------------------------------
