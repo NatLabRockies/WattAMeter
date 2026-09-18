@@ -13,6 +13,11 @@ from .utils import (
     Utilization,
 )
 
+try:
+    from .amdsmi import AMDSMIReader
+except ModuleNotFoundError:
+    AMDSMIReader = None
+
 __all__ = [
     "NVMLReader",
     "RAPLReader",
@@ -28,3 +33,6 @@ __all__ = [
     "Utilization",
     "DataThroughput",
 ]
+
+if AMDSMIReader is not None:
+    __all__.append("AMDSMIReader")
