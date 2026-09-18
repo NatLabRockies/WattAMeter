@@ -10,6 +10,7 @@ from ..readers import RAPLReader, NVMLReader
 from ..readers import Energy, DataThroughput, Utilization, Power, Temperature
 
 signal_handled = threading.Event()
+_AUTO_SUFFIX = object()
 
 
 def parse_tracker_spec(spec_string):
@@ -98,15 +99,23 @@ def _suffix():
     return "" if suffix is None else f"_{suffix}"
 
 
-def powerlog_filename(suffix=None):
-    """Generate a log filename based on the ID."""
-    suffix = f"_{suffix}" if suffix is not None else _suffix()
+def powerlog_filename(suffix=_AUTO_SUFFIX):
+    """Generate a log filename based on the suffix."""
+    if suffix is _AUTO_SUFFIX:
+        suffix = _suffix()
+    elif suffix is None:
+        suffix = ""
+    else:
+        suffix = f"_{suffix}"
     return f"wattameter{suffix}.log"
 
 
 def print_powerlog_filename(id=None):
     """Print the power log filename based on the ID."""
-    print(powerlog_filename(id))
+    if id is None:
+        print(powerlog_filename())
+    else:
+        print(powerlog_filename(id))
 
 
 def default_cli_arguments(parser: argparse.ArgumentParser):
