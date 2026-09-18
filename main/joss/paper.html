@@ -108,7 +108,7 @@
 <section id="software-design">
 <h1>Software design<a class="headerlink" href="#software-design" title="Link to this heading"></a></h1>
 <p>WattAMeter follows a modular reader and tracker architecture [&#64;wattameter_software]. Reader classes encapsulate device-specific access (for example RAPL and NVML), while tracker classes manage periodic polling, buffering, and persistence. In practice, this means users can change metrics and sampling settings without modifying the underlying collection logic.</p>
-<p>The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the (open) pull request adding an <code class="docutils literal notranslate"><span class="pre">AMDSMIReader</span></code> for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [&#64;wattameter_pr9_amdsmi].</p>
+<p>The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the (recently) pull request adding an <code class="docutils literal notranslate"><span class="pre">AMDSMIReader</span></code> for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [&#64;wattameter_pr9_amdsmi].</p>
 <p>The core tracker loop is thread-based and uses fixed sampling intervals (<code class="docutils literal notranslate"><span class="pre">dt_read</span></code>) with configurable write cadence (<code class="docutils literal notranslate"><span class="pre">freq_write</span></code>). On shutdown, trackers perform a final read/write cycle to reduce end-of-run data loss in short jobs or interrupted sessions. The implementation also supports context-manager usage and signal-aware command-line execution, which maps well to batch-system lifecycle control.</p>
 <p>Two design choices are central for research use.</p>
 <ol class="arabic simple">
@@ -154,7 +154,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Alliance for Energy Innovation, LLC.</p>
+    <p>&#169; Copyright 2025-2026, Alliance for Energy Innovation, LLC.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
