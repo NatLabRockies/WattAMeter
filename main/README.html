@@ -46,7 +46,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">WattAMeter</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#current-features">Current Features</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#optional-extras">Optional extras</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#optional-extras">Optional extras</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#amd-smi-support">AMD SMI support</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#as-a-python-module">As a Python module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#command-line-interface">Command-line interface</a></li>
@@ -133,6 +136,10 @@ pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class=
 pip<span class="w"> </span>install<span class="w"> </span>wattameter<span class="o">[</span>postprocessing,mqtt<span class="o">]</span>
 </pre></div>
 </div>
+<section id="amd-smi-support">
+<h3>AMD SMI support<a class="headerlink" href="#amd-smi-support" title="Link to this heading"></a></h3>
+<p>For AMD GPU monitoring, WattAMeter relies on the AMD SMI Python package. Follow the instructions at https://rocm.docs.amd.com/projects/amdsmi/en/latest/install/install.html to install the AMD SMI Python package from your ROCm installation. If you have a ROCm installation, you can try to use <a class="reference download internal" download="" href="_downloads/f5d3101b7cb345575c37a103899b7d70/setup_amdsmi.sh"><span class="xref download myst">setup-amdsmi</span></a> to automatically set up the AMD SMI environment, which includes installing the AMD SMI Python package to your Python environment.</p>
+</section>
 </section>
 <section id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h2>
