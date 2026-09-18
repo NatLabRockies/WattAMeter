@@ -17,7 +17,7 @@ authors:
 affiliations:
   - index: 1
     name: National Laboratory of the Rockies, United States
-date: 9 April 2026
+date: 18 September 2026
 bibliography: paper.bib
 ---
 
@@ -66,7 +66,7 @@ The WattAMeter contribution is a workflow-oriented collection layer that unifies
 
 WattAMeter follows a modular reader and tracker architecture [@wattameter_software]. Reader classes encapsulate device-specific access (for example RAPL and NVML), while tracker classes manage periodic polling, buffering, and persistence. In practice, this means users can change metrics and sampling settings without modifying the underlying collection logic.
 
-The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the (open) pull request adding an `AMDSMIReader` for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [@wattameter_pr9_amdsmi].
+The same architecture is intentionally designed for straightforward extension to new backends. As a concrete example, the (recently) pull request adding an `AMDSMIReader` for AMD GPU monitoring extends the existing reader model without requiring changes to the tracker abstraction [@wattameter_pr9_amdsmi].
 
 The core tracker loop is thread-based and uses fixed sampling intervals (`dt_read`) with configurable write cadence (`freq_write`). On shutdown, trackers perform a final read/write cycle to reduce end-of-run data loss in short jobs or interrupted sessions. The implementation also supports context-manager usage and signal-aware command-line execution, which maps well to batch-system lifecycle control.
 
