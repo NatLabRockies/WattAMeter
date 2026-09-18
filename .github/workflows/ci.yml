@@ -56,7 +56,7 @@ jobs:
           python -m pytest -v -s --timeout=60
 
       - name: Run benchmarks
-        if: matrix.benchmark == 'true'
+        if: matrix.benchmark
         run: |
           wattameter_benchmark_dt
           wattameter_benchmark_overhead

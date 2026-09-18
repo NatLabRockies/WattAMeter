@@ -91,6 +91,8 @@ class NVMLReader(BaseReader):
 
     def __del__(self):
         """Shutdown NVML on deletion."""
+        if pynvml is None:
+            return
         try:
             pynvml.nvmlShutdown()
             logger.info("NVML shutdown successfully.")
