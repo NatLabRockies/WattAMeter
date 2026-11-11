@@ -11,8 +11,10 @@ authors:
   - given-names: Weslley
     non-dropping-particle: da
     surname: Silva Pereira
+    orcid: 0000-0002-6593-0503
     affiliation: "1"
   - name: Struan Clark
+    orcid: 0000-0003-0078-6560
     affiliation: "1"
 affiliations:
   - index: 1
