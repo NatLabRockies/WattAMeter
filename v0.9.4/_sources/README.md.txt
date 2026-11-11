@@ -1,0 +1,168 @@
+[![CI](https://github.com/NatLabRockies/WattAMeter/actions/workflows/ci.yml/badge.svg)](https://github.com/NatLabRockies/WattAMeter/actions/workflows/ci.yml)
+
+![wattameter_logo](_static/wattameter_logo.png)
+
+**wattameter** is a Python package for collecting and unifying heterogeneous hardware telemetry. It supports periodic collection of CPU and GPU metrics in a common time-series format and can be launched as part of an experiment script or from SLURM job scripts. This lowers friction for users who need to run repeated measurements across different machines and software versions.
+
+# WattAMeter
+
+The package emphasizes repeatability and operational simplicity:
+
+- unbiased sampling intervals,
+- configurable write frequency while guaranteeing a final write on shutdown,
+- parity between Python API and CLI interfaces,
+- optional real-time publication over MQTT, and
+- shell utilities that integrate with SLURM jobs.
+
+The resulting workflow reduces the overhead for experiment instrumentation and supports comparative studies across nodes, job configurations, and application versions.
+
+## Current Features
+
+- Track power usage for CPU (using RAPL) and GPU (using nvidia-ml-py)
+- Track GPU utilization and temperature
+- Periodically log time series data to file
+- Real-time MQTT publishing for integration with monitoring systems
+- Customizable logging and output options
+- Command-line interface for easy usage
+- Integration with SLURM for HPC environments
+
+## Installation
+
+You can install **wattameter** via pip:
+
+```bash
+pip install wattameter
+```
+
+## Optional extras
+
+Some features are optional and not required for the core runtime. The current optional dependencies are post-processing (`postprocessing`) and benchmark (`benchmark`) utilities, and MQTT (`mqtt`) publishing. Here are a few examples of how to install with optional dependencies:
+
+```bash
+# Install with post-processing utilities
+pip install wattameter[postprocessing]
+
+# Install with benchmark utilities
+pip install wattameter[benchmark]
+
+# Install with postprocessing and mqtt
+pip install wattameter[postprocessing,mqtt]
+```
+
+### AMD SMI support
+
+For AMD GPU monitoring, WattAMeter relies on the AMD SMI Python package. Follow the instructions at https://rocm.docs.amd.com/projects/amdsmi/en/latest/install/install.html to install the AMD SMI Python package from your ROCm installation. If you have a ROCm installation, you can try to use [setup-amdsmi](../src/wattameter/utils/setup_amdsmi.sh) to automatically set up the AMD SMI environment, which includes installing the AMD SMI Python package to your Python environment.
+
+## Usage
+
+### As a Python module
+
+There are at least two ways to use **wattameter** in your Python code: using the tracker `start()` and `stop()` methods, or using the tracker as a context manager. The following example demonstrates both approaches:
+
+```python
+from wattameter import Tracker
+from wattameter.readers import NVMLReader, Power
+
+tracker = Tracker(
+    reader=NVMLReader((Power,)),
+    dt_read=0.1,  # Time interval for reading power data (seconds)
+    freq_write=600,  # Frequency (# reads) for writing power data to file
+    output="power_log.txt",
+)
+tracker.start(freq_write=0)
+# ... your code ...
+tracker.stop(freq_write=0)
+
+# ... or ...
+
+with Tracker(
+    reader=NVMLReader((Power,)),
+    dt_read=0.1,
+    freq_write=600,
+    output="power_log.txt",
+) as tracker:
+    # ... your code ...
+```
+
+The first approach saves data within the `Tracker` object, and allows you to start and stop the same tracker multiple times. The second approach is more convenient for one-off tracking, as it automatically handles starting and stopping the tracker, and saves the data to the specified output file when the context is exited.
+
+### Command-line interface
+
+```sh
+wattameter --tracker 0.1,nvml-power,rapl --tracker 1.0,nvml-util --suffix test --id 0 --freq-write 600 --log-level info
+```
+
+For MQTT publishing, add MQTT broker configuration:
+
+```sh
+wattameter \
+  --tracker 0.1,nvml-power,rapl \
+  --mqtt-broker mqtt.example.com \
+  --mqtt-port 1883 \
+  --mqtt-username myuser \
+  --mqtt-password mypassword \
+  --mqtt-topic-prefix "hpc/wattameter"
+```
+
+See [MQTT Usage Documentation](./mqtt_usage.md) for detailed information on MQTT publishing.
+
+| Option       | Short | Default             | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------ | ----- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --tracker    |       | 0.1,nvml-power,rapl | Tracker specification: `dt_read,metric1,metric2,...` where `dt_read` is the time interval in seconds between readings. Available metrics: `rapl` (CPU energy), `nvml-energy` (GPU energy), `nvml-power` (GPU power), `nvml-temp` (GPU temperature), `nvml-util` (GPU utilization), `nvml-nvlink` (GPU NVLink throughput). Can be specified multiple times to create multiple trackers with different configurations. |
+| --suffix     | -s    | None                | Suffix for output files                                                                                                                                                                                                                                                                                                                                                                                              |
+| --id         | -i    | UUID                | Identifier for the experiment                                                                                                                                                                                                                                                                                                                                                                                        |
+| --freq-write | -f    | 3600                | Frequency (# reads) for writing data to file                                                                                                                                                                                                                                                                                                                                                                         |
+| --log-level  | -l    | warning             | Logging level: debug, info, warning, error, critical                                                                                                                                                                                                                                                                                                                                                                 |
+| --mqtt-broker|       | None                | MQTT broker hostname. If provided, enables real-time publishing to MQTT                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-port  |       | 1883                | MQTT broker port                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --mqtt-username |    | None                | MQTT authentication username (optional)                                                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-password |    | None                | MQTT authentication password (optional)                                                                                                                                                                                                                                                                                                                                                                             |
+| --mqtt-topic-prefix | | wattameter         | Prefix for MQTT topics                                                                                                                                                                                                                                                                                                                                                                                              |
+| --mqtt-qos   |       | 1                   | MQTT Quality of Service level (0, 1, or 2)                                                                                                                                                                                                                                                                                                                                                                          |
+| --help       | -h    |                     | Show the help message and exit                                                                                                                                                                                                                                                                                                                                                                                       |
+
+### Command-line interface with SLURM
+
+For usage within SLURM jobs, we recommend using our utility functions `start_wattameter` and `stop_wattameter` in [slurm.sh](../src/wattameter/utils/slurm.sh). Follow the example [examples/slurm.sh](../examples/slurm.sh), i.e.,
+
+```bash
+# In a Python environment with wattameter installed,
+# load wattameter slurm utilities
+WATTAPATH=$(python -c 'import wattameter; import os; print(os.path.dirname(wattameter.__file__))')
+source "${WATTAPATH}/utils/slurm.sh"
+
+# Run wattameter on all nodes
+start_wattameter
+
+# Input your job commands here
+# ...
+
+# Stop wattameter on all nodes
+stop_wattameter
+```
+
+All options are the same as the regular command-line interface. The script will automatically handle the output file naming based on the provided SLURM_JOB_ID and node information.
+
+## Contributing
+
+Contributions are welcome! Please open issues or submit pull requests at [https://github.com/NatLabRockies/WattAMeter/](https://github.com/NatLabRockies/WattAMeter/).
+
+## Documentation
+
+The API documentation is available at [https://NatLabRockies.github.io/WattAMeter/](https://NatLabRockies.github.io/WattAMeter/).
+For specific documentation of the NLR module, visit [https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/](https://natlabrockies.github.io/HPC/Documentation/Development/Performance_Tools/WattAMeter/).
+
+## Publications and data
+
+This software has been used in the following publications:
+
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matthew Selensky, and Juliane Mueller, "Measurement of Generative AI Workload Power Profiles for Whole-Facility Data Center Infrastructure Planning," [arXiv:2604.07345](https://arxiv.org/abs/2604.07345) (2026)
+- Vercellino, Roberto, Jared Willard, Gustavo Campos, Weslley da Silva Pereira, Olivia Hull, Matt Selensky, and Juliane Mueller. 2026. "Dataset of Generative AI Workload Power Profiles." NLR Data Catalog. Golden, CO: National Laboratory of the Rockies. Last updated: July 17, 2026. DOI: [10.7799/3025227](https://data.nlr.gov/submissions/312) — measured with WattAMeter
+
+## License
+
+See the [LICENSE](LICENSE) file for details.
+
+---
+
+_NLR Software Record number: SWR-25-101_
